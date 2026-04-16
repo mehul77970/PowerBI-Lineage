@@ -1,0 +1,22 @@
+{
+  "name": "powerbi-lineage",
+  "version": "0.1.0",
+  "description": "Standalone Power BI lineage/usage dashboard — reads a .Report folder + .SemanticModel sibling, serves an interactive HTML dashboard.",
+  "type": "module",
+  "bin": {
+    "powerbi-lineage": "dist/app.js"
+  },
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "tsc && node dist/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}

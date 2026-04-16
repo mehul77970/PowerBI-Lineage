@@ -1,0 +1,11 @@
+# Build + dependencies
+node_modules/
+dist/
+
+# Editor/agent state
+.claude/
+
+# Logs and OS junk
+*.log
+.DS_Store
+Thumbs.db
