@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "140afc26fff68e9429c5",
+  "displayName": "tt_summary_hierarchy",
+  "displayOption": "ActualSize",
+  "height": 390,
+  "width": 350,
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

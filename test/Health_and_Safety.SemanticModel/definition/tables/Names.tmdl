@@ -1,0 +1,157 @@
+/// Lookup table containing period naming conventions for base, comparison, previous year, and same-weekday period labels.
+table Names
+	isHidden
+	lineageTag: 37fcefcb-0d3d-4cad-b0a1-d95843141dab
+	sourceLineageTag: e41f9700-3dc3-4e6e-9eb4-031b35c77801
+
+	/// Base period ID for previous year comparison.
+	column 'Base Period ID Previous Year'
+		dataType: string
+		isHidden
+		lineageTag: 96c5d8a6-0072-42c3-be3d-66301a3ad24f
+		sourceLineageTag: b4be62c5-5df9-4266-bf75-53f25510f13e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Period ID Previous Year
+
+		annotation SummarizationSetBy = User
+
+	/// Base period ID for same weekday comparison.
+	column 'Base Period ID Same Weekday'
+		dataType: string
+		isHidden
+		lineageTag: 166649bf-367f-4550-8420-82b5745cc213
+		sourceLineageTag: ab2d95ca-653d-4383-bde7-e743bfc2992d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Period ID Same Weekday
+
+		annotation SummarizationSetBy = User
+
+	/// Base period ID for all-dates range.
+	column 'Base Period ID All Date'
+		dataType: string
+		isHidden
+		lineageTag: 0ee3b967-922a-44d1-ba87-7734be619e8f
+		sourceLineageTag: e570a6d8-305d-4f98-ba59-edd83c6c15cb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Period ID All Date
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the base period.
+	column 'Base Period Name'
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 59d101d8-8dca-4f76-b5fa-e77a58cd0a75
+		sourceLineageTag: 9e93abd1-f91e-4678-b09a-1dcfa4a6b269
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Period Name
+
+		annotation SummarizationSetBy = User
+
+	/// Comparison period ID for previous period.
+	column 'Comparison Period Previous Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 1b19b6d2-9d79-4335-b14f-f2ff35d948f5
+		sourceLineageTag: 3562e1f8-feb0-49b0-b57c-5035a95f902c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Period ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name for previous period comparison.
+	column 'Comparison Period Previous Period Name'
+		dataType: string
+		isHidden
+		lineageTag: 53fc8714-ffcf-4bf2-8fc6-aaee0d367f91
+		sourceLineageTag: 214f31c9-ae41-41f0-ad31-554369802a7e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Period Name
+
+		annotation SummarizationSetBy = User
+
+	/// Comparison period ID for previous year.
+	column 'Comparison Period Previous Year ID'
+		dataType: string
+		isHidden
+		lineageTag: d5a4b0ab-699f-40ed-a7c4-dd0970916f61
+		sourceLineageTag: 5df33f4d-1fcc-43ae-8a0e-740383f09feb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Year ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name for previous year comparison.
+	column 'Comparison Period Previous Year Name'
+		dataType: string
+		isHidden
+		lineageTag: d2fa6de5-c1b6-4150-9182-f407ab455f4b
+		sourceLineageTag: 4697ca2d-49a3-4577-a400-8863868bf514
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Year Name
+
+		annotation SummarizationSetBy = User
+
+	/// Comparison period ID for same weekday in previous period.
+	column 'Comparison Period Previous Same Weekday ID'
+		dataType: string
+		isHidden
+		lineageTag: f60dd872-b883-42a9-af89-4525d4006b56
+		sourceLineageTag: 15155473-6132-4439-8b89-11117544bbe4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Same Weekday ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name for same weekday comparison.
+	column 'Comparison Period Previous Same Weekday Name'
+		dataType: string
+		isHidden
+		lineageTag: 09ea6db9-b0f0-4fb3-ac3b-6cbbab46e2b2
+		sourceLineageTag: 93614b5f-1e6f-4ca7-ac0e-816aad07644c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Period Previous Same Weekday Name
+
+		annotation SummarizationSetBy = User
+
+	/// All-dates period identifier.
+	column 'All Dates'
+		dataType: string
+		isHidden
+		lineageTag: 2536d5f0-bed0-49e6-9816-3255886d0844
+		sourceLineageTag: 13b64335-4458-48dd-811c-8472ceb36444
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: All Dates
+
+		annotation SummarizationSetBy = User
+
+	/// Display name for the all-dates period.
+	column 'All Dates Name'
+		dataType: string
+		isHidden
+		lineageTag: 21485f08-d308-42d8-a65b-e2ae97497cf8
+		sourceLineageTag: b5eaf1a4-ce7e-44e8-93a9-e8a428692ad1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: All Dates Name
+
+		annotation SummarizationSetBy = User
+
+	partition Names = entity
+		mode: directQuery
+		source
+			entityName: Names
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

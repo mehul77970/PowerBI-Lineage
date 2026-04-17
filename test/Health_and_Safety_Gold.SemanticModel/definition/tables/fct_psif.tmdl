@@ -1,0 +1,192 @@
+/// Fact table recording Potential Serious Injury or Fatality (PSIF) incidents by site and month.
+table fct_psif
+	lineageTag: 619987d1-8cdb-4b98-b34a-ec53656a6121
+
+	/// Number of PSIF
+	/// 
+	/// [Type:  Sum ,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of PSIF' =
+			
+			SUM( fct_psif[number_PSIF] )
+		formatString: 0
+		displayFolder: _measures_fct_PSIF
+		lineageTag: e0917472-9fd2-488d-9df8-4932f880eb26
+
+	column first_of_month = DATE('fct_psif'[Reporting_year],fct_psif[Reporting_month],01)
+		formatString: Short Date
+		lineageTag: 7e6eb934-7385-4ade-a748-3d73b3b2d386
+		summarizeBy: none
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column end_of_month = EOMONTH(date('fct_psif'[Reporting_year],fct_psif[Reporting_month],1),0)
+		formatString: Long Date
+		lineageTag: 2723a242-9ac6-419f-bc76-6441d6df18da
+		summarizeBy: none
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column year_month = FORMAT(date('fct_psif'[Reporting_year],fct_psif[Reporting_month],1),"YYYY-MM")
+		lineageTag: 29e9c7fb-3d78-4116-bace-045ed78a559a
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: 2a19a363-0bf6-47c0-87f1-3650bcaef355
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting month of the metrics
+	column reporting_month
+		dataType: string
+		lineageTag: 5bfb3c88-6166-47a4-8516-4416d4101116
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identifying the site - site_ID can be defined by the groups as long as the first 2 characters are identical to the group_ID. Meaning that a site_ID from SHV_Energy always starts with "G2", for Nutreco with "G3" and for Kiwa "G4" etc.
+	column site_ID
+		dataType: string
+		isHidden
+		lineageTag: 51cbc8e4-717d-4c6e-9f62-8a1d00c13e16
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		lineageTag: ecc4638c-dad2-4b62-be06-d892a0f0d249
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of potential injuries or fatalities
+	column number_PSIF
+		dataType: int64
+		formatString: 0
+		lineageTag: 40878427-49fa-4357-8dc0-43896ac90302
+		summarizeBy: sum
+		sourceColumn: number_PSIF
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 7225998e-f29a-4d93-8c7f-4336c14d78c8
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 2ea66b69-7534-45b0-a799-66ebfddfdd9a
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: fc2e05a5-537e-4e0f-a773-2516ecfd4f0e
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 74d942e0-1508-4f50-97f1-9b9e71363e8c
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: ba15fb52-2834-412b-9e35-1408ba7110a3
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 53ae9ad7-8bf8-4467-b998-77f1e30594bc
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: ad187fc7-0cae-4ed6-9577-f0f42eaaea74
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: e9700c10-b34c-4f65-acbf-025e6fb0a5ea
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_psif = m
+		mode: import
+		queryGroup: 'Fact Tables\Pilot Wave'
+		source =
+				let
+				    Source = Sql.Database(Domain_Health_and_Safety_SQL, Domain_Health_and_Safety_WH),
+				    dbo_fct_psif_cu_fct_PSIF = Source{[Schema=Domain_Health_and_Safety_Schema,Item=table_PSIF]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(dbo_fct_psif_cu_fct_PSIF,{{"number_PSIF", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "fe0b113ccc77612ab963",
+  "displayName": "tt_geo_summary_country_matrix",
+  "displayOption": "ActualSize",
+  "height": 325,
+  "width": 350,
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

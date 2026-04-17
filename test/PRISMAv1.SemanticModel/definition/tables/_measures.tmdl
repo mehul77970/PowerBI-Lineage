@@ -1,0 +1,1063 @@
+table _measures
+	lineageTag: 9452c871-433c-4553-9ec0-1fd4c4b98b20
+
+	/// Count of stores with Store Status = Open in the current filter context.
+	measure 'Active Stores' = CALCULATE( DISTINCTCOUNT( Store[Store Code] ), Store[Store Status] = "Open" )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: faf2c38b-5fbf-4fd9-8e8b-d709cf5c6cc4
+
+	/// Revenue at list price: SUMX of Sales[Quantity] * Sales[Unit Price].
+	measure 'Gross Revenue' =
+			
+			SUMX( Sales, Sales[Quantity] * Sales[Unit Price] )
+		formatString: #,0
+		displayFolder: KPI - Sales
+		lineageTag: 3864f6ec-b4b3-490c-9438-ea79216f1524
+
+	/// Average net revenue per order: DIVIDE([Net Revenue], [Orders]).
+	measure 'Avg Order Value' =
+			
+			DIVIDE( [Net Revenue], [Orders] )
+		formatString: #,0
+		displayFolder: KPI - Sales
+		lineageTag: 2b253de4-d5c1-4ff6-a346-402f12dfe2cd
+
+	/// Number of unique order lines: COUNTROWS over distinct combinations of Order Number and Line Number.
+	measure 'Line Items' =
+			
+			VAR Lines =
+			    SUMMARIZE( Sales, Sales[Order Number], Sales[Line Number] )
+			RETURN
+			    COUNTROWS( Lines )
+		formatString: #,0
+		displayFolder: KPI - Sales
+		lineageTag: a4844a3d-9c34-4559-baff-02afad5837e3
+
+	/// Average lines per order: DIVIDE([Total Line Items],[Total Orders]).
+	measure 'Avg Line Items' =
+			
+			DIVIDE( [Line Items], [Orders] )
+		formatString: #,0.0
+		displayFolder: KPI - Sales
+		lineageTag: e005c246-045e-4973-b668-58256212399e
+
+	/// Distinct orders for Same Period Last Year, based on Date[Date].
+	measure 'Orders SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Orders], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 24115dae-b5ea-42af-900c-381d7ea38ab4
+
+	/// Absolute change in Orders vs Same Period Last Year.
+	measure 'Orders Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Orders], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 20d3e1e7-6a17-4882-bf35-b7c554d99a6f
+
+	/// Percent change in orders vs Same Period Last Year.
+	measure 'Orders Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Orders], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: f8005450-11bc-4b89-849a-293596b0523b
+
+	/// Average Order Value for Same Period Last Year.
+	measure 'Avg Order Value SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Avg Order Value], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 9583fcc9-d6d6-46ea-9943-f570fcacb476
+
+	/// Percent change in Average Order Value vs Same Period Last Year.
+	measure 'Avg Order Value Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Avg Order Value], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: d90eaa1e-6a7f-47ea-b01f-6578a8d22653
+
+	/// Distinct count of customers with activity in the current filter context.
+	measure Customers =
+			
+			DISTINCTCOUNT( Customer[CustomerKey] )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 31d810bc-e553-408e-81a7-700cf58a780e
+
+	/// Average age (in years) of customers in the current filter context.
+	measure 'Average Age' =
+			
+			AVERAGE( Customer[Age] )
+		formatString: #,0.0
+		displayFolder: Customer
+		lineageTag: 8fa88e1c-5e1a-4543-b5fd-eca08708718f
+
+	/// Average Net Revenue per active customer in the current filter context. Uses customers who actually transacted in the period, not all-time distinct customers.
+	measure 'Revenue per Customer' = DIVIDE( [Net Revenue], DISTINCTCOUNT( Sales[CustomerKey] ) )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 47983de3-d642-49c7-a2ef-fca38e95da06
+
+	/// Share of customers with two or more distinct orders: customers with ≥2 orders divided by all active customers.
+	measure 'Repeat Rate' =
+			
+			VAR T =
+			    SUMMARIZE(
+			        Sales,
+			        Sales[CustomerKey],
+			        "Orders", DISTINCTCOUNT( Sales[Order Number] )
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS( FILTER( T, [Orders] >= 2 ) ),
+			        COUNTROWS( T )
+			    )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: 1bcdbf15-9f52-4285-98c4-f7364015a2bb
+
+	/// Distinct count of Product[ProductKey] in filter context (products available/sold).
+	measure 'Unique Products' =
+			
+			DISTINCTCOUNT( Product[ProductKey] )
+		formatString: #,0
+		displayFolder: Product
+		lineageTag: ae73af14-1585-4b5d-a5ea-71cd33bc1ac0
+
+	/// Distinct count of Product[Brand] in filter context.
+	measure 'Active Brands' =
+			
+			DISTINCTCOUNT( Product[Brand] )
+		formatString: #,0
+		displayFolder: Product
+		lineageTag: f5ee2e74-3a83-4f58-9172-a2f8f3775f5a
+
+	/// Average realised net revenue per unit sold: DIVIDE([Net Revenue], [Units Sold]).
+	measure 'Avg Unit Price' =
+			
+			DIVIDE( [Net Revenue], [Units Sold] )
+		formatString: #,0.00
+		displayFolder: Product
+		lineageTag: c26fbbd4-6893-4e80-90b8-03e7c9b4e790
+
+	/// Distinct count of Store[Store Code] in filter context.
+	measure Stores =
+			
+			DISTINCTCOUNT( Store[Store Code] )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: a88ee692-370b-4fe3-86ba-e05f8b44d831
+
+	/// Count of permanently closed stores. Excludes Restructured.
+	measure 'Closed Stores' = CALCULATE( DISTINCTCOUNT( Store[Store Code] ), Store[Store Status] = "Closed" )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: e37ee5c3-656b-48e5-9e7f-1f2d1a30f8da
+
+	/// Average Store[Square Meters] across the current selection.
+	measure 'Avg Sq Meters' =
+			
+			AVERAGE( Store[Square Meters] )
+		formatString: #,0.0
+		displayFolder: Geography
+		lineageTag: d3bd467f-a518-48c0-9313-cc80b55feca4
+
+	/// Average Net Revenue per open physical store. Excludes Online channel from both numerator and denominator.
+	measure 'Revenue per Store' =
+			DIVIDE(
+			    [Physical Revenue],
+			    CALCULATE( DISTINCTCOUNT( Store[Store Code] )
+			))
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: 49b67028-fefb-433e-913b-c5d8af71372f
+
+	/// Physical Net Revenue per square metre of active physical floor space. Excludes Online channel from both numerator and denominator.
+	measure 'Revenue per Sq Meter' =
+			DIVIDE(
+			    [Physical Revenue],
+			    CALCULATE( SUM( Store[Square Meters] )
+			))
+		formatString: #,0.00
+		displayFolder: Geography
+		lineageTag: 1dcbc75e-a72e-4d40-b8d0-52f663438d80
+
+	/// Net revenue converted to USD using row‑level Sales[Exchange Rate].
+	measure 'Sales Amount USD' =
+			
+			SUMX(
+			    Sales,
+			    Sales[Quantity] * Sales[Net Price] * Sales[Exchange Rate]
+			)
+		formatString: #,0
+		isHidden
+		displayFolder: Currency
+		lineageTag: 849c3fc0-539d-4ff3-a180-8f36a8fe79be
+
+		changedProperty = IsHidden
+
+	/// Gross margin dollars for Same Period Last Year.
+	measure 'Net Profit SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Net Profit], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 95c1be3d-f3ea-4213-adf1-9dc337209127
+
+	/// Net profit margin % for Same Period Last Year.
+	measure 'Margin % SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Margin %], 'Date'[Date], "SPLY" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 1c5116c2-2c5f-41ca-a32a-82eb6cd3eb5d
+
+	/// Change in net profit margin % vs Same Period Last Year, expressed in percentage points.
+	measure 'Margin Delta pp' =
+			VAR _TotalDates  = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected = COUNTROWS( 'Date' ) = _TotalDates
+			VAR MarginNow    = [Margin %]
+			VAR MarginPrior  = udf.adaptfy.timeintellgence( [Margin %], 'Date'[Date], "SPLY" )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        0,
+			        IF(
+			            NOT ISBLANK( MarginNow ) && NOT ISBLANK( MarginPrior ),
+			            ( MarginNow - MarginPrior ) * 100
+			        )
+			    )
+		formatString: 0.00 "pp";-0.00 "pp";0.00 "pp"
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 7fb52cfa-0ecd-4600-945e-faff4215cbb4
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	/// Order line count for Same Period Last Year.
+	measure 'Line Items SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Line Items], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: e7cdc5d2-74f9-4079-b546-c3fb2aedac8e
+
+	/// Average line items per order for Same Period Last Year.
+	measure 'Avg Line Items SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Avg Line Items], 'Date'[Date], "SPLY" ) )
+		formatString: #,0.0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 09fd9b86-e1da-4823-907e-e427f30e07d3
+
+	/// Percent change in average line items per order vs Same Period Last Year.
+	measure 'Avg Line Items Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Avg Line Items], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 14a417fe-1057-47b1-9941-13424385984d
+
+	/// Hex color based on absolute delta vs SPLY (positive=green, negative=red, zero/blank=amber).
+	measure 'Sales Amount Color' = udf.adaptfy.color.ragHex( [Revenue Delta], "NORMAL" )
+		displayFolder: Formatting - Examples
+		lineageTag: c43a03a2-5c24-4c71-9502-c6bf9a77b79b
+
+	/// Total units sold for Same Period Last Year.
+	measure 'Units Sold SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Units Sold], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 9bb90789-405e-4585-9ffd-e1055936111a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// SVG trend arrow based on absolute revenue delta vs SPLY. Green UP = positive, Red DOWN = negative, Amber FLAT = zero/blank. Use in an Image URL visual field.
+	measure 'Revenue Arrow' = udf.adaptfy.svg.ragArrow( [Revenue Delta], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 4a912ea5-a0c1-4caf-97bc-f08085bc7428
+		dataCategory: ImageUrl
+
+	/// Percent change in Units Sold vs Same Period Last Year.
+	measure 'Units Sold Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Units Sold], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: d248483a-b305-4c6e-989a-b1d434c3acbb
+
+	/// Utility measure returning a single space. Used as a blank placeholder in visuals where an empty measure slot is needed.
+	measure Blank =
+			
+			" "
+		displayFolder: Formatting - Examples
+		lineageTag: 54d5aec7-a549-46dd-b9a4-daf45afbd8c4
+
+	/// RAG trend arrow for Net Profit Delta % vs SPLY. Green when net profit is growing, red when declining.
+	measure 'Net Profit Arrow' =
+			
+			udf.adaptfy.svg.ragArrow( [Net Profit Delta], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: e2668a49-2632-4c1e-b1f4-6f899d2d85bc
+		dataCategory: ImageUrl
+
+	/// Percent change in Net Revenue vs Same Period Last Year.
+	measure 'Revenue Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Net Revenue], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 43743009-aa61-4181-b0f9-1227edb29a43
+
+	/// Absolute change in Net Revenue vs Same Period Last Year.
+	measure 'Revenue Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Net Revenue], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: cb8db50e-9b3f-40a5-a7de-802a76ec2345
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Net revenue for Same Period Last Year based on Date[Date] using model time‑intelligence UDF.
+	measure 'Revenue SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Net Revenue], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: e379e66c-74cc-4dc9-bea7-2f0714ce63e8
+
+	/// RAG trend arrow for Units Sold Delta % vs SPLY. Green when units sold are growing, red when declining.
+	measure 'Units Sold Arrow' = udf.adaptfy.svg.ragArrow( [Units Sold Delta], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: efa11e5f-02c9-4e1c-a6db-9aa399e8d923
+		dataCategory: ImageUrl
+
+	/// Absolute change in Units Sold vs Same Period Last Year.
+	measure 'Units Sold Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Units Sold], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 7b658a85-a6b2-49e4-a2fe-00eae3825ed9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// RAG trend arrow for Orders Delta vs SPLY. Green when orders are growing, red when declining.
+	measure 'Orders Arrow' = udf.adaptfy.svg.ragArrow( [Orders Delta], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 1e4c7192-6c15-4b21-ba80-1a4c5708a525
+		dataCategory: ImageUrl
+
+	/// Absolute change in Net Profit vs Same Period Last Year.
+	measure 'Net Profit Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Net Profit], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 1134539e-70b5-44a3-8366-94677ea4270b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Percent change in Net Profit vs Same Period Last Year.
+	measure 'Net Profit Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Net Profit], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Time Intelligence
+		lineageTag: ee7d96a7-2324-46e9-a518-b7da00bb34b3
+
+	/// RAG trend arrow for Margin Delta pp vs SPLY. Green when margin is improving, red when declining.
+	measure 'Margin Arrow' =
+			
+			udf.adaptfy.svg.ragArrow( [Margin Delta pp], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 5c71a756-5c41-496a-843e-93323170b430
+		dataCategory: ImageUrl
+
+	/// Discount rate: share of list price given away as discounts. DIVIDE(Gross Revenue - Net Revenue, Gross Revenue).
+	measure 'Discount %' = DIVIDE( [Gross Revenue] - [Net Revenue], [Gross Revenue] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Sales
+		lineageTag: e9fea506-954b-481b-9cdf-9af265d76b0a
+
+	/// Gross Revenue (list price) for Same Period Last Year.
+	measure 'Gross Revenue SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Gross Revenue], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: KPI - Sales
+		lineageTag: 1954d173-4e0c-46e5-9a02-b2036aa0b042
+
+	/// Percent change in Gross Revenue vs Same Period Last Year.
+	measure 'Gross Revenue Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Gross Revenue], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Sales
+		lineageTag: bb90828c-060a-4f36-9f19-e457bef7a703
+
+	/// Net Revenue as a % of grand total, ignoring Category and Country filters. Use in category/country visuals to show revenue mix.
+	measure 'Revenue % of Total' =
+			DIVIDE(
+			    [Net Revenue],
+			    CALCULATE( [Net Revenue], ALL( Product[Category] ), ALL( Store[Country] ) )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Sales
+		lineageTag: 62a50780-9eb9-4e8b-8dcc-5be1c83e96b4
+
+	/// Returns the country with the highest Net Revenue in the current filter context. Use in a card visual for executive narrative.
+	measure 'Top Country' =
+			CALCULATE(
+			    SELECTEDVALUE( Store[Country] ),
+			    TOPN( 1, ALL( Store[Country] ), [Net Revenue], DESC )
+			)
+		displayFolder: KPI - Sales
+		lineageTag: daea6f30-ce54-4b0a-bbde-d9bdc1e9d87a
+
+	/// Returns the product category with the highest Net Revenue in the current filter context. Use in a card visual for executive narrative.
+	measure 'Top Category' =
+			CALCULATE(
+			    SELECTEDVALUE( Product[Category] ),
+			    TOPN( 1, ALL( Product[Category] ), [Net Revenue], DESC )
+			)
+		displayFolder: KPI - Sales
+		lineageTag: 48e9161a-552c-412d-8ca4-392b4808f1ad
+
+	/// Dynamic Y-axis minimum for Margin % chart. Pads below the visible minimum by 50% of the visible range (min 0.5pp), then rounds down to the nearest 0.5pp. Use in a What-if parameter or axis min reference line.
+	measure 'Margin % Axis Min' =
+			VAR VisibleMin    = MINX( VALUES( 'Date'[Year Month Number] ), [Margin %] )
+			VAR VisibleMax    = MAXX( VALUES( 'Date'[Year Month Number] ), [Margin %] )
+			VAR VisibleRange  = VisibleMax - VisibleMin
+			VAR Padding       = MAX( VisibleRange * 0.5, 0.005 )  -- at least 0.5pp padding each side
+			RETURN
+			    FLOOR( ( VisibleMin - Padding ) * 100, 0.5 ) / 100
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Formatting - Examples
+		lineageTag: 16a42d36-6622-455a-9708-1a621e589ce2
+
+	/// Dynamic Y-axis maximum for Margin % chart. Pads above the visible maximum by 50% of the visible range (min 0.5pp), then rounds up to the nearest 0.5pp. Use in a What-if parameter or axis max reference line.
+	measure 'Margin % Axis Max' =
+			VAR VisibleMin    = MINX( VALUES( 'Date'[Year Month Number] ), [Margin %] )
+			VAR VisibleMax    = MAXX( VALUES( 'Date'[Year Month Number] ), [Margin %] )
+			VAR VisibleRange  = VisibleMax - VisibleMin
+			VAR Padding       = MAX( VisibleRange * 0.5, 0.005 )  -- at least 0.5pp padding each side
+			RETURN
+			    CEILING( ( VisibleMax + Padding ) * 100, 0.5 ) / 100
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Formatting - Examples
+		lineageTag: d406af72-94d6-4ad4-9c03-9d889e4a9701
+
+	/// Revenue per open store for Same Period Last Year.
+	measure 'Revenue per Store SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Revenue per Store], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: 8b654972-9758-430f-b792-d61512c2b46b
+
+	/// Percent change in revenue per open store vs Same Period Last Year.
+	measure 'Revenue per Store Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Store], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: fd0c6268-a990-41ec-991e-750da150ec3d
+
+	/// RAG trend arrow for Revenue per Store (Open) vs SPLY.
+	measure 'Revenue per Store Arrow' = udf.adaptfy.svg.ragArrow( [Revenue per Store Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: fd3d5ccb-f577-4f71-814f-8f43e53d01df
+		dataCategory: ImageUrl
+
+	/// Revenue per square metre for Same Period Last Year.
+	measure 'Revenue per Sq Meter SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Revenue per Sq Meter], 'Date'[Date], "SPLY" ) )
+		formatString: #,0.00
+		displayFolder: Geography
+		lineageTag: 6eb5ca64-0938-4754-8b2b-39fe454f3465
+
+	/// Percent change in revenue per square metre vs Same Period Last Year.
+	measure 'Revenue per Sq Meter Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Sq Meter], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: 7d35872b-d61f-4e58-912a-72a4d7ab94fd
+
+	/// Online channel share of total Net Revenue.
+	measure 'Online vs Physical %' =
+			DIVIDE(
+			    CALCULATE( [Net Revenue], Store[Channel] = "Online" ),
+			    [Net Revenue]
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: 5daa8fa7-51ba-4fab-8981-b36147227a3b
+
+	/// Net Revenue from physical stores only, excluding Online.
+	measure 'Physical Revenue' = CALCULATE( [Net Revenue], Store[Channel] = "Physical" )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: ab484a54-5cc3-4f90-9786-8f97c461c573
+
+	/// Net Revenue from the Online channel.
+	measure 'Online Revenue' = CALCULATE( [Net Revenue], Store[Channel] = "Online" )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: 1e6c25ea-db50-4e01-b3e9-1fd53d8a8f16
+
+	/// Average floor area (sqm) across active physical stores only. Excludes Online and closed/restructured stores.
+	measure 'Avg Store Size' =
+			CALCULATE(
+			    AVERAGE( Store[Square Meters] ),
+			    Store[Store Status] = "Open",
+			    Store[Channel] = "Physical"
+			)
+		formatString: #,0.0
+		displayFolder: Geography
+		lineageTag: 8c34f16e-9c08-4bcc-b0d2-4480e6a65da1
+
+	/// Share of stores permanently closed: Closed Stores / Total Stores.
+	measure 'Store Closure Rate' = DIVIDE( [Closed Stores], [Stores] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: a35ecd9c-44bd-4a35-988a-665e902a6c4c
+
+	/// Online channel Net Revenue for Same Period Last Year.
+	measure 'Online Revenue SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Online Revenue], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: 3325cc2b-5263-46b7-8bd8-2ec7cdbba525
+
+	/// Percent change in Online Revenue vs Same Period Last Year.
+	measure 'Online Revenue Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Online Revenue], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: f395aa59-a07b-43ca-9278-6f13d28ffdee
+
+	/// Physical stores Net Revenue for Same Period Last Year.
+	measure 'Physical Revenue SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Physical Revenue], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: ffd4cd32-f753-4760-8756-b45a2f66d5c4
+
+	/// Percent change in Physical Revenue vs Same Period Last Year.
+	measure 'Physical Revenue Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Physical Revenue], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: 43d97d7e-9ef8-4e15-a341-c1966aada8f5
+
+	/// RAG trend arrow for Online Revenue vs SPLY.
+	measure 'Online Revenue Arrow' = udf.adaptfy.svg.ragArrow( [Online Revenue Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 974dca14-bcf7-4135-bff0-d454a9de6ab9
+		dataCategory: ImageUrl
+
+	/// RAG trend arrow for Physical Revenue vs SPLY.
+	measure 'Physical Revenue Arrow' = udf.adaptfy.svg.ragArrow( [Physical Revenue Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 627ed6bf-66cf-453a-8932-0fab34df3940
+		dataCategory: ImageUrl
+
+	/// Dynamic text banner showing active store counts by channel. Recalculates automatically if store data changes. Use in a Card visual as a compact header on the store page.
+	measure 'Store Summary Banner' =
+			VAR PhysicalOpen = CALCULATE( DISTINCTCOUNT( Store[Store Code] ), Store[Channel] = "Physical", Store[Store Status] = "Open" )
+			VAR OnlineOpen   = CALCULATE( DISTINCTCOUNT( Store[Store Code] ), Store[Channel] = "Online",   Store[Store Status] = "Open" )
+			RETURN
+			    FORMAT( PhysicalOpen, "0" ) & " physical stores  ·  " &
+			    FORMAT( OnlineOpen,   "0" ) & " online store"
+		displayFolder: Formatting - Examples
+		lineageTag: 836eb567-526d-4645-88e0-0e5f88d26583
+
+	/// Online channel share of Net Revenue for Same Period Last Year.
+	measure 'Online Share SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Online vs Physical %], 'Date'[Date], "SPLY" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Geography
+		lineageTag: dd34c386-2f72-4260-b7cc-e1725dcaead0
+
+	/// Change in Online channel revenue share vs Same Period Last Year, expressed in percentage points. Uses udf.adaptfy.timeintellgence for SPLY calculation.
+	measure 'Online Share Delta pp' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			VAR OnlinePctNow   = [Online vs Physical %]
+			VAR OnlinePctPrior = udf.adaptfy.timeintellgence( [Online vs Physical %], 'Date'[Date], "SPLY" )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        0,
+			        IF(
+			            NOT ISBLANK( OnlinePctNow ) && NOT ISBLANK( OnlinePctPrior ),
+			            ( OnlinePctNow - OnlinePctPrior ) * 100
+			        )
+			    )
+		formatString: 0.00 "pp";-0.00 "pp";0.00 "pp"
+		displayFolder: Geography
+		lineageTag: 56e1b707-66e3-42e9-af71-0f72a050397a
+
+	/// RAG trend arrow for Online Share Delta pp vs SPLY.
+	measure 'Online Share Arrow' = udf.adaptfy.svg.ragArrow( [Online Share Delta pp], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 65820d5c-441c-46cc-b1b1-876ff630913e
+		dataCategory: ImageUrl
+
+	/// RAG trend arrow for Revenue per Sq Meter vs SPLY.
+	measure 'Revenue per Sq Meter Arrow' = udf.adaptfy.svg.ragArrow( [Revenue per Sq Meter Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 3d604efc-7ee9-495e-911d-b316982b9ad9
+		dataCategory: ImageUrl
+
+	/// Absolute change in Revenue per Physical Store vs Same Period Last Year.
+	measure 'Revenue per Store Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Store], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: Geography
+		lineageTag: 1b73b505-f87a-4fd4-b6ff-663c85353adc
+
+	/// Absolute change in Revenue per Sq Meter vs Same Period Last Year.
+	measure 'Revenue per Sq Meter Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Sq Meter], 'Date'[Date], "DELTA" ) )
+		formatString: #,0.00
+		displayFolder: Geography
+		lineageTag: f3ea7150-69da-4207-85dd-0e73fb4db17c
+
+	/// Average unit price for Same Period Last Year.
+	measure 'Avg Unit Price SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Avg Unit Price], 'Date'[Date], "SPLY" ) )
+		formatString: #,0.00
+		displayFolder: Product
+		lineageTag: be00ad1d-1306-4d43-8ad8-2da71ad62295
+
+	/// Percent change in average unit price vs Same Period Last Year.
+	measure 'Avg Unit Price Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Avg Unit Price], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Product
+		lineageTag: 90ad7dc9-7232-46e0-8743-263feac69b64
+
+	/// RAG trend arrow for Avg Unit Price vs SPLY.
+	measure 'Avg Unit Price Arrow' = udf.adaptfy.svg.ragArrow( [Avg Unit Price Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 883f2e3b-7300-40a7-aa6d-2e8b09aedd51
+		dataCategory: ImageUrl
+
+	/// Discount rate for Same Period Last Year.
+	measure 'Discount % SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Discount %], 'Date'[Date], "SPLY" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Product
+		lineageTag: a8508f7b-92fe-4fe0-bd5f-6d74305ac2db
+
+	/// Change in discount rate vs Same Period Last Year in percentage points. Positive = discounting more.
+	measure 'Discount Delta pp' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			VAR DiscountNow    = [Discount %]
+			VAR DiscountPrior  = udf.adaptfy.timeintellgence( [Discount %], 'Date'[Date], "SPLY" )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        0,
+			        IF(
+			            NOT ISBLANK( DiscountNow ) && NOT ISBLANK( DiscountPrior ),
+			            ( DiscountNow - DiscountPrior ) * 100
+			        )
+			    )
+		formatString: 0.00 "pp";-0.00 "pp";0.00 "pp"
+		displayFolder: Product
+		lineageTag: 0921ea12-7cda-4aa1-ac67-bad752431a92
+
+	/// Average Net Revenue per unique product. Measures portfolio revenue efficiency.
+	measure 'Revenue per Product' = DIVIDE( [Net Revenue], [Unique Products] )
+		formatString: #,0
+		displayFolder: Product
+		lineageTag: 17e2cf0b-34ee-4d3e-8455-4991dc124ece
+
+	/// Revenue per unique product for Same Period Last Year.
+	measure 'Revenue per Product SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Revenue per Product], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Product
+		lineageTag: d99f0d92-0bd5-47c3-b151-c07402e977d0
+
+	/// Percent change in Revenue per Product vs Same Period Last Year.
+	measure 'Revenue per Product Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Product], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Product
+		lineageTag: 79c8f327-1dd5-4f8a-a6a3-653de2ac4557
+
+	/// RAG trend arrow for Revenue per Product vs SPLY.
+	measure 'Revenue per Product Arrow' = udf.adaptfy.svg.ragArrow( [Revenue per Product Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 8596545f-5b41-426e-a737-5d6c37e089cc
+		dataCategory: ImageUrl
+
+	/// Returns the brand with the highest Net Revenue in the current filter context.
+	measure 'Top Brand' =
+			CALCULATE(
+			    SELECTEDVALUE( Product[Brand] ),
+			    TOPN( 1, ALL( Product[Brand] ), [Net Revenue], DESC )
+			)
+		displayFolder: Product
+		lineageTag: a454a986-68f7-427b-978c-f6eea665c28f
+
+	/// RAG trend arrow for Discount Delta pp vs SPLY. Delta is rounded to 2dp before passing to UDF so sub-0.01pp changes render as amber neutral rather than triggering a red/green arrow. INVERSE direction — red when discounting increases, green when it decreases.
+	measure 'Discount Arrow' =
+			VAR RawDelta    = [Discount Delta pp]
+			VAR RoundedDelta = ROUND( RawDelta, 2 )
+			RETURN
+			    udf.adaptfy.svg.ragArrow( RoundedDelta, "INVERSE", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 9853dfb7-9b3e-4f2a-83ff-58d2f516ca7d
+		dataCategory: ImageUrl
+
+	/// Customers whose first ever order falls within the current filter context period.
+	measure 'New Customers' =
+			CALCULATE(
+			    DISTINCTCOUNT( Sales[CustomerKey] ),
+			    FILTER(
+			        VALUES( Sales[CustomerKey] ),
+			        VAR FirstPurchaseDate =
+			            CALCULATE( MIN( Sales[Order Date] ), ALL( 'Date' ) )
+			        RETURN
+			            FirstPurchaseDate >= MIN( 'Date'[Date] ) &&
+			            FirstPurchaseDate <= MAX( 'Date'[Date] )
+			    )
+			)
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 1a3bc347-9f57-45f2-afd7-d401f627cfbe
+
+	/// Customers who made their first purchase before the current filter period.
+	measure 'Returning Customers' =
+			CALCULATE(
+			    DISTINCTCOUNT( Sales[CustomerKey] ),
+			    FILTER(
+			        VALUES( Sales[CustomerKey] ),
+			        VAR FirstPurchaseDate =
+			            CALCULATE( MIN( Sales[Order Date] ), ALL( 'Date' ) )
+			        RETURN
+			            FirstPurchaseDate < MIN( 'Date'[Date] )
+			    )
+			)
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: aebaa99d-b1ea-436e-87af-1e0f765509c8
+
+	/// Share of active customers in the period who are buying for the first time.
+	measure 'New Customer %' = DIVIDE( [New Customers], [Customers] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: c4b83ce5-e8d8-458f-b116-7a8e75f759a9
+
+	/// Distinct customers for Same Period Last Year.
+	measure 'Customers SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Customers], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: f5a628f8-e9dd-4be9-955b-7efd254c088f
+
+	/// Percent change in active customers vs Same Period Last Year.
+	measure 'Customers Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Customers], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: 3820c264-dcff-4ed3-811c-ff5dcf3ba1aa
+
+	/// RAG trend arrow for Customers vs SPLY.
+	measure 'Customers Arrow' = udf.adaptfy.svg.ragArrow( [Customers Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 7a5b25b9-bcaf-4428-903c-30dc098b6701
+		dataCategory: ImageUrl
+
+	/// Revenue per customer for Same Period Last Year.
+	measure 'Revenue per Customer SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Revenue per Customer], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 0afd93bd-e736-4a7f-a005-b2c9edbc0f89
+
+	/// Percent change in revenue per customer vs Same Period Last Year.
+	measure 'Revenue per Customer Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Revenue per Customer], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: 4428cbc5-8dab-4698-9027-76da546f7a61
+
+	/// RAG trend arrow for Revenue per Customer vs SPLY.
+	measure 'Revenue per Customer Arrow' = udf.adaptfy.svg.ragArrow( [Revenue per Customer Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: a98e4d5f-77ad-45c2-9276-3ce0a7c30b77
+		dataCategory: ImageUrl
+
+	/// Repeat purchase rate for Same Period Last Year.
+	measure 'Repeat Rate SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Repeat Rate], 'Date'[Date], "SPLY" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: bd85804a-3048-4dd1-8dba-a20efeceeedc
+
+	/// Change in repeat rate vs Same Period Last Year in percentage points.
+	measure 'Repeat Rate Delta pp' =
+			VAR _TotalDates  = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected = COUNTROWS( 'Date' ) = _TotalDates
+			VAR RateNow      = [Repeat Rate]
+			VAR RatePrior    = udf.adaptfy.timeintellgence( [Repeat Rate], 'Date'[Date], "SPLY" )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        0,
+			        IF(
+			            NOT ISBLANK( RateNow ) && NOT ISBLANK( RatePrior ),
+			            ( RateNow - RatePrior ) * 100
+			        )
+			    )
+		formatString: 0.00 "pp";-0.00 "pp";0.00 "pp"
+		displayFolder: Customer
+		lineageTag: e9891149-60ab-44f8-845b-bf892485a1de
+
+	/// RAG trend arrow for Repeat Rate vs SPLY.
+	measure 'Repeat Rate Arrow' = udf.adaptfy.svg.ragArrow( [Repeat Rate Delta pp], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 22c46101-45a2-4c91-8f73-e3958262e8ec
+		dataCategory: ImageUrl
+
+	/// New customers for Same Period Last Year.
+	measure 'New Customers SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [New Customers], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 44759173-530c-419e-a9c7-2bb7ccebbb81
+
+	/// Percent change in new customers vs Same Period Last Year.
+	measure 'New Customers Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [New Customers], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: 06ed9e25-3762-4be9-8df1-5383f6c25763
+
+	/// RAG trend arrow for New Customers vs SPLY.
+	measure 'New Customers Arrow' = udf.adaptfy.svg.ragArrow( [New Customers Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 22ae5584-3cd5-4f59-9367-d7b83932928e
+		dataCategory: ImageUrl
+
+	/// Average customer age for Same Period Last Year.
+	measure 'Average Age SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Average Age], 'Date'[Date], "SPLY" ) )
+		formatString: #,0.0
+		displayFolder: Customer
+		lineageTag: dfc8ead6-25c1-45b7-8938-b285e08344df
+
+	/// Distinct customers who made at least one purchase in the current filter context. Unlike Customers (all-time), this only counts buyers active in the selected period.
+	measure 'Active Customers' = DISTINCTCOUNT( Sales[CustomerKey] )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 2e0bb3f1-0fe3-47a4-8b2f-eb986267af8c
+
+	/// Active customers for Same Period Last Year.
+	measure 'Active Customers SPLY' =
+			VAR _AllSelected = COUNTROWS( 'Date' ) = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			RETURN IF( _AllSelected, BLANK(), udf.adaptfy.timeintellgence( [Active Customers], 'Date'[Date], "SPLY" ) )
+		formatString: #,0
+		displayFolder: Customer
+		lineageTag: 6474976a-6651-4df3-b439-5172f53f0e32
+
+	/// Percent change in active customers vs Same Period Last Year.
+	measure 'Active Customers Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Active Customers], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Customer
+		lineageTag: 0109585e-a2b1-4329-9cd2-2a83c424c66e
+
+	/// RAG trend arrow for Active Customers vs SPLY.
+	measure 'Active Customers Arrow' = udf.adaptfy.svg.ragArrow( [Active Customers Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 50a66759-7ed6-445c-99d4-8eb27329f135
+		dataCategory: ImageUrl
+
+	/// RAG trend arrow for Average Order Value vs SPLY.
+	measure 'Avg Order Value Arrow' = udf.adaptfy.svg.ragArrow( [Avg Order Value Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 6070cc31-25de-44b4-822a-047cc64a1814
+		dataCategory: ImageUrl
+
+	/// RAG trend arrow for Avg Line Items per order vs SPLY. Delta rounded to 2dp before passing to UDF so sub-0.01 changes render as amber neutral.
+	measure 'Avg Line Items Arrow' =
+			VAR RoundedDelta = ROUND( [Avg Line Items Delta], 2 )
+			RETURN
+			    udf.adaptfy.svg.ragArrow( RoundedDelta, "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: f326c4ff-2b53-4026-85f7-71450c780ef4
+		dataCategory: ImageUrl
+
+	/// Percent change in total line items vs Same Period Last Year.
+	measure 'Line Items Delta %' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Line Items], 'Date'[Date], "PCT" ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: KPI - Sales
+		lineageTag: bf4b3589-4d4d-4797-acc3-5287e0fa8201
+
+	/// RAG trend arrow for Line Items vs SPLY.
+	measure 'Line Items Arrow' = udf.adaptfy.svg.ragArrow( [Line Items Delta %], "NORMAL", 48, "ARROW" )
+		displayFolder: Formatting - Examples
+		lineageTag: 13e35ebb-9909-44d9-ae50-765752484b10
+		dataCategory: ImageUrl
+
+	/// Absolute change in Average Order Value vs Same Period Last Year.
+	measure 'Avg Order Value Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Avg Order Value], 'Date'[Date], "DELTA" ) )
+		formatString: #,0
+		displayFolder: KPI - Time Intelligence
+		lineageTag: a5033e90-e47e-4d7e-a8f4-4697b21a9011
+
+	/// Absolute change in average line items per order vs Same Period Last Year.
+	measure 'Avg Line Items Delta' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _AllSelected   = COUNTROWS( 'Date' ) = _TotalDates
+			RETURN IF( _AllSelected, 0, udf.adaptfy.timeintellgence( [Avg Line Items], 'Date'[Date], "DELTA" ) )
+		formatString: #,0.00
+		displayFolder: KPI - Time Intelligence
+		lineageTag: 837e96e3-f268-4e60-bb69-8c55db5ae3a3
+
+	/// Dynamic format string for use as the Display Units field in a Power BI visual. Uses SELECTEDMEASURE() to read the value at render time and returns the correct compact scale format string. Safeguards: blank returns empty string, zero returns integer. Scale: T=trillions (4 commas), B=billions (3), M=millions (2), K=thousands (1). Below 100: increasing decimal precision.
+	measure 'Format string' =
+			VAR __Value = ABS( SELECTEDMEASURE() )
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK( SELECTEDMEASURE() ), "",
+			        SELECTEDMEASURE() = 0,        "#,0",
+			        __Value >= 1E12,              "#,0,,,,.0T",
+			        __Value >= 1E9,               "#,0,,,.0B",
+			        __Value >= 1E6,               "#,0,,.0M",
+			        __Value >= 1E3,               "#,0,.0K",
+			        __Value >= 100,               "#,0",
+			        __Value >= 10,                "#,0.0",
+			        __Value >= 1,                 "#,0.00",
+			                                      "#,0.000"
+			    )
+		displayFolder: KPI - Sales
+		lineageTag: a4dd584b-f6d8-4593-b16d-1df627d45aae
+
+	/// Displays the selected date range and its SPLY comparison as a readable label. Returns 'All periods selected' when no date filter is applied. Otherwise adapts to any filter context: single month (Jun 2023), same-year range (Jan - Mar 2023), cross-year range (Oct 2022 - Mar 2023), or full year (Jan - Dec 2023). Use in a Card visual as a dynamic period context label.
+	measure 'Selected Period vs SPLY' =
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'Date' ), ALL( 'Date' ) )
+			VAR _SelectedDates = COUNTROWS( 'Date' )
+			VAR _AllSelected   = _SelectedDates = _TotalDates
+			VAR _MinDate       = MIN( 'Date'[Date] )
+			VAR _MaxDate       = MAX( 'Date'[Date] )
+			VAR _MinSPLY       = DATE( YEAR( _MinDate ) - 1, MONTH( _MinDate ), DAY( _MinDate ) )
+			VAR _MaxSPLY       = DATE( YEAR( _MaxDate ) - 1, MONTH( _MaxDate ), DAY( _MaxDate ) )
+			VAR _SameMonth     = MONTH( _MinDate ) = MONTH( _MaxDate ) && YEAR( _MinDate ) = YEAR( _MaxDate )
+			VAR _SameYear      = YEAR( _MinDate ) = YEAR( _MaxDate )
+			VAR _Current =
+			    IF( _SameMonth,
+			        FORMAT( _MinDate, "MMM YYYY" ),
+			        IF( _SameYear,
+			            FORMAT( _MinDate, "MMM" ) & " - " & FORMAT( _MaxDate, "MMM YYYY" ),
+			            FORMAT( _MinDate, "MMM YYYY" ) & " - " & FORMAT( _MaxDate, "MMM YYYY" )
+			        )
+			    )
+			VAR _SPLY =
+			    IF( _SameMonth,
+			        FORMAT( _MinSPLY, "MMM YYYY" ),
+			        IF( _SameYear,
+			            FORMAT( _MinSPLY, "MMM" ) & " - " & FORMAT( _MaxSPLY, "MMM YYYY" ),
+			            FORMAT( _MinSPLY, "MMM YYYY" ) & " - " & FORMAT( _MaxSPLY, "MMM YYYY" )
+			        )
+			    )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        "All periods selected",
+			        _Current & "  |  vs.  " & _SPLY
+			    )
+		displayFolder: KPI - Sales
+		lineageTag: 46fbd696-dac1-4b4d-9926-0ee53235c9d6
+
+	column dummy
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 23d209a0-adce-460a-b12c-0e432b612443
+		summarizeBy: sum
+		sourceColumn: dummy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMlCKjQUA", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [dummy = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"dummy", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

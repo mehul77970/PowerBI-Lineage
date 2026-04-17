@@ -1,0 +1,22 @@
+expression 'DirectQuery to AS - Global_DatePeriod' =
+		let
+		    Source = AnalysisServices.Database("powerbi://api.powerbi.com/v1.0/myorg/local-jpa-GlobalDataHouse__WS", "Global_DatePeriod"),
+		    Cubes = Table.Combine(Source[Data]),
+		    Cube = Cubes{[Id="Model", Kind="Cube"]}[Data]
+		in
+		    Cube
+	lineageTag: c0708b6e-a944-41ea-9466-a3f3909f189a
+
+	annotation PBI_IncludeFutureArtifacts = True
+
+expression 'DirectQuery to AS - Health_and_Safety_Gold' =
+		let
+		    Source = AnalysisServices.Database("powerbi://api.powerbi.com/v1.0/myorg/local-jpa-DD_HealthAndSafety__WS", "Health_and_Safety_Gold"),
+		    Cubes = Table.Combine(Source[Data]),
+		    Cube = Cubes{[Id="Model", Kind="Cube"]}[Data]
+		in
+		    Cube
+	lineageTag: 4ebdf92d-babb-4957-8a6b-be8dc0c66906
+
+	annotation PBI_IncludeFutureArtifacts = True
+

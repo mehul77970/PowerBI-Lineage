@@ -1,0 +1,194 @@
+/// Product dimension. One row per product. Full catalogue with category/subcategory hierarchy, pricing, and physical attributes.
+table Product
+	lineageTag: 788e06ac-419f-4210-be7d-232115f91c18
+
+	/// Primary key uniquely identifying each product.
+	column ProductKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: de8b0944-7e1e-43ab-9f3d-900e55258e76
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Company that manufactures the product.
+	column Manufacturer
+		dataType: string
+		lineageTag: 06d0bedb-8e42-4069-b7d7-6273e4eaac2b
+		summarizeBy: none
+		sourceColumn: Manufacturer
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Brand name under which the product is sold.
+	column Brand
+		dataType: string
+		lineageTag: dde298a7-1cf1-49cb-8afd-51b2e855f8c6
+		summarizeBy: none
+		sourceColumn: Brand
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Primary color of the product.
+	column Color
+		dataType: string
+		lineageTag: d50599a0-bfc6-45ad-bbf9-7518a18d69c1
+		summarizeBy: none
+		sourceColumn: Color
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Physical weight of the product in the specified unit.
+	column Weight
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 49b67afc-46ae-4ebf-8553-c4872c4ce083
+		summarizeBy: none
+		sourceColumn: Weight
+
+		changedProperty = IsHidden
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Internal SKU or product code.
+	column 'Product Code'
+		dataType: string
+		lineageTag: e634c49b-1c4a-4dd2-8243-7c7d7a95ba98
+		summarizeBy: none
+		sourceColumn: Product Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Full descriptive name of the product.
+	column 'Product Name'
+		dataType: string
+		lineageTag: e09ca54d-34ee-47c5-883f-41aa43951960
+		summarizeBy: none
+		sourceColumn: Product Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Unit of measurement for the product's weight (e.g. kg, lb).
+	column 'Weight Unit Measure'
+		dataType: string
+		isHidden
+		lineageTag: 18a93819-7b36-4b90-b68f-38190f700278
+		summarizeBy: none
+		sourceColumn: Weight Unit Measure
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Standard cost to procure or produce one unit of this product.
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 01e45dd0-17da-46cb-aae4-94f931d6fb67
+		summarizeBy: none
+		sourceColumn: Unit Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Standard retail list price for one unit of this product.
+	column 'Unit Price'
+		dataType: decimal
+		isHidden
+		lineageTag: 5e46b6e6-be10-4940-8f43-403ec14be44b
+		summarizeBy: none
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Numeric code identifying the top-level product category.
+	column 'Category Code'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b8e13dca-d879-484d-8a5c-be103596ea37
+		summarizeBy: none
+		sourceColumn: Category Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Top-level product category name (e.g. Electronics, Clothing).
+	column Category
+		dataType: string
+		lineageTag: df588855-cb47-4b18-a20d-b07d587af514
+		summarizeBy: none
+		sourceColumn: Category
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Numeric code identifying the product subcategory.
+	column 'Subcategory Code'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e8779be0-b83f-409c-80e1-2d2d33778385
+		summarizeBy: none
+		sourceColumn: Subcategory Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Product subcategory name (child of Category).
+	column Subcategory
+		dataType: string
+		lineageTag: 4f47ca92-3149-4f7b-b39a-1198a346810c
+		summarizeBy: none
+		sourceColumn: Subcategory
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Two-level product classification hierarchy: Category (top-level) → Subcategory (child).
+	hierarchy Category-Subcategory
+		lineageTag: cc14e60f-4122-4d18-887d-1c1a0f6ed7ee
+
+		/// Top level. Broadest product grouping (e.g. Electronics, Clothing).
+		level Category
+			lineageTag: 356510e4-981f-4ee6-b948-a575b06e7697
+			column: Category
+
+		/// Lowest level. Product subcategory within the selected category.
+		level Subcategory
+			lineageTag: 795213b8-537b-4217-8fa2-6e75719bbea4
+			column: Subcategory
+
+	partition Product-9730db17-a88f-43ad-b6f2-50ae8a679b18 = m
+		mode: import
+		source =
+				let
+				    Source = Parquet.Document(File.Contents("C:\Users\JonathanPapworth\Downloads\parquet-1m\product.parquet")),
+				    #"Renamed Columns" = Table.RenameColumns(Source, {
+				        {"ProductCode", "Product Code"},
+				        {"ProductName", "Product Name"},
+				        {"WeightUnit", "Weight Unit Measure"},
+				        {"Cost", "Unit Cost"},
+				        {"Price", "Unit Price"},
+				        {"SubCategoryKey", "Subcategory Code"},
+				        {"SubCategoryName", "Subcategory"},
+				        {"CategoryKey", "Category Code"},
+				        {"CategoryName", "Category"}
+				    }),
+				    #"Selected Columns" = Table.SelectColumns(#"Renamed Columns", {"ProductKey", "Product Code", "Product Name", "Manufacturer", "Brand", "Color", "Weight Unit Measure", "Weight", "Unit Cost", "Unit Price", "Subcategory Code", "Subcategory", "Category Code", "Category"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Selected Columns", {{"Unit Cost", Currency.Type}, {"Unit Price", Currency.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

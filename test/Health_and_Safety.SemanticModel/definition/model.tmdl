@@ -1,0 +1,89 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+/// Group for storing parameters for warehouse and lakehouse.
+queryGroup 'Connection Parameters'
+
+	annotation PBI_QueryGroupOrder = 0
+
+/// Dimensional tables and reference data tables
+queryGroup 'Dimension & Reference Tables'
+
+	annotation PBI_QueryGroupOrder = 1
+
+/// Fact tables for the current domain.
+queryGroup 'Fact Tables'
+
+	annotation PBI_QueryGroupOrder = 2
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["_measures","DirectQuery to AS - Global_DatePeriod","DirectQuery to AS - Health_and_Safety_Gold"]
+
+annotation PBI_ProTooling = ["DevMode","DaxQueryView_Desktop","MCP-PBIModeling"]
+
+annotation __TEdtr = 1
+
+annotation __PBI_ServiceStoredInTmdl = reserved
+
+ref table switch_hours_worked
+ref table _measures
+ref table 'Date Period NEW'
+ref table Names
+ref table 'Date Period NEW Config'
+ref table 'Date Period NEW Base'
+ref table 'Date NEW'
+ref table 'Date Period NEW Comparison'
+ref table 'Date Period NEW Defined'
+ref table dim_calendar
+ref table LocalDateTable_3c93e122-3535-43c0-9636-2fea0e831d1a
+ref table LocalDateTable_23a1d73b-bcfa-4ef3-92f0-d4057c78b0de
+ref table LocalDateTable_17ada190-9f0c-43b7-8d09-1459212dcb22
+ref table LocalDateTable_ff40f39c-20b3-4bcc-9ac7-1573fccf80fd
+ref table LocalDateTable_5bc38a5c-da47-44f3-b34e-f7e13c25c7e5
+ref table LocalDateTable_1157f75d-26b1-4d0a-9f7d-a93660982432
+ref table LocalDateTable_6e49d4cb-c8a7-4a8e-bec7-07b67d211f20
+ref table LocalDateTable_d83df253-46f2-489a-8ebe-c664af3d9fea
+ref table LocalDateTable_10a54981-0e64-4feb-819e-b53b1ed412a0
+ref table dim_country
+ref table dim_group
+ref table dim_injury_type
+ref table dim_life_saving_rules
+ref table dim_serious_injury_fatality
+ref table dim_site
+ref table dim_workforce_category
+ref table fct_psif
+ref table fct_health_safety
+ref table fct_injuries
+ref table switch_geodata
+ref table dim_calendar_year
+ref table dim_calendar_semester
+ref table Globa_Data_House
+ref table Global_Dimensions_Schema
+ref table Global_Data_House_SQL
+ref table Domain_Health_and_Safety_WH
+ref table Domain_Health_and_Safety_Schema
+ref table Domain_Health_and_Safety_SQL
+ref table dim_calendar_month
+ref table dim_calendar_quarter
+ref table _Rollup_measures
+ref table dim_freetext_summary
+ref table Global_Dimensions_Text_Summary
+ref table dim_calendar_plan_year
+ref table table_PSIF
+ref table table_HS
+ref table table_injury
+ref table fct_trcf_targets
+ref table table_trcf_targets
+ref table LocalDateTable_1cc8bc22-7813-492e-8aa0-8a88a9b28e13
+ref table 'Refresh Time Stamp'
+ref table switch_time_period
+ref table switch_site_details
+
+ref cultureInfo en-US
+

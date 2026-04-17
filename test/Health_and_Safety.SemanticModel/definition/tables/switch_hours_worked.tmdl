@@ -1,0 +1,69 @@
+/// Parameter table toggling worked hours display mode.
+table switch_hours_worked
+	lineageTag: 722359e5-bc6d-4f53-83c4-c0206b1950f7
+
+	/// Provides a scaling factor for normalizing injury rates, set to 200,000 to represent the standard, or 1 million for CSRD ensuring consistency in rate calculations across different contexts.
+	/// 
+	/// [Type:  Logic / Helper,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'worked hours multiplier' =
+			
+			FIRSTNONBLANK( switch_hours_worked[hours_worked], 1 )
+		formatString: 0
+		lineageTag: 5445133a-b5b3-4ec3-93c8-10fe4e72eb8d
+
+	/// Sort order for hours worked display.
+	column Order
+		isHidden
+		formatString: 0
+		lineageTag: 26948a18-52f7-43c3-8701-983a9f8565ff
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Order]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Display label for the hours worked mode.
+	column Description
+		lineageTag: 3696b55e-c793-43d4-96b9-d4e5f7de72ef
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Description]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Worked hours multiplier value (200,000 or 1,000,000).
+	column hours_worked
+		isHidden
+		formatString: 0
+		lineageTag: cbe8b02d-337e-468d-b24a-ebaed4afb070
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [hours_worked]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition switch_hours_worked = calculated
+		mode: import
+		source = ```
+				
+				ADDCOLUMNS(
+				    DATATABLE(
+				        "Order", INTEGER,
+				        "hours_worked", INTEGER,
+				        {
+				            {1, 200000},
+				            {2, 1000000}
+				        }
+				    ),
+				    "Description", 
+				    SWITCH(
+				        TRUE(),
+				        [hours_worked] >= 1000000, FORMAT([hours_worked]/1000000, "0") & " Million hours",
+				        [hours_worked] >= 1000, FORMAT([hours_worked]/1000, "0") & " Thousands hours",
+				        FORMAT([hours_worked], "General Number")
+				    )
+				)
+				```
+
+	annotation PBI_Id = 84327dab168d4a8caab92ea14ad956ba
+

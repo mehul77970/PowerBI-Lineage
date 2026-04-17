@@ -1,0 +1,32 @@
+/// PRISMA retail sales semantic model. Star schema with a central Sales fact table and four dimensions: Customer, Product, Store, and Date. Includes measures across net revenue, net profit, margin, time intelligence, customer, product, geography, and currency topics. Store dimension includes Channel (Online/Physical) and Store Status (Open/Closed/Restructured) calculated columns.
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+extendedProperty TabularEditor_ModelDaxPkgSeq = 2
+
+extendedProperty TabularEditor_ModelDaxPkgTable = {}
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["Customer","Date","Product","Sales","Store","Currency Exchange","DatabaseName","_measures"]
+
+annotation PBI_ProTooling = ["DevMode","TMDLView_Desktop","DaxQueryView_Desktop","MCP-PBIModeling","CopilotTooling"]
+
+annotation __TEdtr = 1
+
+ref table Customer
+ref table Date
+ref table Product
+ref table Sales
+ref table Store
+ref table 'Currency Exchange'
+ref table _measures
+
+ref cultureInfo en-US
+

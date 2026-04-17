@@ -1,0 +1,260 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "6907be091501d4598ad2",
+  "position": {
+    "x": 24.285046462573398,
+    "y": 115.75503107006443,
+    "z": 3000,
+    "height": 225.0281722127894,
+    "width": 841.64080158326749,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Table Example",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "14pt",
+                      "color": "#ffffff"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Sales",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Street address of the customer."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Age",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t \t\t\t"
+                  },
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Customer's age in years at time of data load."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Zip Code",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t"
+                  },
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Postal or ZIP code of the customer's address."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Gender",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": " \t\t\t"
+                  },
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Customer's gender (e.g. Male, Female)."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Square Meters",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t"
+                  },
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Floor area of the store in square metres. Used in revenue density calculations."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 4,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

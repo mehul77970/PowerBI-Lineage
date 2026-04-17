@@ -1,0 +1,24 @@
+/// Schema for dimension tables.
+table Domain_Health_and_Safety_Schema
+	isHidden
+	lineageTag: 2be15e3a-6fbf-41fc-8812-a8ae06bd7e2c
+
+	column Domain_Health_and_Safety_Schema
+		dataType: string
+		lineageTag: b55e27c7-a488-49c5-b44b-079d23031376
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_Schema
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Domain_Health_and_Safety_Schema = m
+		mode: import
+		queryGroup: 'Domain Connections'
+		source = "local_gpe__csrd_esg_soc__curated" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

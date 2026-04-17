@@ -1,0 +1,54 @@
+table switch_site_details
+	lineageTag: f2f85bf0-f75f-4929-a4b2-88367c07e7a4
+
+	column 'Group > Site'
+		lineageTag: d33780c5-f6df-4f0b-8d8a-220c4111bc1c
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Parameter Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Parameter Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Parameter Fields'
+		isHidden
+		lineageTag: df26c134-7b15-4767-9dc9-5eb02d6b3e09
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Parameter Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Parameter Order'
+		isHidden
+		formatString: 0
+		lineageTag: 5377df6d-ad2e-48f2-9595-8a0db0952629
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition switch_site_details = calculated
+		mode: import
+		source =
+				{
+				    --("ultimate_region", NAMEOF('dim_country'[ultimate_region]), 0),
+				    --("region", NAMEOF('dim_country'[region]), 1),
+				    --("country_SAP_name", NAMEOF('dim_country'[country_SAP_name]), 2),
+				    ("Groups", NAMEOF('dim_group'[Level2_group]), 0),
+				    --("Site Type", NAMEOF('dim_site'[site_type_name]), 1),
+				    ("Site Name", NAMEOF('dim_site'[site_name]), 1)
+				    --("City Name", NAMEOF('dim_site'[city_name]), 3)
+				    --("No Selection", NAMEOF([tech_spacer]),3)
+				}
+
+	annotation PBI_Id = fabb0034df45434ba93162c42772fb8b
+

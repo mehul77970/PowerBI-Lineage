@@ -1,0 +1,223 @@
+/// Fact table recording individual recordable injuries linked to injury type, severity, life saving rules, workforce category, and site.
+table fct_injuries
+	lineageTag: 21d6f184-d7e2-4671-a1b5-c9b42825ae58
+
+	/// Count of all injuries.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Injuries' =
+			
+			DISTINCTCOUNT( fct_injuries[recordable_injury_ID] )
+		formatString: 0
+		displayFolder: _measures_fct_injuries
+		lineageTag: a2aac38f-7907-4aa5-b690-c9b927e815d5
+
+	column end_of_month = EOMONTH(date('fct_injuries'[Reporting_year],fct_injuries[Reporting_month],1),0)
+		formatString: General Date
+		lineageTag: e4635d92-b34a-4122-9797-96c27bf22c4b
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column year_month = FORMAT(date('fct_injuries'[Reporting_year],fct_injuries[Reporting_month],1),"YYYY-MM")
+		lineageTag: aace1c22-e468-4b49-82a6-8a826cd5d3d2
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_of_month = DATE('fct_injuries'[Reporting_year],fct_injuries[Reporting_month],01)
+		formatString: General Date
+		lineageTag: 3ae4084a-7ea5-4c64-baff-b4978000da5f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: 3218b609-d081-4f1f-b83a-e64324fb444d
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting month of the metrics
+	column reporting_month
+		dataType: string
+		lineageTag: 259a85ec-caaa-415c-8743-9c70b13ec9f8
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identifying the site - site_ID can be defined by the groups as long as the first 2 characters are identical to the group_ID. Meaning that a site_ID from SHV_Energy always starts with "G2", for Nutreco with "G3" and for Kiwa "G4" etc.
+	column site_ID
+		dataType: string
+		isHidden
+		lineageTag: 921d286b-17e8-45d2-baf8-caf1e24bcc81
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID to identify the workforce category
+	column workforce_category_ID
+		dataType: string
+		isHidden
+		lineageTag: c9dc7734-1b77-47e6-9f17-ab4f3aaab47e
+		summarizeBy: none
+		sourceColumn: workforce_category_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		lineageTag: 5b0fa821-57fb-4ec0-a0ef-3a0ca114f138
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Non-unique Key to identify every recordable injury. Non-unique as 1 recordable injury can be linked to multiple LSRs
+	column recordable_injury_ID
+		dataType: string
+		isHidden
+		lineageTag: 9ce6af69-098a-41a3-96cc-5774741e7311
+		summarizeBy: none
+		sourceColumn: recordable_injury_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID to identify the injury type
+	column injury_type_ID
+		dataType: string
+		isHidden
+		lineageTag: a03ffe64-ae32-4160-963f-de308a15b636
+		summarizeBy: none
+		sourceColumn: injury_type_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID to identify severe incident or fatality
+	column severe_injury_fatality_ID
+		dataType: string
+		isHidden
+		lineageTag: 81b070ec-0ba8-41e0-a25e-65f7b7287a46
+		summarizeBy: none
+		sourceColumn: severe_injury_fatality_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID to identify the Life Saving Rules associated to the recordable injuries
+	column life_saving_rules_ID
+		dataType: string
+		isHidden
+		lineageTag: e435d8f2-0ddc-42e4-8efc-cdff1e72ec30
+		summarizeBy: none
+		sourceColumn: life_saving_rules_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 21818ebd-989d-41a4-b3e4-cd51a8ce82cf
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: c8c228ad-f2e6-4ee9-baec-db53106fb055
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: d3bc197b-3859-4b94-97b1-b0784fdee5d3
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: b19ac400-1a44-4fde-871a-caa652737d7d
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 48f4844c-ecf2-411a-9634-367fe33cc756
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 1a79b232-cf8d-4d96-8d51-c2285a66bf60
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 101e527a-3890-44f3-b89d-ce3ca6eb26ff
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: eff36d5a-a69d-466e-b634-14fa9da56077
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_injuries = m
+		mode: import
+		queryGroup: 'Fact Tables\Pilot Wave'
+		source =
+				let
+				    Source = Sql.Database(Domain_Health_and_Safety_SQL, Domain_Health_and_Safety_WH),
+				    #"load" = Source{[Schema=Domain_Health_and_Safety_Schema,Item=table_injury]}[Data]
+				in
+				    #"load"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

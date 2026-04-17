@@ -1,0 +1,199 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "b9f37b2e4e0cd983d9a2",
+  "position": {
+    "x": -2,
+    "y": 40,
+    "z": 0,
+    "height": 280,
+    "width": 352,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Shows the number of recordable injuries classified into SIFs.",
+                    "textStyle": {
+                      "fontSize": "10.6667px",
+                      "color": "#000000"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "SIFs: the most serious Recordable Injuries are SIFs, which concern:",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fatality",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Life-threatening injury",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury that if not immediately addressed is likely to lead to the death of the affected individual, and will usually require emergency response personnel to provide life-sustaining support. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Life-changing injury",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ":",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury that has a significant and permanent adverse effect on an individuals ability to function in day-to-day life. Typically, this will result in the affected person leaving employment on medical grounds or require changing their job role. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 8,
+                      "Percent": 0.6
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

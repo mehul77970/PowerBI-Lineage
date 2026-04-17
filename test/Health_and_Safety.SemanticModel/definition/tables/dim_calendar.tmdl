@@ -1,0 +1,220 @@
+/// Full calendar with every granularity
+table dim_calendar
+	lineageTag: ed85f274-72bf-443b-a6b3-fc640966eb50
+	sourceLineageTag: 7a452097-cde8-4159-9b98-a8154580f64c
+
+	/// Calendar date.
+	column Date
+		dataType: dateTime
+		isNullable: false
+		formatString: Short Date
+		lineageTag: 8e18de78-348f-46be-837b-7209d10899c7
+		sourceLineageTag: 486b6cd0-43d7-4401-9c3d-749fa3993da6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: 621dbb58-4642-462e-8a7c-27e219fb5324
+			defaultHierarchy: LocalDateTable_d83df253-46f2-489a-8ebe-c664af3d9fea.'Date Hierarchy'
+
+		annotation SummarizationSetBy = User
+
+	/// Date formatted as integer string (YYYYMMDD).
+	column DateInt
+		dataType: string
+		lineageTag: 911cfff8-0262-4133-9924-f011a8b64321
+		sourceLineageTag: 492d4741-8330-4e6e-960d-aa2ec95a0cd2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: DateInt
+
+		annotation SummarizationSetBy = User
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 1b417573-cf34-44be-852a-59b28c6107e9
+		sourceLineageTag: 533ebdcf-e8bd-43b0-947f-834d5728fec5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	/// Month number as string (01-12).
+	column Monthnumber
+		dataType: string
+		lineageTag: b4715694-27ec-4535-820c-02dcc5e29cc2
+		sourceLineageTag: c7949eee-8bdf-4003-a4fe-34241ddd1b1e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Monthnumber
+
+		annotation SummarizationSetBy = User
+
+	/// Abbreviated month name (e.g. Jan, Feb).
+	column MonthNameShort
+		dataType: string
+		lineageTag: fe7e9be1-b24d-4db2-8405-2f1e5cc14acc
+		sourceLineageTag: 06ce9a68-6725-4d8c-874f-63d1be201d7e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthNameShort
+		sortByColumn: Monthnumber
+
+		annotation SummarizationSetBy = User
+
+	/// Full month name (e.g. January, February).
+	column MonthNameLong
+		dataType: string
+		lineageTag: f7352847-acf1-4b7f-ab20-d373f2b9d1a3
+		sourceLineageTag: 5e41b13c-8900-4225-8a34-19a180a8866b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthNameLong
+
+		annotation SummarizationSetBy = User
+
+	/// Day of week number (1=Monday).
+	column DayOfWeekNumber
+		dataType: int64
+		formatString: 0
+		lineageTag: 7203cba0-2b5d-4888-b45b-09da13d6d494
+		sourceLineageTag: eefa1ea2-c5f1-4f2b-8bec-d6aafb993206
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: DayOfWeekNumber
+
+		annotation SummarizationSetBy = User
+
+	/// Full day of week name (e.g. Monday).
+	column DayOfWeek
+		dataType: string
+		lineageTag: 3a46c5ce-adaa-484c-b623-3a8a13914458
+		sourceLineageTag: ae0661b6-e9f6-4c1b-80ea-ce9b9f6b23b3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: DayOfWeek
+
+		annotation SummarizationSetBy = User
+
+	/// Abbreviated day of week (e.g. Mon).
+	column DayOfWeekShort
+		dataType: string
+		lineageTag: 37841185-3c8c-47a2-8a91-3b516d12d217
+		sourceLineageTag: 8302a3bb-2d7e-4594-b46f-d7fe81b04bfc
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: DayOfWeekShort
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter label (e.g. Q1, Q2).
+	column Quarter
+		dataType: string
+		lineageTag: 626b660d-fc7a-4df7-b13f-c6f66d124995
+		sourceLineageTag: 4c9dca47-dad2-452a-9b55-9c484d7c6dfa
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = User
+
+	/// Year and quarter combined (e.g. 2025 Q1).
+	column YearQuarter
+		dataType: string
+		lineageTag: 444e55ae-8106-4d8c-8667-bccf0bcf15c4
+		sourceLineageTag: 2b4f2da6-e6f9-4778-a0ed-62e12b9efe91
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearQuarter
+
+		annotation SummarizationSetBy = User
+
+	/// Last date of the month.
+	column EndOfMonth
+		dataType: dateTime
+		formatString: General Number
+		lineageTag: 10fc1fe8-4725-42b7-add7-e31ca825ffca
+		sourceLineageTag: 7f4aa0b6-767a-46f0-8681-76faa173e765
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: EndOfMonth
+
+		variation Variation
+			isDefault
+			relationship: 57e0f528-9084-4453-8045-7884d804af9a
+			defaultHierarchy: LocalDateTable_10a54981-0e64-4feb-819e-b53b1ed412a0.'Date Hierarchy'
+
+		annotation SummarizationSetBy = User
+
+	/// Year and month combined (e.g. 2025-01).
+	column YearMonth
+		dataType: string
+		lineageTag: 98800d95-ecc0-4679-ba28-599f2b92235a
+		sourceLineageTag: 41c22036-4218-4154-9b8e-13cc2c6b66e8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+		annotation SummarizationSetBy = User
+
+	/// Sort key for month ordering.
+	column MonthKey
+		dataType: string
+		lineageTag: 907b1f58-79b5-4dba-bfaa-eecfa88305ac
+		sourceLineageTag: 4f989b5d-3a33-4328-b235-6d8e8adf9d48
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthKey
+
+		annotation SummarizationSetBy = User
+
+	/// Semester label (e.g. H1, H2).
+	column Semester
+		dataType: string
+		lineageTag: 4c988836-a0e9-4fee-a9e4-20d3cab8a08e
+		sourceLineageTag: 1686a00c-6b6f-4da6-8ee7-8253a21e4af8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Semester
+
+		annotation SummarizationSetBy = User
+
+	/// Last date of the calendar year.
+	column YearEndDate
+		dataType: dateTime
+		formatString: General Number
+		lineageTag: fea70e84-3577-4334-a311-38f15683b484
+		sourceLineageTag: 3d8a4095-ccd6-448e-a60d-634be52c6301
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearEndDate
+
+		variation Variation
+			isDefault
+			relationship: 5a6a86e1-65d1-4928-ace0-24ab5136c7da
+			defaultHierarchy: LocalDateTable_1cc8bc22-7813-492e-8aa0-8a88a9b28e13.'Date Hierarchy'
+
+		annotation SummarizationSetBy = User
+
+	/// Display label for the year-end date.
+	column YearEndLabel
+		dataType: string
+		lineageTag: f5352343-2be1-431d-812a-a9ab86a2fc9f
+		sourceLineageTag: 97ad1234-efaa-49d0-83a6-a679fd0fb950
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearEndLabel
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

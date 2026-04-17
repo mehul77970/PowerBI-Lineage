@@ -1,0 +1,26 @@
+table table_HS
+	isHidden
+	lineageTag: 1ca2c111-918d-4502-a226-d4f1d662ca6f
+
+	column table_HS
+		dataType: string
+		isHidden
+		lineageTag: abe00508-140d-47c9-b5de-220822fc03d7
+		summarizeBy: none
+		sourceColumn: table_HS
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition table_HS = m
+		mode: import
+		queryGroup: Tables
+		source = "fct__csrd_esg_soc__health_safety" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

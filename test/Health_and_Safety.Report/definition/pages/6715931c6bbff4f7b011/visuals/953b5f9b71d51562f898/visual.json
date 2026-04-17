@@ -1,0 +1,217 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "953b5f9b71d51562f898",
+  "position": {
+    "x": -2,
+    "y": 36,
+    "z": 0,
+    "height": 344,
+    "width": 352,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "An injury is a ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "recordable ",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury if an employee or contractor that works under supervision of SHV or the Groups is physically injured resulting from events or exposures in the work environment.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Recordable injuries can be classified into categories that define the employees’ ability to continue their regular work and concern: Fatality, Lost Time Incident, Restricted Work Case, Medical Treatment Case and Loss of Consciousness*. Other cases, such as First Aid or Near Miss do not concern a ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "Recordable",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "Injuries",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " but ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "are nevertheless tracked by the Groups to prevent recurrence.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "The number of recordable injuries CSRD Metric :",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "S1-12",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " Number and rate of recordable work-related injuries",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Visible is the total number of injuries for the selected base timeframe compared to the select comparison timeframe period.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 8,
+                      "Percent": 0.6
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

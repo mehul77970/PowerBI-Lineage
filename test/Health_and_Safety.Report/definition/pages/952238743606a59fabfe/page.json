@@ -1,0 +1,76 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "952238743606a59fabfe",
+  "displayName": "tt_visual_geo",
+  "displayOption": "ActualSize",
+  "height": 470,
+  "width": 970,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "fb095c74b7cc4446bffc",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_country"
+              }
+            },
+            "Property": "country_SAP_name"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "51a609442bca95be1535",
+    "type": "Tooltip",
+    "parameters": [
+      {
+        "name": "3db7aded6e36ea774386",
+        "boundFilter": "fb095c74b7cc4446bffc",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_country"
+              }
+            },
+            "Property": "country_SAP_name"
+          }
+        }
+      }
+    ]
+  },
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 0,
+                    "Percent": -0.1
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

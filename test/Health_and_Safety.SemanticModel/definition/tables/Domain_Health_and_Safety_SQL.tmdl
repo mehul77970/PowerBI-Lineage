@@ -1,0 +1,22 @@
+/// SQL end point for the global data house
+table Domain_Health_and_Safety_SQL
+	isHidden
+	lineageTag: e087bb12-9697-4710-8177-0bdddae0b498
+	sourceLineageTag: a7bbadcf-e300-470a-8a7a-2081c961c407
+
+	column Domain_Health_and_Safety_SQL
+		dataType: string
+		lineageTag: 76e4038e-4ce6-44c7-8cdf-386be12d7040
+		sourceLineageTag: b72bed4f-45e6-42c0-b0e7-4b6e2cbbe9b2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_SQL
+
+		annotation SummarizationSetBy = User
+
+	partition Domain_Health_and_Safety_SQL = entity
+		mode: directQuery
+		source
+			entityName: Domain_Health_and_Safety_SQL
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

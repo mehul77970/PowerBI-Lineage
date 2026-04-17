@@ -1,0 +1,22 @@
+/// Schema for dimension tables.
+table Domain_Health_and_Safety_Schema
+	isHidden
+	lineageTag: ffc4113b-2257-4e88-a20c-ec8e39ad35ba
+	sourceLineageTag: 2be15e3a-6fbf-41fc-8812-a8ae06bd7e2c
+
+	column Domain_Health_and_Safety_Schema
+		dataType: string
+		lineageTag: de03be73-6b21-4c08-ae77-8cdc9b8cc072
+		sourceLineageTag: b55e27c7-a488-49c5-b44b-079d23031376
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_Schema
+
+		annotation SummarizationSetBy = User
+
+	partition Domain_Health_and_Safety_Schema = entity
+		mode: directQuery
+		source
+			entityName: Domain_Health_and_Safety_Schema
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

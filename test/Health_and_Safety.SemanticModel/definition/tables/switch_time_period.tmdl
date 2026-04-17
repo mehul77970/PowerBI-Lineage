@@ -1,0 +1,49 @@
+table switch_time_period
+	lineageTag: 2794b448-f33a-4a91-a4d0-d840b6aa52be
+
+	column 'Time Period'
+		lineageTag: 97f9c6cc-2609-485b-8240-5e3fd628989a
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Parameter Order'
+
+		relatedColumnDetails
+			groupByColumn: 'Parameter Fields'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Parameter Fields'
+		isHidden
+		lineageTag: 8e0efbe9-4aac-4f34-8960-ec7c1dd082c8
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Parameter Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Parameter Order'
+		isHidden
+		formatString: 0
+		lineageTag: 83656a32-ec8e-4b1c-a006-71b0c5ff2c8b
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition switch_time_period = calculated
+		mode: import
+		source =
+				{
+				    ("Month", NAMEOF('dim_calendar'[YearMonth]), 2),
+				    ("Quarter", NAMEOF('dim_calendar'[YearQuarter]), 1),
+				    ("Year", NAMEOF('dim_calendar'[Year]), 0)
+				}
+
+	annotation PBI_Id = 85f51523399646e78c915d1231421529
+

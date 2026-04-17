@@ -1,0 +1,214 @@
+/// Country dimension with SAP codes, ISO codes, parent group hierarchy, and regional classification.
+table dim_country
+	lineageTag: 36f71b7f-cfde-404d-8d5d-4aef9b9fe69c
+
+	/// ID representing the 3-letter ISO country code.
+	column country_ISO3_ID
+		dataType: string
+		isHidden
+		lineageTag: 57b4df1c-9d9d-42cb-b66d-ecf9b47ca235
+		summarizeBy: none
+		sourceColumn: country_ISO3_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID representing the 2-letter ISO country code.
+	column country_ISO2_ID
+		dataType: string
+		isHidden
+		lineageTag: 57f1cf1a-3cc7-4461-884c-730c87ee6058
+		summarizeBy: none
+		sourceColumn: country_ISO2_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID used for the country within SAP systems.
+	column country_SAP_ID
+		dataType: string
+		isHidden
+		lineageTag: f4428afe-c871-4fb2-adfd-bb5f37f58c79
+		summarizeBy: none
+		sourceColumn: country_SAP_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The name of the country as referenced in SAP systems.
+	column country_SAP_name
+		dataType: string
+		lineageTag: dd841298-19e8-473c-a187-1820ac72fcaa
+		summarizeBy: none
+		sourceColumn: country_SAP_name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID representing the parent group of a given entity.
+	column parent_group_ID
+		dataType: string
+		isHidden
+		lineageTag: fcc97387-7ee5-48cc-aca9-c2a5a41674fb
+		summarizeBy: none
+		sourceColumn: parent_group_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The name of the parent group associated with a specific entity.
+	column parent_group_name
+		dataType: string
+		lineageTag: be1e9cfd-2214-4e31-aa8c-ef360f3d7cb9
+		summarizeBy: none
+		sourceColumn: parent_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Geographic region of the country.
+	column region
+		dataType: string
+		lineageTag: aa93d6be-d9b2-42a4-be08-02c77ec63f07
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identifying the highest-level parent entity within the hierarchy.
+	column ultimate_parent_ID
+		dataType: string
+		isHidden
+		lineageTag: 33600718-5852-4087-9ef7-c60267996dda
+		summarizeBy: none
+		sourceColumn: ultimate_parent_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The name of the highest-level parent entity.
+	column ultimate_parent_name
+		dataType: string
+		lineageTag: 92e07d58-ef2e-4f57-923d-549cd9799b31
+		summarizeBy: none
+		sourceColumn: ultimate_parent_name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Region of the ultimate parent entity.
+	column ultimate_region
+		dataType: string
+		lineageTag: daa414c4-24c0-474d-a69f-7bc052b67bca
+		summarizeBy: none
+		sourceColumn: ultimate_region
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: b39eda82-8c27-4ba6-b7d8-e45e6f8cbde5
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 104e77bb-ce33-4178-8349-be1327044c95
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: bd3baa0e-c255-449b-9d65-6db17f28769b
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: c8b4bdb4-fc3f-4092-9991-1dcab03946f3
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 20e63102-e4b3-45b4-9d78-75a8dac952b6
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: af4f1298-b60a-4791-85dc-f04efdd07723
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 922acd53-7ad7-447e-8c8f-5be1be1139fb
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 4bd4eecd-27fe-4057-883a-63c4c0ff7fd8
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c4bc59c5-6780-495e-86d8-841a2eeb94c9
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 00b05695-141e-4379-9a11-6a67f3dc58ac
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_country = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source =
+				let
+				    Source = Sql.Database(Global_Data_House_SQL, Globa_Data_House),
+				    #"load" = Source{[Schema=Global_Dimensions_Schema,Item="dim_country"]}[Data],
+				    #"Duplicated parent group" = Table.DuplicateColumn(#"load", "parent_group_name", "parent_group_display_name"),
+				    #"Split Column by Delimiter" = Table.SplitColumn(#"Duplicated parent group", "parent_group_display_name", Splitter.SplitTextByDelimiter("-", QuoteStyle.Csv), {"parent_group_display_name.1", "parent_group_display_name.2"}),
+				    #"Removed duplicated column" = Table.RemoveColumns(#"Split Column by Delimiter",{"parent_group_display_name.1"}),
+				    #"Renamed to Region" = Table.RenameColumns(#"Removed duplicated column",{{"parent_group_display_name.2", "region"}}),
+				    #"Duplicated ultimate parent name" = Table.DuplicateColumn(#"Renamed to Region", "ultimate_parent_name", "ultimate_parent_name - Copy"),
+				    #"Split Column by Delimiter." = Table.SplitColumn(#"Duplicated ultimate parent name", "ultimate_parent_name - Copy", Splitter.SplitTextByDelimiter("-", QuoteStyle.Csv), {"ultimate_parent_name - Copy.1", "ultimate_parent_name - Copy.2"}),
+				    #"Removed duplicated Columns" = Table.RemoveColumns(#"Split Column by Delimiter.",{"ultimate_parent_name - Copy.1"}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Removed duplicated Columns",{{"ultimate_parent_name - Copy.2", "ultimate_region"}}),
+				    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each [is_sdp_active] = true)
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

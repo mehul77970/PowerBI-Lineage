@@ -1,0 +1,269 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "60792c3549566d7f7f2b",
+  "position": {
+    "x": -2,
+    "y": 0,
+    "z": 0,
+    "height": 440,
+    "width": 352,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Shows the number of recordable injuries classified into the following categories:",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fatality",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an injury resulting in the death of an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "employee/contractor.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Lost Time Incident",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor is unable to perform their regular job duties, leading to lost workdays. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Restricted Work Case",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor is assigned to restricted work activities or transferred to another job due to the incident.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Medical Treatment Case",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor receives medical treatment beyond basic first aid, the case is considered a medical treatment case. First aid concerns simple measures that can be performed with minimal training and without medical expertise.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Loss of Consciousness",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ":",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "incident where an employee/contractor loses consciousness. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 8,
+                      "Percent": 0.6
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

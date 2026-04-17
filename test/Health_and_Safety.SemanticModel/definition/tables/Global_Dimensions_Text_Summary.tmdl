@@ -1,0 +1,23 @@
+/// Schema for dimension tables.
+table Global_Dimensions_Text_Summary
+	isHidden
+	lineageTag: b6922f2b-e4ed-4df7-85eb-3de0966d7771
+	sourceLineageTag: 449a4f14-6497-4d8d-a023-e89d513f87ed
+
+	column Global_Dimensions_Text_Summary
+		dataType: string
+		isHidden
+		lineageTag: 655e595b-b8fd-4b9c-a3e3-ea6ba4b42702
+		sourceLineageTag: 2308847c-19c0-420c-bfa4-e5292a49d727
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Global_Dimensions_Text_Summary
+
+		annotation SummarizationSetBy = User
+
+	partition Global_Dimensions_Text_Summary = entity
+		mode: directQuery
+		source
+			entityName: Global_Dimensions_Text_Summary
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

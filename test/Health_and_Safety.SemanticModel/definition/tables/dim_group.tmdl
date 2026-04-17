@@ -1,0 +1,251 @@
+/// Group dimension with parent-child hierarchy, calculated hierarchy paths and levels for matrix navigation.
+table dim_group
+	lineageTag: f7b44bf3-7391-42e6-b437-82bcd50f597b
+	sourceLineageTag: 79451d5f-d6c2-46f5-a321-e1b28d8f9341
+
+	/// Browse depth level within a group hierarchy by checking whether Level1_group and Level2_group are currently in scope—returning a numeric value that reflects the depth of the user's navigation in the report.
+	/// 
+	/// [Type:  Logic / Helper,  Created on: 2025-09-11,  Create by: JPA]
+	measure BrowseDepth_group = EXTERNALMEASURE("BrowseDepth_group", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_dim_group
+		lineageTag: 17486f6c-439a-412e-822f-103b72a01c9d
+		sourceLineageTag: 06cc58e4-8c01-4823-ad35-94324f5370b6
+		dataCategory: Uncategorized
+
+	/// Maximum depth of the group hierarchy, determined by checking the presence of Level1_group and Level2_group in the current context—returning a numeric value that indicates the deepest level of hierarchy available for navigation.
+	/// 
+	/// [Type:  Logic / Helper,  Created on: 2025-09-11,  Create by: JPA]
+	measure MaxHierarchyDepth_group = EXTERNALMEASURE("MaxHierarchyDepth_group", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_dim_group
+		lineageTag: 3c050279-0a71-49fb-9fe2-6a0078f0b357
+		sourceLineageTag: d66a3e8d-2a01-486d-b95d-e2d36fab9d9a
+		dataCategory: Uncategorized
+
+	/// ID representing a specific group within the organization or hierarchy.
+	column group_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 36ee42e5-d34c-457c-b5f0-5a004e6e250a
+		sourceLineageTag: 0bfb415d-e9a7-4667-92f1-db4300823c52
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_ID
+
+		annotation SummarizationSetBy = User
+
+	/// The name of a particular group in the structure.
+	column group_name
+		dataType: string
+		lineageTag: 43f52748-4e84-42ed-b850-3199a9d76576
+		sourceLineageTag: c4aaa808-7596-47ac-8205-d02e7b2c14af
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_name
+
+		annotation SummarizationSetBy = User
+
+	/// Calculated DAX path representing the full hierarchy from root to current group.
+	column Hierarchy_Path_group
+		dataType: string
+		lineageTag: 59e7651e-976b-4540-9aad-3e9fa7a0d8a4
+		sourceLineageTag: 3cb902ab-b671-48a9-a4e3-de13b2092ef8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Hierarchy_Path_group
+
+		annotation SummarizationSetBy = User
+
+	/// Top-level group name extracted from the hierarchy path.
+	column Level1_group
+		dataType: string
+		lineageTag: ca5bb161-82c2-4942-a237-602d24200758
+		sourceLineageTag: 8158e45f-3aec-4e78-bb3f-aca431a9befe
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Level1_group
+
+		annotation SummarizationSetBy = User
+
+	/// Second-level group name extracted from the hierarchy path.
+	column Level2_group
+		dataType: string
+		lineageTag: db861376-e3fa-449a-9b6c-6f77a429a537
+		sourceLineageTag: dca25d3a-1d59-4309-9cca-fceb835ad33d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Level2_group
+		sortByColumn: order
+
+		annotation SummarizationSetBy = User
+
+	/// ID identifying the direct parent entity in the hierarchy.
+	column parent_ID
+		dataType: string
+		isHidden
+		lineageTag: d6bc6bd3-1d6b-4d48-84cf-cffa1e4d52dd
+		sourceLineageTag: 0d2d0c88-8818-4a5e-9074-04c8a668a47d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: parent_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Calculated depth of the hierarchy path for the group.
+	column HierarchyLength_group
+		dataType: int64
+		formatString: 0
+		lineageTag: 19fc1aad-cdec-43bd-bf5a-581239c8e5c7
+		sourceLineageTag: 5d86d253-6f78-4d8f-a02b-52a3bfd89845
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: HierarchyLength_group
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 818a5eb0-a51b-4096-964b-2a2f25d836d6
+		sourceLineageTag: a2a87d6d-ee38-4932-8c49-2debeb78b5e9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 39ed7c89-58e7-470a-881d-afbc435d8adf
+		sourceLineageTag: c851fbb9-40b9-4811-986c-8245341f3394
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: ad7d0754-a7b1-49e3-8690-7a5a14bf9abf
+		sourceLineageTag: 8cdf1b01-4e77-4824-ac88-c738105ab611
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 3e37b082-68e2-45e7-bfa4-153e34c3c8e6
+		sourceLineageTag: 731abe4c-02f3-4520-ab5a-d8f4ce471d6c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: f55f15ec-bdd1-414c-97c0-c01e1dcb7dfd
+		sourceLineageTag: 093c1c93-fb00-45c7-8de4-80d425fd3d11
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 3411b5de-66c8-4c30-b6a3-0c511922fa5a
+		sourceLineageTag: 84964ace-cd87-4be8-a744-fd0314aec876
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: f9c59002-7cff-4ece-96ab-179cf869e967
+		sourceLineageTag: 360d2a27-bb34-4e72-8bc4-ca9862194975
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: b8bd7319-24a1-4a23-b78e-9b799e90bfaa
+		sourceLineageTag: c0e6a49c-3bec-4178-a078-247d7a056395
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 151ac779-a4b6-42fb-9545-2dec7d688311
+		sourceLineageTag: b9d611a8-4714-4e33-9fce-cb307422a304
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = User
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 52ac6958-9a3a-49a6-ba05-b6fbf73ecb32
+		sourceLineageTag: e0c88d6b-4ad3-4db8-ba58-f11a65ab14ab
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	/// Sort order for group display.
+	column order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c830f818-042a-4dcb-aacc-30d2b423b0c7
+		sourceLineageTag: 6f310245-0872-4592-8af7-15466e8aa3bc
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: order
+
+		annotation SummarizationSetBy = User
+
+	hierarchy 'Group Hierarchy'
+		lineageTag: 3d88c93a-fa46-439c-88d0-1204a4da5078
+
+		level Consolidated
+			lineageTag: 19537075-7f76-469a-b830-fbfaeb2f777c
+			column: Level1_group
+
+		level Groups
+			lineageTag: e58ae29a-191c-459e-99e7-3addeeb5c897
+			column: Level2_group
+
+		changedProperty = Name
+
+	partition dim_group = entity
+		mode: directQuery
+		source
+			entityName: dim_group
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

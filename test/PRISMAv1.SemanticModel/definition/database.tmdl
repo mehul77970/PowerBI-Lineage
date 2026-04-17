@@ -1,0 +1,4 @@
+/// Central fact table. One row per order line. Contains all transactional sales data including quantities, prices, costs, dates, and foreign keys to all dimension tables.
+database
+	compatibilityLevel: 1702
+

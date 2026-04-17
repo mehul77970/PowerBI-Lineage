@@ -1,0 +1,46 @@
+/// Quartely Calendar, Years and Quarter
+table dim_calendar_quarter
+	lineageTag: 16329231-6c7a-4ba4-86a9-c781f1b9290f
+	sourceLineageTag: 5ac8e4d1-fb5f-4644-8d30-096b82ac201b
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 003f7fde-b107-4b7f-8b59-6c12c4206021
+		sourceLineageTag: 59c47e4b-5bb6-428b-b55f-949a3bef6ec1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter label (e.g. Q1, Q2).
+	column Quarter
+		dataType: string
+		lineageTag: 909873e3-bc15-4ceb-8b57-7d6b42169107
+		sourceLineageTag: a3c64728-54e8-429b-a85a-867e9cc0f4c6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = User
+
+	/// Year and quarter combined (e.g. 2025 Q1).
+	column YearQuarter
+		dataType: string
+		isNullable: false
+		lineageTag: 38312b28-baf0-4ec4-ac3a-5de5d9a20102
+		sourceLineageTag: db4e0007-861c-4a13-9cd9-66e16202bb17
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearQuarter
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar_quarter = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar_quarter
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

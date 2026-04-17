@@ -1,0 +1,309 @@
+EVALUATE
+	UNION(
+		ROW(
+			"Table", "Store",
+			"Column", "StoreKey",
+			"Count", COUNT('Store'[StoreKey]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[StoreKey]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[StoreKey]),
+			"Min", MIN('Store'[StoreKey]),
+			"Max", MAX('Store'[StoreKey]),
+			"Median", MEDIAN('Store'[StoreKey]),
+			"Mean", AVERAGE('Store'[StoreKey]),
+			"Standard Deviation", STDEV.P('Store'[StoreKey]),
+			"Zeros", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					'Store'[StoreKey] = 0
+				)),
+				0
+			),
+			"Evens", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[StoreKey],
+						2
+					) = 0
+				)),
+				0
+			),
+			"Odds", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[StoreKey],
+						2
+					) <> 0
+				)),
+				0
+			),
+			"P25", PERCENTILE.INC(
+				'Store'[StoreKey],
+				0.25
+			),
+			"P75", PERCENTILE.INC(
+				'Store'[StoreKey],
+				0.75
+			),
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Store Code",
+			"Count", COUNT('Store'[Store Code]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Store Code]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Store Code]),
+			"Min", MIN('Store'[Store Code]),
+			"Max", MAX('Store'[Store Code]),
+			"Median", MEDIAN('Store'[Store Code]),
+			"Mean", AVERAGE('Store'[Store Code]),
+			"Standard Deviation", STDEV.P('Store'[Store Code]),
+			"Zeros", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					'Store'[Store Code] = 0
+				)),
+				0
+			),
+			"Evens", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[Store Code],
+						2
+					) = 0
+				)),
+				0
+			),
+			"Odds", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[Store Code],
+						2
+					) <> 0
+				)),
+				0
+			),
+			"P25", PERCENTILE.INC(
+				'Store'[Store Code],
+				0.25
+			),
+			"P75", PERCENTILE.INC(
+				'Store'[Store Code],
+				0.75
+			),
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Country",
+			"Count", COUNT('Store'[Country]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Country]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Country]),
+			"Min", MIN('Store'[Country]),
+			"Max", MAX('Store'[Country]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", "N/A",
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "State",
+			"Count", COUNT('Store'[State]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[State]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[State]),
+			"Min", MIN('Store'[State]),
+			"Max", MAX('Store'[State]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", "N/A",
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Name",
+			"Count", COUNT('Store'[Name]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Name]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Name]),
+			"Min", MIN('Store'[Name]),
+			"Max", MAX('Store'[Name]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", "N/A",
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Square Meters",
+			"Count", COUNT('Store'[Square Meters]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Square Meters]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Square Meters]),
+			"Min", MIN('Store'[Square Meters]),
+			"Max", MAX('Store'[Square Meters]),
+			"Median", MEDIAN('Store'[Square Meters]),
+			"Mean", AVERAGE('Store'[Square Meters]),
+			"Standard Deviation", STDEV.P('Store'[Square Meters]),
+			"Zeros", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					'Store'[Square Meters] = 0
+				)),
+				0
+			),
+			"Evens", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[Square Meters],
+						2
+					) = 0
+				)),
+				0
+			),
+			"Odds", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					MOD(
+						'Store'[Square Meters],
+						2
+					) <> 0
+				)),
+				0
+			),
+			"P25", PERCENTILE.INC(
+				'Store'[Square Meters],
+				0.25
+			),
+			"P75", PERCENTILE.INC(
+				'Store'[Square Meters],
+				0.75
+			),
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Open Date",
+			"Count", COUNT('Store'[Open Date]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Open Date]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Open Date]),
+			"Min", MIN('Store'[Open Date]),
+			"Max", MAX('Store'[Open Date]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					'Store'[Open Date] = 0
+				)),
+				0
+			),
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", DATEDIFF(
+				MIN('Store'[Open Date]),
+				MAX('Store'[Open Date]),
+				DAY
+			),
+			"Range in Months", DATEDIFF(
+				MIN('Store'[Open Date]),
+				MAX('Store'[Open Date]),
+				MONTH
+			),
+			"Range in Years", DATEDIFF(
+				MIN('Store'[Open Date]),
+				MAX('Store'[Open Date]),
+				YEAR
+			)
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Close Date",
+			"Count", COUNT('Store'[Close Date]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Close Date]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Close Date]),
+			"Min", MIN('Store'[Close Date]),
+			"Max", MAX('Store'[Close Date]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", COALESCE(
+				COUNTROWS(FILTER(
+					'Store',
+					'Store'[Close Date] = 0
+				)),
+				0
+			),
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", DATEDIFF(
+				MIN('Store'[Close Date]),
+				MAX('Store'[Close Date]),
+				DAY
+			),
+			"Range in Months", DATEDIFF(
+				MIN('Store'[Close Date]),
+				MAX('Store'[Close Date]),
+				MONTH
+			),
+			"Range in Years", DATEDIFF(
+				MIN('Store'[Close Date]),
+				MAX('Store'[Close Date]),
+				YEAR
+			)
+		),
+		ROW(
+			"Table", "Store",
+			"Column", "Status",
+			"Count", COUNT('Store'[Status]),
+			"Distinct Values", DISTINCTCOUNTNOBLANK('Store'[Status]),
+			"Null Count", COUNTROWS('Store') - COUNT('Store'[Status]),
+			"Min", MIN('Store'[Status]),
+			"Max", MAX('Store'[Status]),
+			"Median", "N/A",
+			"Mean", "N/A",
+			"Standard Deviation", "N/A",
+			"Zeros", "N/A",
+			"Evens", "N/A",
+			"Odds", "N/A",
+			"P25", "N/A",
+			"P75", "N/A",
+			"Range in Days", "N/A",
+			"Range in Months", "N/A",
+			"Range in Years", "N/A"
+		)
+	)

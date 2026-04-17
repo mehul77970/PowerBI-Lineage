@@ -1,0 +1,178 @@
+/// Dimension of Life Saving Rules (LSR) linked to groups, used to classify injuries by associated safety rule violations.
+table dim_life_saving_rules
+	lineageTag: f45fb972-857e-48ec-9ee6-ba46c3e19c69
+
+	/// ID Identifying the LSR, connected to Group ID
+	column life_saving_rules_ID
+		dataType: string
+		isHidden
+		lineageTag: 591c7d72-54b8-459f-a384-5e2f3755e74b
+		summarizeBy: none
+		sourceColumn: life_saving_rules_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Type of the LSR
+	column life_saving_rules_type
+		dataType: string
+		lineageTag: bd1c7e1b-7d28-4dd1-90f7-8df0d3fb6935
+		summarizeBy: none
+		sourceColumn: life_saving_rules_type
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Name of the Group
+	column group_name
+		dataType: string
+		lineageTag: 86a573da-f40d-41fa-ad0a-11f176dba19e
+		summarizeBy: none
+		sourceColumn: group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ea472893-f787-48e7-9bee-8f4455aa8ace
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Flag indicating whether the LSR is active or applicable.
+	column lsr_flag
+		dataType: string
+		lineageTag: 86c31c86-f5c2-4479-9f70-a9afce6f6dcd
+		summarizeBy: none
+		sourceColumn: lsr_flag
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: c04634d5-260a-41c1-988d-434a24936b1d
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: f9ec3a67-2e03-4ae6-830e-43e0aa489cd9
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 7952ec23-988a-4b86-977a-e6ec4724729c
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 466e88a2-0652-4fbd-b44d-221d5cfb2eb2
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: df75ca8f-b037-4337-8107-bd8726f2110d
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 8a478358-a8be-4bf6-a935-5dcbf7b937e8
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 4e6fb7cc-b52a-49c6-9915-424f9e338bc7
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: e2fd4ef2-4871-4ccf-9d82-d63b8fa396d5
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2dba3ce7-45fd-437c-aa71-4bbb3108b3f3
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 43d4efed-2a4b-4442-9519-b6248770cb15
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition dim_life_saving_rules = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source =
+				let
+				    Source = Sql.Database(Global_Data_House_SQL, Globa_Data_House),
+				    Load = Source{[Schema=Global_Dimensions_Schema,Item="dim_life_saving_rules"]}[Data],
+				        // Add "order" column
+				    AddOrder = Table.AddColumn(
+				        Load,
+				        "order",
+				        each if [life_saving_rules_ID] = "LSR0" then 1 else 0,
+				        Int64.Type
+				    ),
+				    // Add "lsr_flag" column
+				    AddFlag = Table.AddColumn(
+				        AddOrder,
+				        "lsr_flag",
+				    each
+				        if [life_saving_rules_ID] = "LSR00" then "Unknown"
+				        else if [life_saving_rules_ID] = "LSR0" then "No"
+				        else "Yes"
+				    ),
+				    #"Filtered Rows" = Table.SelectRows(AddFlag, each [is_sdp_active] = true)
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

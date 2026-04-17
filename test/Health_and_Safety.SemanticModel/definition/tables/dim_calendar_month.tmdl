@@ -1,0 +1,101 @@
+/// Monthly Calendar, Year Quarters Month
+table dim_calendar_month
+	lineageTag: a9ffa2e2-d560-4000-9c04-4fd1633ef9a0
+	sourceLineageTag: 9cc7ae03-f8be-45d1-b235-3b7f5b6ddfce
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: f95e7756-d50e-4702-867f-927df7c45c35
+		sourceLineageTag: 0465e5f1-0759-4f51-bbeb-8505f2fdaf6f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	/// Year and month combined (e.g. 2025-01).
+	column YearMonth
+		dataType: string
+		isNullable: false
+		lineageTag: 7cbab8ea-2f64-4c0a-b920-75f1b99f9110
+		sourceLineageTag: 729848e1-b291-4aee-872d-0c8cce978243
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+		annotation SummarizationSetBy = User
+
+	/// Year and quarter combined (e.g. 2025 Q1).
+	column YearQuarter
+		dataType: string
+		lineageTag: ae184436-8604-4bd9-a4b7-bb35ba5b33d6
+		sourceLineageTag: b77ceb22-7242-4a64-aa97-48ea55e69229
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearQuarter
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter label (e.g. Q1, Q2).
+	column Quarter
+		dataType: string
+		lineageTag: bc0cc111-4e28-42ae-a994-057b8a26a416
+		sourceLineageTag: 908f386e-2c1a-40a0-9ea8-e7b0b425a5bf
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Quarter
+
+		annotation SummarizationSetBy = User
+
+	/// Full month name (e.g. January).
+	column MonthNameLong
+		dataType: string
+		lineageTag: 11a076c1-a825-498c-a4cc-cea0816a5834
+		sourceLineageTag: 22f97c67-4652-4355-aac1-d9353428f070
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthNameLong
+
+		annotation SummarizationSetBy = User
+
+	/// Abbreviated month name (e.g. Jan).
+	column MonthNameShort
+		dataType: string
+		lineageTag: 1c4cdd6d-6681-4dfd-b603-5cde0e035ee2
+		sourceLineageTag: 5cf072f3-515a-48fb-8177-5d02ecc35a42
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthNameShort
+
+		annotation SummarizationSetBy = User
+
+	/// Month number as string (01-12).
+	column MonthNumber
+		dataType: string
+		lineageTag: 5307cc2b-e5d6-4b94-b46a-dbf3938eea2b
+		sourceLineageTag: b3c3e48d-9405-4e2b-a4e4-62d9313fea4d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthNumber
+
+		annotation SummarizationSetBy = User
+
+	/// Sort key for month ordering.
+	column MonthKey
+		dataType: string
+		lineageTag: 121c7a14-761f-497d-b96f-4853e8e5dd82
+		sourceLineageTag: af124ca6-37df-487c-a6df-6e14644ee798
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: MonthKey
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar_month = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar_month
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

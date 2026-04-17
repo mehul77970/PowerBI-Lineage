@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a8bb49191780bbf98ef6",
+  "displayName": "tt_summary_timeframe",
+  "displayOption": "ActualSize",
+  "height": 210,
+  "width": 400,
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

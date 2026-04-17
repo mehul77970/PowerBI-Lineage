@@ -1,0 +1,104 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "5554a80971372b823efb",
+  "displayName": "Sales",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "foregroundColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 0,
+                    "Percent": 0
+                  }
+                }
+              }
+            }
+          },
+          "backgroundColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 2,
+                    "Percent": -0.5
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "filterCard": [
+      {
+        "properties": {
+          "foregroundColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 0,
+                    "Percent": 0
+                  }
+                }
+              }
+            }
+          },
+          "borderColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 2,
+                    "Percent": -0.5
+                  }
+                }
+              }
+            }
+          },
+          "backgroundColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 0,
+                    "Percent": -0.6
+                  }
+                }
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "Available"
+        }
+      },
+      {
+        "properties": {
+          "backgroundColor": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 7,
+                    "Percent": -0.25
+                  }
+                }
+              }
+            }
+          }
+        },
+        "selector": {
+          "id": "Applied"
+        }
+      }
+    ]
+  }
+}

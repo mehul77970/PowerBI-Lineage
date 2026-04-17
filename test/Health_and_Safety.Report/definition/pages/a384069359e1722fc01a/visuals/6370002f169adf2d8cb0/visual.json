@@ -1,0 +1,443 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "6370002f169adf2d8cb0",
+  "position": {
+    "x": 699,
+    "y": 82,
+    "z": 8000,
+    "height": 606,
+    "width": 560,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Recordable injuries – Categories ",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Recordable injuries can be classified into the following categories:",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fatality",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an injury resulting in the death of an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "employee/contractor.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Lost Time Incident",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor is unable to perform their regular job duties, leading to lost workdays. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Restricted Work Case",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor is assigned to restricted work activities or transferred to another job due to the incident.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Medical Treatment Case",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury where an employee/contractor receives medical treatment beyond basic first aid, the case is considered a medical treatment case. First aid concerns simple measures that can be performed with minimal training and without medical expertise.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Loss of Consciousness",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": an ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "incident where an employee/contractor loses consciousness. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "SIFs and PSIFs",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "SIFs: the most serious Recordable Injuries are SIFs, which concern:",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fatality",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Life-threatening injury",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury that if not immediately addressed is likely to lead to the death of the",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "affected individual, and will usually require emergency response personnel to",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "provide life-sustaining support. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Life-changing injury",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ": ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury that has a significant and permanent adverse effect on an individual’s",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "ability to function in day-to-day life. Typically, this will result in the affected person leaving employment on medical grounds or require changing their job role. ",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "PSIFs:",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "besides SIFs, potential SIFs (PSIFs) are recorded by the Groups. This concerns any injury that could have reasonably and realistically resulted in a SIF had any of the circumstances or factors changed, or protective measures failed. It is up to discretion of Group management to determine if a PSIF is qualifies for reporting to SHV.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'txt_right'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

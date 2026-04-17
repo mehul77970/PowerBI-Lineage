@@ -1,0 +1,252 @@
+/// Returns usage documentation for the udf.adaptfy.timeintellgence library.
+function 'udf.adaptfy.timeintellgence.About' =
+		() =>
+		VAR LineBreak = UNICHAR ( 10 )
+		RETURN
+		    "💡 Library:   udf.adaptfy.timeintellgence"   & LineBreak &
+		    "🧑 Author:    Adaptfy"                         & LineBreak &
+		    "📦 Version:   0.1.0"                           & LineBreak &
+		    "⚖️  License:   Unspecified"                      & LineBreak &
+		    LineBreak &
+		    "🖋️  Signature:"                                & LineBreak &
+		    "   udf.adaptfy.timeintellgence("              & LineBreak &
+		    "       BaseMeasure  : ANYREF EXPR,"           & LineBreak &
+		    "       DateColumn   : ANYREF EXPR,"           & LineBreak &
+		    "       Outcome      : STRING"                 & LineBreak &
+		    "   )"                                         & LineBreak &
+		    LineBreak &
+		    "📋 Outcome values:"                            & LineBreak &
+		    "   SPLY             → Same Period Last Year"  & LineBreak &
+		    "   DELTA / SPLY_DELTA → Absolute change"     & LineBreak &
+		    "   PCT / SPLY% / SPLY-PCT → % change"        & LineBreak &
+		    LineBreak &
+		    "⚠️  Usage notes:"                              & LineBreak &
+		    "   1. Pass your base measure and Date[Date]" & LineBreak &
+		    "   2. Set formatString=% on PCT measures"    & LineBreak &
+		    "   3. Relies on an active Date relationship"
+	lineageTag: c46a2d67-b027-47f7-a043-88729aeb5f48
+
+/// Returns a RAG hex colour string based on the measure value and direction.
+/// - Positive (normal) or Negative (inverse) → Green  #00C853
+/// - Negative (normal) or Positive (inverse) → Red    #D50000
+/// - Blank / zero → Amber #FFC107
+/// direction values treated as inverse: INVERSE, INVERT, NEG, LOWER_IS_BETTER, TRUE, YES, 1
+function 'udf.adaptfy.color.ragHex' =
+		( BaseMeasure : ANYREF EXPR, Direction : STRING ) =>
+		VAR MeasureValue       = BaseMeasure
+		VAR DirectionNormalised = UPPER ( TRIM ( Direction ) )
+		VAR ColourAmber        = "#FFC107"
+		VAR ColourGreen        = "#00C853"
+		VAR ColourRed          = "#D50000"
+		VAR IsInverted =
+		    SWITCH (
+		        DirectionNormalised,
+		        "INVERSE",         TRUE(),
+		        "INVERT",          TRUE(),
+		        "NEG",             TRUE(),
+		        "LOWER_IS_BETTER", TRUE(),
+		        "TRUE",            TRUE(),
+		        "YES",             TRUE(),
+		        "1",               TRUE(),
+		        FALSE()
+		    )
+		RETURN
+		    IF (
+		        IsInverted,
+		        SWITCH ( TRUE(), ISBLANK ( MeasureValue ), ColourAmber, MeasureValue < 0, ColourGreen, MeasureValue > 0, ColourRed,   ColourAmber ),
+		        SWITCH ( TRUE(), ISBLANK ( MeasureValue ), ColourAmber, MeasureValue > 0, ColourGreen, MeasureValue < 0, ColourRed,   ColourAmber )
+		    )
+	lineageTag: 4fccc840-4a62-44c2-b194-3cdd191a1206
+
+/// Returns usage documentation for the udf.adaptfy.color.ragHex function.
+function 'udf.adaptfy.color.ragHex.About' =
+		() =>
+		VAR LineBreak = UNICHAR ( 10 )
+		RETURN
+		    "💡 Library:   udf.adaptfy.color"                & LineBreak &
+		    "🧑 Author:    Adaptfy"                            & LineBreak &
+		    "📦 Version:   0.1.0"                              & LineBreak &
+		    "⚖️  License:   Unspecified"                         & LineBreak &
+		    LineBreak &
+		    "🖋️  Signature:"                                   & LineBreak &
+		    "   udf.adaptfy.color.ragHex("                 & LineBreak &
+		    "       BaseMeasure  : ANYREF EXPR,"            & LineBreak &
+		    "       Direction    : STRING"                  & LineBreak &
+		    "   )"                                          & LineBreak &
+		    LineBreak &
+		    "🎨 Returns:   Hex colour string"                  & LineBreak &
+		    "   #00C853  Green  → positive (normal)"       & LineBreak &
+		    "   #D50000  Red    → negative (normal)"       & LineBreak &
+		    "   #FFC107  Amber  → blank or zero"           & LineBreak &
+		    LineBreak &
+		    "🔄 Direction values (invert green/red):"         & LineBreak &
+		    "   INVERSE, INVERT, NEG, LOWER_IS_BETTER"     & LineBreak &
+		    "   TRUE, YES, 1"                               & LineBreak &
+		    "   Any other value → normal (positive=green)" & LineBreak &
+		    LineBreak &
+		    "⚠️  Usage notes:"                                & LineBreak &
+		    "   Use with conditional formatting (Rules)"   & LineBreak &
+		    "   or in a measures table for RAG KPI cards"
+	lineageTag: a4f4bbbf-edda-48c5-80d1-03b83e03212c
+
+/// Returns usage documentation for the udf.adaptfy.svg.ragArrow function.
+function 'udf.adaptfy.svg.ragArrow.About' =
+		() =>
+		VAR LineBreak = UNICHAR ( 10 )
+		RETURN
+		    "💡 Library:   udf.adaptfy.svg"                   & LineBreak &
+		    "🧑 Author:    Adaptfy"                             & LineBreak &
+		    "📦 Version:   0.2.0"                               & LineBreak &
+		    "⚖️  License:   Unspecified"                          & LineBreak &
+		    LineBreak &
+		    "🖋️  Signature:"                                    & LineBreak &
+		    "   udf.adaptfy.svg.ragArrow("                      & LineBreak &
+		    "       BaseMeasure  : ANYREF EXPR,"                & LineBreak &
+		    "       Direction    : STRING,"                     & LineBreak &
+		    "       SizePx       : DOUBLE,"                     & LineBreak &
+		    "       Style        : STRING"                      & LineBreak &
+		    "   )"                                              & LineBreak &
+		    LineBreak &
+		    "🎨 Returns:   SVG data URI"                        & LineBreak &
+		    "   ↗️  Green  UP      → positive (normal)"          & LineBreak &
+		    "   ↘️  Red    DOWN    → negative (normal)"          & LineBreak &
+		    "   —  Amber  NEUTRAL → blank or zero"              & LineBreak &
+		    LineBreak &
+		    "🖼️  Style values:"                                  & LineBreak &
+		    "   ARROW     → rising/falling trend line + bracket" & LineBreak &
+		    "   TRIANGLE  → solid filled ▲ / ▼"                & LineBreak &
+		    LineBreak &
+		    "🔄 Direction values (invert up/down):"             & LineBreak &
+		    "   INVERSE, INVERT, NEG, LOWER_IS_BETTER"         & LineBreak &
+		    "   TRUE, YES, 1"                                   & LineBreak &
+		    "   Any other value → normal (positive = up)"       & LineBreak &
+		    LineBreak &
+		    "📐 SizePx:"                                        & LineBreak &
+		    "   Rendered pixel size, e.g. 24, 32, 48, 64"      & LineBreak &
+		    "   Aspect ratio always 1:1"                        & LineBreak &
+		    "   viewBox fixed at 0 0 48 48"                     & LineBreak &
+		    LineBreak &
+		    "⚠️  Usage notes:"                                   & LineBreak &
+		    "   Set dataCategory = ImageUrl on the measure"     & LineBreak &
+		    "   Use in Table / Matrix Image URL field"          & LineBreak &
+		    "   Visual row height controls the final size"    & LineBreak &
+		    "   Visual row height controls final size"
+	lineageTag: 574aa529-1649-4cf3-9d3a-55a214b08823
+
+/// Returns the Same Period Last Year value, delta, or % change for any base measure over a date column.
+/// Outcome selector: SPLY, DELTA (or SPLY_DELTA), PCT (or SPLY% or SPLY-PCT).
+function 'udf.adaptfy.timeintellgence' =
+		( BaseMeasure : ANYREF EXPR, DateColumn : ANYREF EXPR, Outcome : STRING ) =>
+		VAR OutcomeNormalised = UPPER ( Outcome )
+		VAR PriorYearValue   = CALCULATE ( BaseMeasure, SAMEPERIODLASTYEAR ( DateColumn ) )
+		VAR AbsoluteDelta    = BaseMeasure - PriorYearValue
+		VAR PercentDelta     = DIVIDE ( AbsoluteDelta, PriorYearValue )
+		RETURN
+		    SWITCH (
+		        OutcomeNormalised,
+		        "SPLY",       PriorYearValue,
+		        "SPLY_DELTA", AbsoluteDelta,
+		        "DELTA",      AbsoluteDelta,
+		        "SPLY-PCT",   PercentDelta,
+		        "SPLY%",      PercentDelta,
+		        "PCT",        PercentDelta,
+		        BLANK()
+		    )
+	lineageTag: a0c44715-8baa-4fca-a5fa-eb91d8fd82cc
+
+/// Returns a self-contained SVG trend icon with RAG colouring.
+/// - Positive (normal) or Negative (inverse) → Green UP trend arrow
+/// - Negative (normal) or Positive (inverse) → Red DOWN trend arrow
+/// - Blank / zero → Amber NEUTRAL horizontal dash
+/// Same direction/inversion logic as udf.adaptfy.color.ragHex.
+/// SizePx sets the rendered pixel dimensions (default 48). viewBox fixed at 0 0 48 48.
+/// Output is a data URI string. Set dataCategory=ImageUrl on the calling measure.
+function 'udf.adaptfy.svg.ragArrow' = ```
+		
+		( BaseMeasure : ANYREF EXPR, Direction : STRING, SizePx : DOUBLE, Style : STRING ) =>
+		
+		VAR MeasureValue        = BaseMeasure
+		VAR DirectionNormalised = UPPER ( TRIM ( Direction ) )
+		VAR StyleNormalised     = UPPER ( TRIM ( Style ) )
+		VAR PixelSize           = FORMAT ( SizePx, "0" )
+		
+		VAR IsInverted =
+		    SWITCH (
+		        DirectionNormalised,
+		        "INVERSE",         TRUE(),
+		        "INVERT",          TRUE(),
+		        "NEG",             TRUE(),
+		        "LOWER_IS_BETTER", TRUE(),
+		        "TRUE",            TRUE(),
+		        "YES",             TRUE(),
+		        "1",               TRUE(),
+		        FALSE()
+		    )
+		
+		// ── RAG colours ─────────────────────────────────────────────
+		// Inversion flips which colour is "good" (green) vs "bad" (red).
+		// Arrow/triangle direction is NOT affected — it always follows value sign.
+		VAR ColourPositive = IF ( IsInverted, "%23D50000", "%2300C853" )  -- red if inverted, else green
+		VAR ColourNegative = IF ( IsInverted, "%2300C853", "%23D50000" )  -- green if inverted, else red
+		VAR ColourNeutral  = "%23FFC107"                                   -- amber always
+		
+		// ── SVG wrapper ─────────────────────────────────────────────
+		// Outer SVG sets the canvas Power BI uses for the image cell.
+		// Inner SVG maps the fixed 48-unit design space to that canvas.
+		VAR SvgWrapperStart =
+		    "<svg xmlns='http://www.w3.org/2000/svg' width='" & PixelSize & "' height='" & PixelSize & "'>" &
+		    "<svg x='0' y='0' width='" & PixelSize & "' height='" & PixelSize & "' viewBox='0 0 48 48' fill='none'>"
+		VAR SvgWrapperEnd = "</svg></svg>"
+		
+		// ── ARROW style ─────────────────────────────────────────────
+		// Rising trend line with top-right corner bracket
+		VAR ArrowUp =
+		    "data:image/svg+xml;utf8," & SvgWrapperStart &
+		    "<path d='M40.9999 27.0005V15.0005H29' stroke='" & ColourPositive & "' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+		    "<path d='M6 37L16.3385 24.5L26.1846 30.5L41 15' stroke='" & ColourPositive & "' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+		    SvgWrapperEnd
+		
+		// Falling trend line with bottom-right corner bracket
+		VAR ArrowDown =
+		    "data:image/svg+xml;utf8," & SvgWrapperStart &
+		    "<path d='M29 34.9999H41V23' stroke='" & ColourNegative & "' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+		    "<path d='M6 13L16.3385 25.5L26.1846 19.5L41 35' stroke='" & ColourNegative & "' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+		    SvgWrapperEnd
+		
+		// ── TRIANGLE style ───────────────────────────────────────────
+		// Solid filled upward triangle — apex (24,8)  base (6,40)-(42,40)
+		VAR TriangleUp =
+		    "data:image/svg+xml;utf8," & SvgWrapperStart &
+		    "<polygon points='24,8 6,40 42,40' fill='" & ColourPositive & "'/>" &
+		    SvgWrapperEnd
+		
+		// Solid filled downward triangle — apex (24,40)  base (6,8)-(42,8)
+		VAR TriangleDown =
+		    "data:image/svg+xml;utf8," & SvgWrapperStart &
+		    "<polygon points='24,40 6,8 42,8' fill='" & ColourNegative & "'/>" &
+		    SvgWrapperEnd
+		
+		// ── NEUTRAL ─ shared across both styles ─────────────────────
+		// Simple horizontal dash centred on canvas (amber, never inverted)
+		VAR NeutralDash =
+		    "data:image/svg+xml;utf8," & SvgWrapperStart &
+		    "<line x1='10' y1='24' x2='38' y2='24' stroke='" & ColourNeutral & "' stroke-width='3' stroke-linecap='round'/>" &
+		    SvgWrapperEnd
+		
+		// ── Icon selection ───────────────────────────────────────────
+		VAR IconUp      = IF ( StyleNormalised = "TRIANGLE", TriangleUp,   ArrowUp   )
+		VAR IconDown    = IF ( StyleNormalised = "TRIANGLE", TriangleDown, ArrowDown )
+		VAR IconNeutral = NeutralDash
+		
+		// Direction of icon always follows value sign — IsInverted only affected colours above
+		RETURN
+		    SWITCH ( TRUE(),
+		        ISBLANK ( MeasureValue ), IconNeutral,
+		        MeasureValue = 0,         IconNeutral,
+		        MeasureValue > 0,         IconUp,
+		                                  IconDown
+		    )
+		
+		```
+	lineageTag: 3d29a004-2002-4e09-bca5-9316579e3255
+

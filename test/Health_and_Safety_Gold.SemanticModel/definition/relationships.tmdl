@@ -1,0 +1,48 @@
+relationship a37cd5f3-5448-1cdf-c561-8bddb0f7ce3c
+	fromColumn: dim_site.country_ISO3_ID
+	toColumn: dim_country.country_ISO3_ID
+
+relationship b1b149e0-4e2c-adee-a31f-743a58832341
+	fromColumn: dim_site.group_ID
+	toColumn: dim_group.group_ID
+
+relationship AutoDetected_4390397f-298f-4498-ad4f-6f31a979fcd1
+	fromColumn: fct_injuries.site_ID
+	toColumn: dim_site.site_ID
+
+relationship AutoDetected_828c19aa-1a48-4968-84e4-bd15ac5c8118
+	fromColumn: fct_health_safety.site_ID
+	toColumn: dim_site.site_ID
+
+relationship 64985613-eb4a-a9df-a6dd-d3bf253990ca
+	fromColumn: fct_psif.site_ID
+	toColumn: dim_site.site_ID
+
+relationship AutoDetected_0a859d82-f5bb-4c4a-8f65-2c13f55c7e3b
+	fromColumn: fct_health_safety.workforce_category_ID
+	toColumn: dim_workforce_category.workforce_category_ID
+
+relationship AutoDetected_67e26908-b281-4d10-ba54-931379ed58a4
+	fromColumn: fct_injuries.workforce_category_ID
+	toColumn: dim_workforce_category.workforce_category_ID
+
+relationship 2abe27f7-1f35-236c-a960-9d94e696f504
+	fromColumn: fct_injuries.life_saving_rules_ID
+	toColumn: dim_life_saving_rules.life_saving_rules_ID
+
+relationship 0f7c744e-1470-e5be-a82e-637489bdcb95
+	fromColumn: fct_injuries.severe_injury_fatality_ID
+	toColumn: dim_serious_injury_fatality.severe_injury_fatality_ID
+
+relationship e5154dfc-2973-f6e4-427d-66d4a5a3e96b
+	fromColumn: fct_injuries.injury_type_ID
+	toColumn: dim_injury_type.injury_type_ID
+
+relationship 7a061f64-6502-150b-a901-9c9bb96d67ef
+	fromColumn: dim_freetext_summary.group_id
+	toColumn: dim_group.group_ID
+
+relationship 06f0bb64-49dd-5c07-efe6-a0481a4f100a
+	fromColumn: fct_trcf_targets.group_ID
+	toColumn: dim_group.group_ID
+

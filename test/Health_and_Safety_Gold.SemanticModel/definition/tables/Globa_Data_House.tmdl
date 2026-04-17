@@ -1,0 +1,27 @@
+/// Connection string to the global data house for dimension tables, measure catalog, metric catalog and metric for dashboard.
+table Globa_Data_House
+	isHidden
+	lineageTag: d1bbe6fd-5d81-4ef2-b928-45d71d70bb9b
+
+	column Globa_Data_House
+		dataType: string
+		isHidden
+		lineageTag: cfae5feb-81a1-4ce9-8c90-1662eaf43cf4
+		summarizeBy: none
+		sourceColumn: Globa_Data_House
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Globa_Data_House = m
+		mode: import
+		queryGroup: 'Global Data House Connections'
+		source = "Global_Data_House__WH" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

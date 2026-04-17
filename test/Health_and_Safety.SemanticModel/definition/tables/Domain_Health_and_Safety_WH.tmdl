@@ -1,0 +1,22 @@
+/// Connection string to the global data house for dimension tables, measure catalog, metric catalog and metric for dashboard.
+table Domain_Health_and_Safety_WH
+	isHidden
+	lineageTag: e2ba3fe6-013f-4ab7-8130-71d39838e25a
+	sourceLineageTag: 94026d86-7395-4cc3-8a65-dacf7c59ac31
+
+	column Domain_Health_and_Safety_WH
+		dataType: string
+		lineageTag: bc3c6402-d9c8-4271-9541-73f73d7d04d7
+		sourceLineageTag: 969fa183-6ef6-4ba7-917d-c168fe4fea85
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_WH
+
+		annotation SummarizationSetBy = User
+
+	partition Domain_Health_and_Safety_WH = entity
+		mode: directQuery
+		source
+			entityName: Domain_Health_and_Safety_WH
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

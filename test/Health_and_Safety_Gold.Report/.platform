@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Health_and_Safety_Gold"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a27ad008-bf11-a325-4456-b5dd710a06f2"
+  }
+}

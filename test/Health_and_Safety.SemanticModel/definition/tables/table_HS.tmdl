@@ -1,0 +1,22 @@
+table table_HS
+	isHidden
+	lineageTag: 283f3434-99d5-40ff-95dc-2e44eba53446
+	sourceLineageTag: 1ca2c111-918d-4502-a226-d4f1d662ca6f
+
+	column table_HS
+		dataType: string
+		isHidden
+		lineageTag: 9408af56-cbd8-4937-8b4b-067ba4e37e7f
+		sourceLineageTag: abe00508-140d-47c9-b5de-220822fc03d7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: table_HS
+
+		annotation SummarizationSetBy = User
+
+	partition table_HS = entity
+		mode: directQuery
+		source
+			entityName: table_HS
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

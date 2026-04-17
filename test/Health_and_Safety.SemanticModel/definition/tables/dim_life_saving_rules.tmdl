@@ -1,0 +1,184 @@
+/// Dimension of Life Saving Rules (LSR) linked to groups, used to classify injuries by associated safety rule violations.
+table dim_life_saving_rules
+	lineageTag: 732c6aba-731d-4028-b79e-4f34eae0d24d
+	sourceLineageTag: f45fb972-857e-48ec-9ee6-ba46c3e19c69
+
+	/// ID Identifying the LSR, connected to Group ID
+	column life_saving_rules_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: d5fa03d8-3656-44c9-8e43-c6c90263cb37
+		sourceLineageTag: 591c7d72-54b8-459f-a384-5e2f3755e74b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: life_saving_rules_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Type of the LSR
+	column life_saving_rules_type
+		dataType: string
+		lineageTag: baba32dd-465e-4d38-b1a2-5b579d6a2e83
+		sourceLineageTag: bd1c7e1b-7d28-4dd1-90f7-8df0d3fb6935
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: life_saving_rules_type
+		sortByColumn: order
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = User
+
+	/// Name of the Group
+	column group_name
+		dataType: string
+		lineageTag: f22861cb-c4c8-4764-9380-a57344e116cd
+		sourceLineageTag: 86a573da-f40d-41fa-ad0a-11f176dba19e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_name
+
+		annotation SummarizationSetBy = User
+
+	/// Flag indicating whether the LSR is active or applicable.
+	column lsr_flag
+		dataType: string
+		lineageTag: 4ec65bf2-ddcc-4af7-84e7-ca51bd0b10d0
+		sourceLineageTag: 86c31c86-f5c2-4479-9f70-a9afce6f6dcd
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: lsr_flag
+
+		annotation SummarizationSetBy = User
+
+	column order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 47cca151-d56d-483d-9e92-bac577d1acfa
+		sourceLineageTag: ea472893-f787-48e7-9bee-8f4455aa8ace
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 39f85d1e-4a7d-437a-82a0-7d01188600c5
+		sourceLineageTag: c04634d5-260a-41c1-988d-434a24936b1d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 4deba996-63f8-4804-9254-3bdf99064766
+		sourceLineageTag: f9ec3a67-2e03-4ae6-830e-43e0aa489cd9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 95eb9d24-e479-4169-8cad-4e2c45f3b6e8
+		sourceLineageTag: 7952ec23-988a-4b86-977a-e6ec4724729c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: dc8d0e50-15ce-44c1-b9a4-563ba8b9d1fb
+		sourceLineageTag: 466e88a2-0652-4fbd-b44d-221d5cfb2eb2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 8af48a45-d91c-4777-bc2b-b7788041e95a
+		sourceLineageTag: df75ca8f-b037-4337-8107-bd8726f2110d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 2ee0749c-1837-454d-92dd-c3ccf76cdc9a
+		sourceLineageTag: 8a478358-a8be-4bf6-a935-5dcbf7b937e8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 512b3bdc-7d48-4779-95e2-cbf7eff1a1b6
+		sourceLineageTag: 4e6fb7cc-b52a-49c6-9915-424f9e338bc7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 99f0b88f-77e1-425b-9acf-00dc40e7a3b1
+		sourceLineageTag: e2fd4ef2-4871-4ccf-9d82-d63b8fa396d5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 1d2fa576-71d7-42d3-90bd-d3ddd4f4f887
+		sourceLineageTag: 2dba3ce7-45fd-437c-aa71-4bbb3108b3f3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: e89c12e6-3ff7-49ba-8a4f-4c5ac3de2c01
+		sourceLineageTag: 43d4efed-2a4b-4442-9519-b6248770cb15
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	partition dim_life_saving_rules = entity
+		mode: directQuery
+		source
+			entityName: dim_life_saving_rules
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

@@ -1,0 +1,22 @@
+table table_injury
+	isHidden
+	lineageTag: 32d0e111-f4eb-4ff6-b230-4a263965b359
+	sourceLineageTag: 9ed2b514-0c4c-4630-a48d-ba70598a9798
+
+	column table_injury
+		dataType: string
+		isHidden
+		lineageTag: 96cd6cf6-0ec8-4092-8cc4-dc998e48ca79
+		sourceLineageTag: c944fefb-df01-4a0f-af7d-eba4798de338
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: table_injury
+
+		annotation SummarizationSetBy = User
+
+	partition table_injury = entity
+		mode: directQuery
+		source
+			entityName: table_injury
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

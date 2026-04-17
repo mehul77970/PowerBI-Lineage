@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "6e40fe9916e68e4a0202",
+  "displayName": "Synonyms",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "visibility": "HiddenInViewMode"
+}

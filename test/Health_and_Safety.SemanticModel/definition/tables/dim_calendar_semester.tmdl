@@ -1,0 +1,35 @@
+/// Year and Semester Table
+table dim_calendar_semester
+	lineageTag: 25b3d536-1560-4fcb-a090-aa944b2eadd9
+	sourceLineageTag: a429d78d-ebb4-49e0-9f9e-f4498dc72544
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 87519169-22c5-4efc-bf3a-b80a12247f46
+		sourceLineageTag: 50b05b8d-5c2b-4ce0-9834-24db61ef926a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	/// Semester label (e.g. H1, H2).
+	column Semester
+		dataType: string
+		isNullable: false
+		lineageTag: 82829e3c-e444-4ec8-930c-95f15c02be7a
+		sourceLineageTag: 2b166552-b6eb-47f7-90f5-fe222a33b268
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Semester
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar_semester = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar_semester
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

@@ -1,0 +1,241 @@
+/// Central fact table. One row per order line. Transactional data with quantities, prices, costs, dates, and FK keys to all dimensions.
+table Sales
+	lineageTag: 94d3ea3b-4449-4e27-903d-c961f1df5413
+
+	/// Net revenue from sales: SUMX of Sales[Quantity] * Sales[Net Price] in current filter context.
+	measure 'Net Revenue' =
+			
+			SUMX( Sales, Sales[Quantity] * Sales[Net Price] )
+		formatString: #,0
+		lineageTag: 7c5f9a14-3465-43ab-b1e5-aeb03f4fe8ad
+
+		changedProperty = FormatString
+
+	/// Total cost of goods sold: SUMX of Sales[Quantity] * Sales[Unit Cost] in current filter context.
+	measure Cost =
+			
+			SUMX( Sales, Sales[Quantity] * Sales[Unit Cost] )
+		formatString: #,0
+		lineageTag: 416604ca-8ec2-48fb-97e3-568ef1a0c264
+
+		changedProperty = FormatString
+
+	/// Net profit in absolute value: Net Revenue minus Cost. As COGS is the only expense in this model this represents the net profit.
+	measure 'Net Profit' =
+			
+			[Net Revenue] - [Cost]
+		formatString: #,0
+		lineageTag: e22dbc08-3844-485a-96d6-625d9d77e004
+
+		changedProperty = FormatString
+
+	/// Total units sold: SUM of Sales[Quantity] in current filter context.
+	measure 'Units Sold' =
+			
+			SUM( Sales[Quantity] )
+		formatString: #,0
+		lineageTag: 3c59d762-8e5b-4258-a132-1b6983b435ce
+
+		changedProperty = FormatString
+
+	/// Distinct count of orders in the current filter context.
+	measure Orders =
+			
+			DISTINCTCOUNT( Sales[Order Number] )
+		formatString: #,0
+		lineageTag: 4de0ade3-e121-4f05-a5d2-907ec49411a5
+
+	/// Net profit margin %: DIVIDE([Net Profit], [Net Revenue]). Represents the share of net revenue retained as profit after deducting cost of goods.
+	measure 'Margin %' =
+			
+			DIVIDE( [Net Profit], [Net Revenue] )
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 78f2291d-1076-4202-b7bc-8d5dcd28f612
+
+		changedProperty = FormatString
+
+	/// Foreign key to the Customer dimension table.
+	column CustomerKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b35afdc7-615a-4e88-8c36-36c10285f310
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Foreign key to the Store dimension table.
+	column StoreKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f917bacb-2013-409d-9d94-8b40068bc9a7
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Foreign key to the Product dimension table.
+	column ProductKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f011ea83-0d14-41e5-a9f2-8d532338586f
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of units sold on this order line.
+	column Quantity
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c8ca10d3-f54d-4c5d-b5ef-da854e2d7973
+		summarizeBy: none
+		sourceColumn: Quantity
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Unique identifier for a sales order. Multiple lines share the same Order Number.
+	column 'Order Number'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 27170f5b-39b9-494d-b77c-00606c248f2a
+		summarizeBy: count
+		sourceColumn: Order Number
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Line item number within an order. Combined with Order Number uniquely identifies a transaction row.
+	column 'Line Number'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 9ac9e454-4919-4492-a489-e38b38bf4f66
+		summarizeBy: sum
+		sourceColumn: Line Number
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the order was placed. Used as the active date relationship to the Date table.
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 54dfa354-027f-4264-a9c9-1e0213db865a
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the order was delivered. Linked to the Date table via an inactive relationship.
+	column 'Delivery Date'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: bfeebab9-451b-4816-91a6-0ee922c0d76b
+		summarizeBy: none
+		sourceColumn: Delivery Date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// List price per unit at the time of sale (before discounts).
+	column 'Unit Price'
+		dataType: decimal
+		isHidden
+		lineageTag: d3301ed0-8b99-46c0-9555-ed28b4ed00f4
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Actual selling price per unit after discounts. Used to calculate Sales Amount.
+	column 'Net Price'
+		dataType: decimal
+		isHidden
+		lineageTag: 0601f915-bc0f-4432-a24c-39fe79cfcd82
+		summarizeBy: sum
+		sourceColumn: Net Price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Cost of goods per unit. Used to calculate Total Cost and Margin.
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: f8f202f4-dbdb-423c-b75e-c2f5f9ed3723
+		summarizeBy: sum
+		sourceColumn: Unit Cost
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// ISO currency code for the transaction (e.g. USD, EUR). Links to Currency Exchange for conversion.
+	column 'Currency Code'
+		dataType: string
+		isHidden
+		lineageTag: cabc3fde-bb38-40c8-b889-4a3314775037
+		summarizeBy: none
+		sourceColumn: Currency Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// FX rate at time of sale, used to convert Net Price to USD.
+	column 'Exchange Rate'
+		dataType: double
+		isHidden
+		lineageTag: d7719257-3b11-442e-a071-4540b1855e5b
+		summarizeBy: sum
+		sourceColumn: Exchange Rate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Sales-4929449f-be0b-48cf-a44e-c644698415ba = m
+		mode: import
+		source =
+				let
+				    Source = Parquet.Document(File.Contents("C:\Users\JonathanPapworth\Downloads\parquet-1m\sales.parquet")),
+				    #"Renamed Columns" = Table.RenameColumns(Source, {
+				        {"OrderKey", "Order Number"},
+				        {"LineNumber", "Line Number"},
+				        {"OrderDate", "Order Date"},
+				        {"DeliveryDate", "Delivery Date"},
+				        {"UnitPrice", "Unit Price"},
+				        {"NetPrice", "Net Price"},
+				        {"UnitCost", "Unit Cost"},
+				        {"CurrencyCode", "Currency Code"},
+				        {"ExchangeRate", "Exchange Rate"}
+				    }),
+				    #"Selected Columns" = Table.SelectColumns(#"Renamed Columns", {"Order Number", "Line Number", "Order Date", "Delivery Date", "CustomerKey", "StoreKey", "ProductKey", "Quantity", "Unit Price", "Net Price", "Unit Cost", "Currency Code", "Exchange Rate"}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Selected Columns", {{"Unit Price", Currency.Type}, {"Net Price", Currency.Type}, {"Unit Cost", Currency.Type}}),
+				        #"Updated Year" = Table.TransformColumns(#"Changed Type", {{"Order Date", each if Date.Year(_) = 2016 then Date.AddYears(_, 10) else _, type datetimezone}}), #"Drop 2026 bad months" = Table.SelectRows(#"Updated Year", each
+				        let d = DateTime.Date(DateTimeZone.RemoveZone([Order Date])), y = Date.Year(d), m = Date.Month(d)
+				        in y <> 2026 or List.Contains({7,8,9,10}, m)),    #"Shift 2026 to YTD" = Table.TransformColumns(#"Drop 2026 bad months", {
+				        {"Order Date", each if Date.Year(DateTime.Date(DateTimeZone.RemoveZone(_))) = 2026 then DateTimeZone.From(Date.AddMonths(DateTime.Date(DateTimeZone.RemoveZone(_)), -6)) else _, type datetimezone},
+				        {"Delivery Date", each if _ <> null and Date.Year(DateTime.Date(DateTimeZone.RemoveZone(_))) = 2026 then DateTimeZone.From(Date.AddMonths(DateTime.Date(DateTimeZone.RemoveZone(_)), -6)) else _, type datetimezone}
+				    })
+				in
+				    #"Shift 2026 to YTD"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

@@ -1,0 +1,55 @@
+/// Parameter table for selecting geographic dimension in report visuals.
+table switch_geodata
+	lineageTag: f78f7a8d-1b44-49a5-88e0-00e9a2b08337
+
+	/// Display label for geographic dimension.
+	column 'Geo Dimension'
+		lineageTag: c19972da-220a-422e-a259-dacca269aa9d
+		summarizeBy: none
+		sourceColumn: [Value1]
+		sortByColumn: 'Parameter Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Field reference for geographic parameter.
+	column 'Parameter Fields'
+		isHidden
+		lineageTag: 77fb3c25-6735-459a-b1b7-c33744cda2b1
+		summarizeBy: none
+		sourceColumn: [Value2]
+		sortByColumn: 'Parameter Order'
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 3,
+				  "kind": 2
+				}
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Sort order for geographic parameter options.
+	column 'Parameter Order'
+		isHidden
+		formatString: 0
+		lineageTag: b8764b54-8f80-4063-ba9f-50cf953866fa
+		summarizeBy: sum
+		sourceColumn: [Value3]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition switch_geodata = calculated
+		mode: import
+		source =
+				{
+				    --("No Selection", NAMEOF([tech_spacer]),3),
+				    ("Region", NAMEOF('dim_country'[ultimate_region]), 1),
+				    --("Parent Region", NAMEOF('dim_country'[region]), 2),
+				    ("Country", NAMEOF('dim_country'[country_SAP_name]), 3)
+				    --("Groups", NAMEOF('dim_group'[Level2_group]), 3),
+				    --("Site Name", NAMEOF('dim_site'[site_name]), 4),
+				    --("Site Type", NAMEOF('dim_site'[site_type_name]), 5),
+				    --("City Name", NAMEOF('dim_site'[city_name]), 6)
+				}
+
+	annotation PBI_Id = 14e03b17e81a45f1940dc40c3981916e
+

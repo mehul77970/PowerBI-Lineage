@@ -1,0 +1,73 @@
+/// Active date period slicer table combining base and comparison periods with sort order.
+table 'Date Period NEW'
+	isHidden
+	lineageTag: 611b30a6-cd4c-4cdd-b4b1-8f92e329e8d6
+	sourceLineageTag: 135cc8f4-af82-4cf5-9cde-f08998321078
+
+	/// Identifier for the base date period.
+	column 'Base Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 90c0c4b8-56da-4d28-81d6-446a29a6d901
+		sourceLineageTag: e2b2994f-6d92-4ee5-b190-1617d43556e7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the base date period.
+	column 'Base Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 20f075e4-5d7c-4fdc-b90b-b3a730ca6983
+		sourceLineageTag: eb5f1ae2-0934-49af-90a2-5d559d1adfa2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period
+
+		annotation SummarizationSetBy = User
+
+	/// Sort order for the base date period.
+	column 'Base Date Period Sort'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 92127ece-c53d-484d-afc3-95fa379b65a1
+		sourceLineageTag: 7736970a-40f7-4454-97a3-4f9898362ad6
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Base Date Period Sort
+
+		annotation SummarizationSetBy = User
+
+	/// Identifier for the comparison date period.
+	column 'Comparison Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 9ed0c50f-3b90-480c-a6e2-ab8035f5fd51
+		sourceLineageTag: 30ad3afa-7029-4a4d-938c-b68e615dc970
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the comparison date period.
+	column 'Comparison Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 59de6339-4755-43ee-82d8-026ebaf5c9eb
+		sourceLineageTag: 1096bbd9-60c0-4c39-85e3-d2017a23ba9f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date Period NEW' = entity
+		mode: directQuery
+		source
+			entityName: Date Period NEW
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

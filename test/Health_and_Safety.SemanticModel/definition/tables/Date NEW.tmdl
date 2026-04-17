@@ -1,0 +1,196 @@
+/// Core date dimension with calendar week, month, quarter, semester, and year attributes for period-based filtering.
+table 'Date NEW'
+	isHidden
+	lineageTag: e29373e3-d882-4fab-a513-44f58c164d9c
+	sourceLineageTag: 68e029e6-88eb-419f-b8ad-3f5038a152db
+
+	/// Calendar date.
+	column Date
+		dataType: dateTime
+		isHidden
+		isNullable: false
+		formatString: Long Date
+		lineageTag: 6c1bb633-24a1-48c9-acfc-0b136bfdbf88
+		sourceLineageTag: 655babeb-24d0-4b3f-911e-7639117c6ef8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// ISO calendar week number.
+	column 'Calender Week'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 032c5004-a4ab-4d5f-abb9-20aa3f8d6bad
+		sourceLineageTag: 3a0bb9ec-82eb-4a6a-b131-7acf75d8053d
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Calender Week
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the week.
+	column FirstDateInWeek
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 83f681f8-ffc9-40b6-a0c6-ccfefeb0e57d
+		sourceLineageTag: 3ca0667b-3683-4ab9-935f-aadccfa82bd1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInWeek
+
+		variation Variation
+			isDefault
+			relationship: 3d17240c-c822-439b-880b-ccf387ed74b4
+			defaultHierarchy: LocalDateTable_3c93e122-3535-43c0-9636-2fea0e831d1a.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the month.
+	column FirstDateInMonth
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 25e2c568-ea00-4d22-a963-b587c7bce6a3
+		sourceLineageTag: a03d2127-79f8-4605-9bed-90d0611c5f0a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInMonth
+
+		variation Variation
+			isDefault
+			relationship: 0bffd532-902e-4d7a-a38b-5fd86c3db0de
+			defaultHierarchy: LocalDateTable_23a1d73b-bcfa-4ef3-92f0-d4057c78b0de.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the quarter.
+	column FirstDateInQuarter
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: a0f4ce15-0b3c-4c9e-b60f-ff68a3201825
+		sourceLineageTag: 8704bb6a-658f-49e1-b011-f24e249dcd40
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInQuarter
+
+		variation Variation
+			isDefault
+			relationship: ce92f0cf-f455-457e-b6cc-96cf884a1e7c
+			defaultHierarchy: LocalDateTable_17ada190-9f0c-43b7-8d09-1459212dcb22.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter label with year (e.g. 2025 Q1).
+	column Quarternum_Long
+		dataType: string
+		isHidden
+		lineageTag: 3a067cd9-07f3-4ed4-9d90-85702d628377
+		sourceLineageTag: dfb01aac-b572-485b-a33f-5c4984e9c542
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Quarternum_Long
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the year.
+	column FirstDateInYear
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 2189af46-2e6e-4ba6-9e6b-fad0c14b257c
+		sourceLineageTag: 7a89cf0b-0733-4670-a4a5-c9138111cd12
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInYear
+
+		variation Variation
+			isDefault
+			relationship: b357963f-6ec1-42fc-a1e1-6dfa4d6925ba
+			defaultHierarchy: LocalDateTable_ff40f39c-20b3-4bcc-9ac7-1573fccf80fd.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1acaa37a-edb0-46b3-88c8-913618ec1ac2
+		sourceLineageTag: 9deef648-cb62-4fae-abcd-d07d3c264f45
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Year
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Year and quarter combined.
+	column YearQuarter
+		dataType: string
+		isHidden
+		lineageTag: eacaf581-df0c-4bd0-b6f6-70268d945f56
+		sourceLineageTag: 3809fac9-fe1b-47e9-ac07-fde8ae22ad82
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearQuarter
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Year and month combined.
+	column YearMonth
+		dataType: string
+		isHidden
+		lineageTag: cfdb85b2-1763-4402-ab81-1b40a76cb862
+		sourceLineageTag: 53dd3ea1-b570-4543-b832-fabea64b726c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: YearMonth
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Semester label (e.g. H1, H2).
+	column Semester
+		dataType: string
+		isHidden
+		lineageTag: 786f1f77-8aff-4313-aa4a-1b3fcebc947c
+		sourceLineageTag: 17a3fd84-038b-4aa2-badd-f7f1a68cb812
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Semester
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date NEW' = entity
+		mode: directQuery
+		source
+			entityName: Date NEW
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+
+	changedProperty = IsHidden
+

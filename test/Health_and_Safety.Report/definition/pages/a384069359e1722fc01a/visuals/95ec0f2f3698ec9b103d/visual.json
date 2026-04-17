@@ -1,0 +1,394 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.5.0/schema.json",
+  "name": "95ec0f2f3698ec9b103d",
+  "position": {
+    "x": 195,
+    "y": 82,
+    "z": 9000,
+    "height": 606,
+    "width": 496,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Introduction",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "SHV follows the Occupational Safety and Health Administration (OSHA) standards from",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "the US Department of Labor for incident reporting. These renowned standards are",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "also used by other corporates and align with reporting under CSRD. The",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "definitions of the main OSHA terms used in this report are outlined below: ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Total Recordable Case Frequency (TRCF)",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Ratio of number of recordable injuries per 100 employees per year, based on the",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "number of recordable injuries and worked hours. TRCF excludes contractors",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "working under supervision (CSRD definition: non-employees) in",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "this report.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Recordable injuries",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "An injury is a ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "recordable ",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "injury if an employee or contractor that works under supervision of SHV or the Groups is physically injured resulting from events or exposures in the work environment.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Recordable injuries can be classified into categories that define the employees’ ability to continue their regular work and concern: Fatality, Lost Time Incident, Restricted Work Case, Medical Treatment Case and Loss of Consciousness",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "*",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": ". Other cases, such as First Aid or Near Miss do not concern a ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "Recordable",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "Injuries",
+                    "textStyle": {
+                      "fontStyle": "italic",
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": " but ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  },
+                  {
+                    "value": "are nevertheless tracked by the Groups to prevent recurrence.",
+                    "textStyle": {
+                      "fontSize": "8pt"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "The aforementioned injury categories usually correspond to severity levels, although this is not always the case. For example, oxygen deficiency in a hydrogen tank resulting in the loss of consciousness can be classified as a SIF.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Therefore, besides the different categories indicating the employees’ ability to continue their work, the most serious injuries are classified as Severe Injury or Fatality (SIF). This enables management to explicitly follow-up on the most serious incidents.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " ",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "In addition, potential SIFs (PSIFs) are tracked, which could have resulted in a SIF if the circumstances had been slightly different.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "The definitions of injury categories and SIFs are outlined in the next paragraph.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "black"
+                    }
+                  }
+                ],
+                "listType": "bullet"
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "5D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'txt_left'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

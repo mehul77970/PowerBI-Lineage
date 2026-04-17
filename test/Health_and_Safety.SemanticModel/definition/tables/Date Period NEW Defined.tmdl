@@ -1,0 +1,87 @@
+/// Predefined date period combinations pairing base periods with their comparison counterparts and sort order.
+table 'Date Period NEW Defined'
+	isHidden
+	lineageTag: 0416a30f-b788-4bb7-9611-2169d57dff67
+	sourceLineageTag: 95a98d05-507c-4560-85d9-cb5faa887a18
+
+	/// Identifier for the base date period.
+	column 'Base Date Period ID'
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: eee75a88-aac2-4853-9fbc-2b4a308d9521
+		sourceLineageTag: 318c8b4b-dd0a-46cc-9d7d-7ce74977b6cd
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the base date period.
+	column 'Base Date Period'
+		dataType: string
+		isHidden
+		lineageTag: c37b5406-20d3-4398-b123-ce767ae5deb0
+		sourceLineageTag: d005d170-545a-446b-b8c3-d2aadde7aa0b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Sort order for the base date period.
+	column 'Base Date Period Sort'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 50603149-3f28-4038-9d8f-6aea93cc40d3
+		sourceLineageTag: 1e657b96-0dee-4353-be12-fc29ca570cc4
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Base Date Period Sort
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Identifier for the comparison date period.
+	column 'Comparison Date Period ID'
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 36386aa0-8a9e-485f-81dd-2da01af2298c
+		sourceLineageTag: 9e7dcb03-19c6-442b-a29f-f588c5c54701
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the comparison date period.
+	column 'Comparison Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 803d73f6-c0e0-454c-bd2c-c1c675ba2566
+		sourceLineageTag: 1354bdf9-21fb-4755-a900-7c49ce8550f1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date Period NEW Defined' = entity
+		mode: directQuery
+		source
+			entityName: Date Period NEW Defined
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+
+	changedProperty = IsHidden
+

@@ -1,0 +1,28 @@
+createOrReplace
+
+	ref table fct_health_safety_management
+
+		/// Sum of Number covered Health Safety
+		/// 
+		/// [Type:  Sum,  Created on: 2026-03-27,  Create by: JPA]
+		measure 'Sum of Number Covered Health Safety' = sum(fct_health_safety_management[number_covered_health_safety])
+			formatString: 0
+			displayFolder: _measures_health_safety_management
+			lineageTag: 4e759a13-ea48-41db-8e9c-d2a03f58675b
+
+		/// Sum of Number of Headcount
+		/// 
+		/// [Type:  Sum,  Created on: 2026-03-27,  Create by: JPA]
+		measure 'Sum of Number Headcount' = sum(fct_health_safety_management[number_headcount])
+			formatString: 0
+			displayFolder: _measures_health_safety_management
+			lineageTag: ced48ac6-50a4-4f34-8905-406c32fe6865
+
+		/// Number of (non-)employees not covered by Health & Safety management system, calculated as total headcount minus covered headcount.
+		/// 
+		/// [Type: Sum, Created on: 2026-04-13, Created by: JPA]
+		measure 'Sum of Number Not Covered Health Safety' = [Sum of Number Headcount] - [Sum of Number Covered Health Safety]
+			formatString: 0
+			displayFolder: _measures_health_safety_management
+			lineageTag: 1d96f2b0-284e-448e-95fe-7dd10b4fd6e0
+

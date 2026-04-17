@@ -1,0 +1,1540 @@
+cultureInfo en-US
+
+	linguisticMetadata =
+			{
+			  "Version": "4.1.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "switch_hour_worked": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "switch_hours_worked"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "switch hour worked": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "switch_hours_worked": {
+			            "Type": "Noun",
+			            "State": "Generated",
+			            "Weight": 0.99
+			          }
+			        },
+			        {
+			          "switch period worked": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.492
+			          }
+			        },
+			        {
+			          "switch era worked": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.482
+			          }
+			        },
+			        {
+			          "switch epoch worked": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.482
+			          }
+			        },
+			        {
+			          "switch age worked": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.468
+			          }
+			        }
+			      ]
+			    },
+			    "switch_hour_worked.order": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "switch_hours_worked",
+			          "ConceptualProperty": "Order"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "order": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "instruction": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "direction": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "edict": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.491
+			          }
+			        },
+			        {
+			          "command": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "directive": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "demand": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "mandate": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "imperative": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "stability": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.466
+			          }
+			        },
+			        {
+			          "harmony": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.466
+			          }
+			        }
+			      ]
+			    },
+			    "switch_hour_worked.description": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "switch_hours_worked",
+			          "ConceptualProperty": "Description"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "description": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "appearance": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.736
+			          }
+			        },
+			        {
+			          "descriptor": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.736
+			          }
+			        },
+			        {
+			          "explanation": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.736
+			          }
+			        },
+			        {
+			          "specification": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.736
+			          }
+			        },
+			        {
+			          "account": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.714
+			          }
+			        },
+			        {
+			          "overview": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.714
+			          }
+			        },
+			        {
+			          "report": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.714
+			          }
+			        },
+			        {
+			          "TRCF hours worked": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "entity__measure": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "_measure": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "_ degree": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "_ quantity": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "_ quota": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "_ extent": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.5
+			          }
+			        },
+			        {
+			          "_ amount": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "_ portion": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "_ ration": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        },
+			        {
+			          "_ size": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.485
+			          }
+			        }
+			      ]
+			    },
+			    "entity__measure.dummy": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "dummy"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "dummy": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "imitation": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "fake": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "mock": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "replica": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.476
+			          }
+			        },
+			        {
+			          "mannequin": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.466
+			          }
+			        },
+			        {
+			          "model": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "figure": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        },
+			        {
+			          "form": {
+			            "Type": "Noun",
+			            "State": "Suggested",
+			            "Source": {
+			              "Agent": "Thesaurus"
+			            },
+			            "Weight": 0.452
+			          }
+			        }
+			      ]
+			    },
+			    "entity__measure.TRCF_rollup_group": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Mgt"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "TRCF (roll-up group)": {
+			            "State": "Generated"
+			          }
+			        },
+			        {
+			          "TRCF": {
+			            "State": "Generated",
+			            "Weight": 0.75
+			          }
+			        },
+			        {
+			          "TRCF (roll up group)": {
+			            "State": "Generated",
+			            "Weight": 0.97
+			          }
+			        },
+			        {
+			          "TRCF         Selected Period": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.rate_of_total_injuries_rollup": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Measures",
+			          "ConceptualProperty": "Rate of Total Injuries (roll-Up)"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_injuries.injuries_type": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Injuries",
+			          "ConceptualProperty": "Injuries_type"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.trcf_comp__period": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Comp. period"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "TRCF          Comp. Period": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_life_saving_rules.isflag": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_Life_Saving_Rules",
+			          "ConceptualProperty": "IsFlag"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_date.year": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_calendar",
+			          "ConceptualProperty": "Year"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_workforce_category.workforce_category": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_workforce_category",
+			          "ConceptualProperty": "workforce_category"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Workforce Category": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_group.group_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_group",
+			          "ConceptualProperty": "group_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Group": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_group.level2_group": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_group",
+			          "ConceptualProperty": "Level2_group"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Group": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Groups": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_country.region": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_country",
+			          "ConceptualProperty": "region"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Parent Region": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_country.ultimate_region": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_country",
+			          "ConceptualProperty": "ultimate_region"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Region": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Ultimate Region": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_site.site_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_site",
+			          "ConceptualProperty": "site_name"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.trcf_change": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Change"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.databars_trcf": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "_databars_TRCF"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_country.country_sap_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_country",
+			          "ConceptualProperty": "country_SAP_name"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Country": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "date_new.quarternum_long": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date NEW",
+			          "ConceptualProperty": "Quarternum_Long"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_site.site_type_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_site",
+			          "ConceptualProperty": "site_type_name"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "date_new.year": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date NEW",
+			          "ConceptualProperty": "Year"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.trcf_change_indicator": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Change Indicator"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.total_injuries_change_indicator": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "Total Injuries Change Indicator"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "date_period_new_defined.base_date_period": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date Period NEW Defined",
+			          "ConceptualProperty": "Base Date Period"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "date_period_new_defined.comparison_date_period": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date Period NEW Defined",
+			          "ConceptualProperty": "Comparison Date Period"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.total_injuries_change": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "Total Injuries Change"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% Δ": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.total_injuries_comp__period": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "Total Injuries Comp. period"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Injuries Comp. Period": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_life_saving_rules.life_saving_rules_type": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_life_saving_rules",
+			          "ConceptualProperty": "life_saving_rules_type"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Life Saving Rule": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "date_new.firstdateinmonth": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date NEW",
+			          "ConceptualProperty": "FirstDateInMonth"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.percent_of_injuries": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "Percent of injuries LSR"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% of injuries": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "switch_geodata.geo_dimension": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "switch_geodata",
+			          "ConceptualProperty": "Geo Dimension"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_rollup_measures.total_injuries_2": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Rollup_measures",
+			          "ConceptualProperty": "Total Injuries"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Injuries": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Injuries Selected Period": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Injuries Selected  Period": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.total_injuries": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "Total Injuries"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_calendar.monthnameshort": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_calendar",
+			          "ConceptualProperty": "MonthNameShort"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Month": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_calendar.yearmonth": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_calendar",
+			          "ConceptualProperty": "YearMonth"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "fct_health_safety.number_of_fatal_health": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fct_health_safety",
+			          "ConceptualProperty": "Number of Fatal Health"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "fct_health_safety.number_of_fatal_injuries": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fct_health_safety",
+			          "ConceptualProperty": "Number of Fatal Injuries"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "fct_health_safety.number_of_worked_hours": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fct_health_safety",
+			          "ConceptualProperty": "Number of Worked Hours"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_site.site_id": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_site",
+			          "ConceptualProperty": "site_ID"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_rollup_measures.total_fatal_injuries": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Rollup_measures",
+			          "ConceptualProperty": "Total Fatalities"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Fatal Injuries": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_freetext_summary.free_text": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_freetext_summary",
+			          "ConceptualProperty": "free_text"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Text Summary": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_group.level1_group": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_group",
+			          "ConceptualProperty": "Level1_group"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.trcf_target": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Target"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "date_new.target_resolved__chart_zero_fill": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Date NEW",
+			          "ConceptualProperty": "Target (Resolved - Chart Zero Fill)"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_measures.column__": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "_TRCF Actuals (Chart Safe)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Actual": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.trcf_target_ref": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "TRCF Target Ref"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Target": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "TRCF Target": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_measures.column_trcf_consolidated_chart_safe": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_measures",
+			          "ConceptualProperty": "_TRCF Consolidated (Chart Safe)"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "table_rollup_measures.total_number_of_employees_characteristics": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Rollup_measures",
+			          "ConceptualProperty": "Total Number of Employees (Characteristics)"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_entity.reporting_entity_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_entity",
+			          "ConceptualProperty": "reporting_entity_name"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_country_employee.country_sap_name": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_country_employee",
+			          "ConceptualProperty": "country_SAP_name"
+			        }
+			      },
+			      "State": "Generated"
+			    },
+			    "dim_calendar.yearquarter": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_calendar",
+			          "ConceptualProperty": "YearQuarter"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Quarter": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  },
+			  "Relationships": {
+			    "switch_hour_worked_has_order": {
+			      "Binding": {
+			        "ConceptualEntity": "switch_hours_worked"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "switch_hour_worked": {
+			          "Target": {
+			            "Entity": "switch_hour_worked"
+			          }
+			        },
+			        "switch_hour_worked.order": {
+			          "Target": {
+			            "Entity": "switch_hour_worked.order"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "switch_hour_worked"
+			            },
+			            "Object": {
+			              "Role": "switch_hour_worked.order"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "switch_hour_worked_have_orders"
+			        }
+			      ]
+			    },
+			    "switch_hour_worked_has_value": {
+			      "Binding": {
+			        "ConceptualEntity": "switch_hours_worked"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "switch_hour_worked": {
+			          "Target": {
+			            "Entity": "switch_hour_worked"
+			          }
+			        },
+			        "switch_hour_worked.value": {
+			          "Target": {
+			            "Entity": "switch_hour_worked.value"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "switch_hour_worked"
+			            },
+			            "Object": {
+			              "Role": "switch_hour_worked.value"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "switch_hour_worked_have_values"
+			        }
+			      ]
+			    },
+			    "switch_hour_worked_has_description": {
+			      "Binding": {
+			        "ConceptualEntity": "switch_hours_worked"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "switch_hour_worked": {
+			          "Target": {
+			            "Entity": "switch_hour_worked"
+			          }
+			        },
+			        "switch_hour_worked.description": {
+			          "Target": {
+			            "Entity": "switch_hour_worked.description"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "switch_hour_worked"
+			            },
+			            "Object": {
+			              "Role": "switch_hour_worked.description"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "switch_hour_worked_have_descriptions"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_dummy": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.dummy": {
+			          "Target": {
+			            "Entity": "entity__measure.dummy"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.dummy"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_dummies"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_total_injuries_rollup_group": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.total_injuries_rollup_group": {
+			          "Target": {
+			            "Entity": "entity__measure.total_injuries_rollup_group"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.total_injuries_rollup_group"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_total_injuries_rollup_group"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_total_injuries_rollup_site": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.total_injuries_rollup_site": {
+			          "Target": {
+			            "Entity": "entity__measure.total_injuries_rollup_site"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.total_injuries_rollup_site"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_total_injuries_rollup_site"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_total_fatal_injuries_rollup_group": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.total_fatal_injuries_rollup_group": {
+			          "Target": {
+			            "Entity": "entity__measure.total_fatal_injuries_rollup_group"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.total_fatal_injuries_rollup_group"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_total_fatal_injuries_rollup_group"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_total_fatal_injuries_rollup_site": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.total_fatal_injuries_rollup_site": {
+			          "Target": {
+			            "Entity": "entity__measure.total_fatal_injuries_rollup_site"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.total_fatal_injuries_rollup_site"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_total_fatal_injuries_rollup_site"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_TRCF_rollup_group": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.TRCF_rollup_group": {
+			          "Target": {
+			            "Entity": "entity__measure.TRCF_rollup_group"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.TRCF_rollup_group"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_TRCF_rollup_group"
+			        }
+			      ]
+			    },
+			    "entity__measure_has_TRCF_rollup_site": {
+			      "Binding": {
+			        "ConceptualEntity": "_measures"
+			      },
+			      "State": "Generated",
+			      "Roles": {
+			        "entity__measure": {
+			          "Target": {
+			            "Entity": "entity__measure"
+			          }
+			        },
+			        "entity__measure.TRCF_rollup_site": {
+			          "Target": {
+			            "Entity": "entity__measure.TRCF_rollup_site"
+			          }
+			        }
+			      },
+			      "Phrasings": [
+			        {
+			          "Attribute": {
+			            "Subject": {
+			              "Role": "entity__measure"
+			            },
+			            "Object": {
+			              "Role": "entity__measure.TRCF_rollup_site"
+			            }
+			          },
+			          "State": "Generated",
+			          "Weight": 0.99,
+			          "ID": "Phrasing_measures_have_TRCF_rollup_site"
+			        }
+			      ]
+			    }
+			  },
+			  "Agents": {
+			    "Internal": {
+			      "Version": "1.1.0"
+			    }
+			  }
+			}
+		contentType: json
+

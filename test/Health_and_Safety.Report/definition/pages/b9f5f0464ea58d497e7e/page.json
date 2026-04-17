@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "b9f5f0464ea58d497e7e",
+  "displayName": "Geographic Summary",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "width": {
+            "expr": {
+              "Literal": {
+                "Value": "364L"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "6e9b911cad8a1eabc5a8",
+      "target": "105825c78f2ca4c85872",
+      "type": "DataFilter"
+    },
+    {
+      "source": "105825c78f2ca4c85872",
+      "target": "6e9b911cad8a1eabc5a8",
+      "type": "NoFilter"
+    },
+    {
+      "source": "105825c78f2ca4c85872",
+      "target": "73c78dbba43836831dfa",
+      "type": "NoFilter"
+    }
+  ]
+}

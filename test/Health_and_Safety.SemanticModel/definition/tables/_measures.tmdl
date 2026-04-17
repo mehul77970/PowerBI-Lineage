@@ -1,0 +1,1233 @@
+/// Helper table hosting report-level measures for visuals, percentages, and conditional formatting.
+table _measures
+	lineageTag: ccccf1e6-c427-4a5f-8aad-20f19811cf6a
+
+	/// Total Recordable Case Frequency (TRCF) by normalizing injury counts against worked hours, and conditionally displays the result only for relevant group levels. Also allows for switch between CSRD and Management
+	/// 
+	/// [Type: Rate ,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'TRCF Mgt' = ```
+			
+			VAR _worked_hours = [worked hours multiplier]
+			
+			-- Calculate base inputs
+			VAR _injuries = CALCULATE( CALCULATE([Number of Injuries]),KEEPFILTERS( dim_workforce_category[workforce_category_ID] = "WC1" ))
+			VAR _hours = CALCULATE( [Number of Worked Hours],KEEPFILTERS( dim_workforce_category[workforce_category_ID] = "WC1" ) )
+			
+			-- Core TRCF value
+			VAR _value = DIVIDE( _injuries, _hours ) * _worked_hours
+			
+			-- Return 0 if at least one value exists
+			VAR _has_data = NOT (
+			    ISBLANK(_injuries) &&
+			    ISBLANK(_hours)
+			)
+			
+			-- Suppress rows scoped to LSR dimension
+			VAR _is_lsr = ISINSCOPE( dim_life_saving_rules[life_saving_rules_type] )
+			
+			-- Identify total rows and showable levels
+			VAR _is_total_row = NOT ISINSCOPE( dim_group[Level1_group] )
+			VAR _show_row =
+			    ( [BrowseDepth_group] <= [MaxHierarchyDepth_group] || _is_total_row )
+			    && NOT _is_lsr
+			
+			-- Final output
+			RETURN
+			    IF(
+			        _show_row,
+			        IF(
+			            _has_data,
+			            COALESCE(_value, 0),  // return actual value or 0
+			            BLANK()               // return blank only if no injuries and no hours
+			        )
+			    )
+			
+			```
+		displayFolder: trcf
+		lineageTag: 949b58c4-1ed8-4f63-be16-ca9dad497c40
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Total PSIF (Potential Serious Injury or Fatality) cases for a comparison period
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total PSIF Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [PSIF],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: psif
+		lineageTag: 69b2ffa8-6aff-4ec8-9635-c7cf1765921d
+
+	/// Absolute difference (delta) in TRCF (Total Recordable Case Frequency) between the current and comparison periods
+	/// 
+	/// [Type:  Delta,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'TRCF Delta' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [TRCF Mgt]
+			VAR _comparison = IF(_CanCompare, CALCULATE([TRCF Mgt], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _delta = _base - _comparison
+			RETURN
+			    IF(_CanCompare, _delta, BLANK())
+		displayFolder: trcf
+		lineageTag: 707277c3-fa1c-4ff7-9f81-e95a82d2588f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Percentage change in TRCF (Total Recordable Case Frequency) compared to a defined comparison period
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'TRCF Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [TRCF Mgt]
+			VAR _comparison = IF(_CanCompare, CALCULATE([TRCF Mgt], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		formatString: 0.0
+		displayFolder: trcf
+		lineageTag: 942efb67-4875-46de-ab9e-868dc9aa8f14
+
+	/// Absolute count of total injuries for a defined comparison period
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [Total Injuries],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: injuries
+		lineageTag: ca3a08f0-df53-4222-aa0e-20bc7cc45ddb
+
+	/// Percentage change in total injuries compared to a defined comparison period
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Total Injuries]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Total Injuries], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		displayFolder: injuries
+		lineageTag: 69a5dbaf-3baa-4ae8-9130-e960cccf6ec1
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Absolute difference (delta) in total injuries between the current and comparison periods
+	/// 
+	/// [Type:  Delta,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries Delta' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Total Injuries]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Total Injuries], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _delta = _base - _comparison
+			RETURN
+			    IF(_CanCompare, _delta, BLANK())
+		formatString: 0
+		displayFolder: injuries
+		lineageTag: e664ddd2-1a41-4fb9-974a-01ba10a5335d
+
+	/// Absolute count of total fatal injuries for a defined comparison period
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Fatal Injuries Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [Total Fatalities],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: fatal injuries
+		lineageTag: cb24fd5e-3c20-4155-927f-154bacbee55d
+
+	/// Percentage change in total fatal injuries compared to a defined comparison period
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Fatal Injuries Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Total Fatalities]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Total Fatalities], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		displayFolder: fatal injuries
+		lineageTag: a924bc73-2bc3-44f9-8f10-d5aba22dca90
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Absolute difference (delta) in total fatal injuries between the current and comparison periods
+	/// 
+	/// [Type:  Delta,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Fatal Injuries Delta' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Total Fatalities]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Total Fatalities], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _delta = _base - _comparison
+			RETURN
+			    IF(_CanCompare, _delta, BLANK())
+		formatString: 0
+		displayFolder: fatal injuries
+		lineageTag: 2c0a6ae8-0f38-4985-967b-a604ef6de99b
+
+	/// Percentage change in PSIF (Potential Serious Injury or Fatality) cases compared to a defined comparison period.
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total PSIF Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [PSIF]
+			VAR _comparison = IF(_CanCompare, CALCULATE([PSIF], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: psif
+		lineageTag: 07c73ca5-195d-4d46-bba3-ea5bf5e6bc24
+
+		changedProperty = Name
+
+	/// Absolute difference (delta) in PSIF (Potential Serious Injury or Fatality) cases between the current and comparison periods.
+	/// 
+	/// [Type:  Delta,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total PSIF Delta' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [PSIF]
+			VAR _comparison = IF(_CanCompare, CALCULATE([PSIF], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _delta = _base - _comparison
+			RETURN
+			    IF(_CanCompare, _delta, BLANK())
+		formatString: 0
+		displayFolder: psif
+		lineageTag: fe21c014-5aaa-42be-aa65-630b5127a7cf
+
+	/// Absolute TRCF (Total Recordable Case Frequency) value for a defined comparison period.
+	/// 
+	/// [Type:  Rate,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'TRCF Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [TRCF Mgt],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0.0
+		displayFolder: trcf
+		lineageTag: 676427ff-4def-4182-9d57-43eb9188ba11
+
+	/// Footer text summarizing the selected base and comparison date ranges in a readable format, enhancing clarity in time-based report sections.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _footer_text_timeframe =
+			
+			VAR _TotalDates    = CALCULATE( COUNTROWS( 'dim_calendar' ), ALL( 'dim_calendar' ) )
+			VAR _SelectedDates = COUNTROWS( 'dim_calendar' )
+			VAR _AllSelected   = _SelectedDates = _TotalDates
+			VAR _MinDate       = MIN( 'dim_calendar'[Date] )
+			VAR _MaxDate       = MAX( 'dim_calendar'[Date] )
+			VAR _MinSPLY       = DATE( YEAR( _MinDate ) - 1, MONTH( _MinDate ), DAY( _MinDate ) )
+			VAR _MaxSPLY       = DATE( YEAR( _MaxDate ) - 1, MONTH( _MaxDate ), DAY( _MaxDate ) )
+			VAR _SameMonth     = MONTH( _MinDate ) = MONTH( _MaxDate ) && YEAR( _MinDate ) = YEAR( _MaxDate )
+			VAR _SameYear      = YEAR( _MinDate ) = YEAR( _MaxDate )
+			VAR _Current =
+			    IF( _SameMonth,
+			        FORMAT( _MinDate, "MMM YYYY" ),
+			        IF( _SameYear,
+			            FORMAT( _MinDate, "MMM" ) & " - " & FORMAT( _MaxDate, "MMM YYYY" ),
+			            FORMAT( _MinDate, "MMM YYYY" ) & " - " & FORMAT( _MaxDate, "MMM YYYY" )
+			        )
+			    )
+			VAR _SPLY =
+			    IF( _SameMonth,
+			        FORMAT( _MinSPLY, "MMM YYYY" ),
+			        IF( _SameYear,
+			            FORMAT( _MinSPLY, "MMM" ) & " - " & FORMAT( _MaxSPLY, "MMM YYYY" ),
+			            FORMAT( _MinSPLY, "MMM YYYY" ) & " - " & FORMAT( _MaxSPLY, "MMM YYYY" )
+			        )
+			    )
+			RETURN
+			    IF(
+			        _AllSelected,
+			        "All periods selected - No Comparison",
+			        " Periods between "& _Current & " with Comparison Periods between " & _SPLY
+			    )
+		displayFolder: technical
+		lineageTag: 55a39b74-2dff-46d2-a63e-bd4bb7f9698c
+
+		changedProperty = Name
+
+	/// Dynamic label for injury totals, showing both the filtered and unfiltered values when slicers are applied, enhancing context visibility.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _label_injury_category =
+			
+			VAR _filtered_result =
+			    CALCULATE(
+			        [Total Injuries],
+			        ALL( dim_group ),
+			        ALL( dim_serious_injury_fatality )
+			    )
+			
+			VAR _base_value =
+			    [Total Injuries]
+			
+			VAR _is_filtered =
+			    ISFILTERED( dim_group[Level2_group] )
+			        || ISFILTERED( dim_serious_injury_fatality[severe_injury_fatality_type] )
+			
+			RETURN
+			    IF(
+			        _is_filtered,
+			        _base_value & " / " & _filtered_result,
+			        _base_value
+			    )
+		formatString: 0
+		displayFolder: injuries
+		lineageTag: fc75745f-ca38-411e-afa8-82e1be1329ec
+
+	/// Dynamic label for SIF totals, showing both the filtered and unfiltered values when slicers are applied, enhancing context visibility.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _label_sif_catergory = ```
+			
+			VAR _filtered_result =
+			    CALCULATE(
+			        [Total Injuries],
+			        ALL( dim_group ),
+			        ALL( dim_injury_type[injury_type] )
+			    )
+			VAR _base_value = [Total Injuries]
+			
+			-- Replace these with your actual key or slicer columns
+			VAR _is_filtered =
+			    ISFILTERED( dim_group[Level2_group] )
+			        
+			        || ISFILTERED( dim_injury_type )
+			RETURN
+			    IF(
+			        _is_filtered,
+			        _base_value & " / " & _filtered_result,
+			        _base_value
+			    )
+			```
+		formatString: 0
+		displayFolder: injuries
+		lineageTag: aa2556c7-d051-452f-98da-d7b3f42eb588
+
+	/// Footer text displaying the base period's start and end dates in a MMM yyyy format, providing clear timeframe context when no comparison period is involved.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure '_footer_text_timeframe_no_comp.' =
+			
+			VAR BaseStart = [DateStart Base]
+			VAR BaseEnd = [DateEnd Base]
+			RETURN
+			    "  Periods between " & FORMAT( BaseStart, "MMM yyyy" )
+			        & " - "
+			        & FORMAT( BaseEnd, "MMM yyyy" )
+		displayFolder: technical
+		lineageTag: daad1322-d3d8-4677-98ff-1724736640c4
+
+	/// Conditionally displays the result only for rows within a certain hierarchy depth or total rows—supporting data bar visualizations.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _databars_TRCF =
+			
+			VAR _worked_hours = [worked hours multiplier]
+			VAR _injuries = CALCULATE( [Number of Injuries] )
+			VAR _hours = CALCULATE( [Number of Worked Hours] )
+			VAR _value = DIVIDE( _injuries, _hours, 0 ) * _worked_hours
+			VAR _is_total_row =
+			    ISINSCOPE( dim_group[Level1_group] ) = FALSE
+			VAR _show_row =
+			    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+			        || _is_total_row
+			VAR _result = IF( _show_row, IF( _value <> 0, _value ) )
+			RETURN
+			    _result
+		displayFolder: technical
+		lineageTag: 089c4a5f-45ab-44b8-a37b-57f80fe455ea
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Distinct count of recordable injuries that are associated with more than one Life Saving Rule.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with multiple LSR' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT( fct_injuries[recordable_injury_ID] ),
+			    FILTER(
+			        VALUES( fct_injuries[recordable_injury_ID] ),
+			        CALCULATE(
+			            DISTINCTCOUNT( fct_injuries[life_saving_rules_ID] )
+			        )
+			            > 1
+			    )
+			)
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: f3045e3a-6419-47ee-9700-c8203a2fe73f
+
+	/// Logic based on the ratio of a measure to its maximum value across all groups and countries. It assigns a specific hex color code depending on where the ratio falls within predefined thresholds, enabling dynamic color formatting in visuals.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _color_gradient_TRCF =
+			
+			VAR _trcf = [TRCF Mgt]
+			VAR _trcf_max =
+			    CALCULATE(
+			        [TRCF Mgt],
+			        REMOVEFILTERS( dim_group ),
+			        REMOVEFILTERS( dim_country )
+			    )
+			VAR _ratio = DIVIDE( _trcf, _trcf_max )
+			VAR _result =
+			    SWITCH(
+			        TRUE( ),
+			        ISBLANK( _trcf ), "#6ea6da",
+			        _ratio <= 0.1, "#6ba1d8",
+			        _ratio <= 0.3, "#6698d5",
+			        _ratio <= 0.5, "#6393d3",
+			        _ratio <= 0.7, "#6a91cf",
+			        _ratio <= 0.9, "#5f7fb8",
+			        _ratio <= 1.0, "#657db4",
+			        _ratio > 1, "#7683b3"
+			    --"#1F4E89"                         -- fallback
+			    --7683b3
+			    )
+			RETURN
+			    _result
+		displayFolder: technical
+		lineageTag: c0bb4e58-370a-4920-a23c-4ed0e7e1156c
+
+		changedProperty = Name
+
+	/// Indicator symbol (up, down, neutral, or blank) based on the percentage change in TRCF (Total Recordable Case Frequency) between the current and comparison periods.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'TRCF Change Indicator' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [TRCF Mgt]
+			VAR _comparison = IF(_CanCompare, CALCULATE([TRCF Mgt], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _change = _base - _comparison
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || _base = 0,
+			        BLANK( ),
+			        IF(
+			            _comparison = BLANK( ) || _comparison = 0,
+			            "-",
+			            DIVIDE(_change , _base)
+			        )
+			    )
+			VAR _indicator = IF(_CanCompare,
+			    SWITCH(
+			        TRUE( ),
+			        ISBLANK( _percentage ), BLANK( ),
+			        _percentage = 0, UNICHAR( 9866 ),
+			        _percentage < 0, UNICHAR( 9660 ),
+			        _percentage > 0, UNICHAR( 9650 ),
+			        "-"
+			    ), BLANK())
+			RETURN
+			    _indicator
+		displayFolder: trcf
+		lineageTag: 57af02e7-51c5-482d-b8d1-ef6371447544
+
+	/// Indicator symbol (up, down, neutral, or blank) based on the percentage change in total injuries between the current and comparison periods.
+	/// 
+	/// [Type:  Technical  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries Change Indicator' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Total Injuries]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Total Injuries], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _change = _base - _comparison
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || _base = 0,
+			        BLANK( ),
+			        IF(
+			            _comparison = BLANK( ) || _comparison = 0,
+			            "-",
+			            DIVIDE(_change, _base)
+			        )
+			    )
+			VAR _indicator = IF(_CanCompare,
+			    SWITCH(
+			        TRUE( ),
+			        ISBLANK( _percentage ), BLANK( ),
+			        _percentage = 0, UNICHAR( 9866 ),
+			        _percentage < 0, UNICHAR( 9660 ),
+			        _percentage > 0, UNICHAR( 9650 ),
+			        "-"
+			    ), BLANK())
+			RETURN
+			    _indicator
+		displayFolder: injuries
+		lineageTag: 382f2108-083e-42f8-8e26-5ca51309caed
+
+	/// Dynamic tooltip or title for injury visuals, displaying either the selected injury type or serious injury,fatality type
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _text_tt_visual_injuries =
+			
+			VAR _injury_type =
+			    SELECTEDVALUE( dim_injury_type[injury_type] )
+			VAR _sif_type =
+			    SELECTEDVALUE(
+			        dim_serious_injury_fatality[severe_injury_fatality_type]
+			    )
+			VAR _result =
+			    SWITCH(
+			        TRUE( ),
+			        NOT ISBLANK( _injury_type ),
+			            _injury_type & " Injuries by Groups",
+			        NOT ISBLANK( _sif_type ), _sif_type & " Injuries by Groups"
+			    )
+			RETURN
+			    _result
+		displayFolder: technical
+		lineageTag: 52916383-8098-4fa7-aa20-43f71a69afbc
+
+		changedProperty = Name
+
+		changedProperty = DisplayFolder
+
+	/// Dynamic title or tooltip for visuals, displaying the selected month and year alongside key safety metrics (TRCF, Injuries, Fatalities, PSIF).
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _text_tt_visual_all =
+			
+			VAR _year = SELECTEDVALUE( dim_calendar[Year] )
+			VAR _month = SELECTEDVALUE( dim_calendar[MonthNameShort] )
+			VAR _result =
+			    SWITCH(
+			        TRUE( ),
+			        NOT ISBLANK( _year ) || NOT ISBLANK( _month ),
+			            "TRCF, Injuries, Fatalities & PSIF " & _month & " - "
+			                & _year
+			    )
+			RETURN
+			    _result
+		displayFolder: technical
+		lineageTag: e2b6291d-17f1-477e-b1ed-60a6020698fe
+
+	/// Dynamic tooltip or title for geographic visuals, displaying the selected month and year..
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _text_tt_visual_geo =
+			
+			VAR _year = SELECTEDVALUE( dim_calendar[Year] )
+			VAR _month = SELECTEDVALUE( dim_calendar[MonthNameShort] )
+			VAR _result =
+			    SWITCH(
+			        TRUE( ),
+			        NOT ISBLANK( _year ) || NOT ISBLANK( _month ),
+			            "Summary for " & _month & " - " & _year
+			    )
+			RETURN
+			    _result
+		displayFolder: technical
+		lineageTag: 130c136f-e44d-48d9-a769-5a104f604385
+
+	/// Distinct count of recordable injuries that are associated no Life Saving Rule.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with no LSR' =
+			
+			VAR _with_no_lsr =
+			    CALCULATE(
+			        [Total Injuries],
+			        dim_life_saving_rules[life_saving_rules_ID]in { "LSR0"}
+			    )
+			RETURN
+			    _with_no_lsr
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: c7667ab1-3098-41ac-94ef-788fc77fe01c
+
+	/// Blank Space
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _blank_spacer =
+			
+			BLANK( )
+		formatString: 0
+		displayFolder: technical
+		lineageTag: 86ebda52-cec7-4935-8d1a-3a4ec8931dfd
+
+		changedProperty = Name
+
+	/// Distinct count of recordable injuries that are associated with single Life Saving Rule.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with single LSR' =
+			
+			VAR _multiple_lsr = [Injuries with multiple LSR]
+			VAR _no_lsr = [Injuries with no LSR]
+			VAR _injuries = CALCULATE([Total Injuries], dim_life_saving_rules[life_saving_rules_ID] <> { "LSR00"})
+			VAR _result = _injuries - _no_lsr - _multiple_lsr
+			RETURN
+			    _result
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: 52461d6c-a7a0-427c-a07b-7b4cc3c71a01
+
+	/// Percentage of injuries attributed to a specific Life Saving Rule (LSR) or group level, relative to its parent group.
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Percent of injuries LSR' =
+			
+			VAR _currentValue = [Number of Injuries]
+			
+			-- Identify current group context
+			VAR _isLSR =
+			    ISINSCOPE( dim_life_saving_rules[life_saving_rules_type] )
+			VAR _isLevel2 = ISINSCOPE( dim_group[Level2_group] ) && NOT _isLSR
+			
+			-- Get current Level2 and Level1 group values
+			VAR _currentLevel2 = MAX( dim_group[Level2_group] )
+			VAR _currentLevel1 = MAX( dim_group[Level1_group] )
+			
+			-- Determine parent total depending on context
+			VAR _parentTotal =
+			    SWITCH(
+			        TRUE( ),
+			        _isLSR,
+			            CALCULATE(
+			                [Number of Injuries],
+			                REMOVEFILTERS( dim_life_saving_rules ),
+			                FILTER(
+			                    ALL( dim_group ),
+			                    dim_group[Level2_group] = _currentLevel2
+			                )
+			            ),
+			        _isLevel2,
+			            CALCULATE(
+			                [Number of Injuries],
+			                FILTER(
+			                    ALL( dim_group ),
+			                    dim_group[Level1_group] = _currentLevel1
+			                )
+			            )
+			    )
+			RETURN
+			    IF(
+			        _parentTotal <> 0,
+			        DIVIDE( _currentValue, _parentTotal )
+			    )
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: lsr
+		lineageTag: abeb5465-a3c6-43f7-a8ed-1939a6fa4667
+
+		changedProperty = Name
+
+		changedProperty = FormatString
+
+	/// Count of injuries with no LSR specifically for a comparison period.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with no LSR Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [Injuries with no LSR],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: 323d91b1-0593-4203-8812-acf463e2efbe
+
+	/// Percentage change in injuries with no LSR compared to a previous period.
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with no LSR Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Injuries with no LSR]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Injuries with no LSR], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: lsr
+		lineageTag: 2bfd09eb-1304-40c7-87bb-7a4244f1d7f0
+
+	/// Percentage change in injuries with a single LSR compared to a previous period.
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with single LSR Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Injuries with single LSR]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Injuries with single LSR], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: lsr
+		lineageTag: c71bb9f6-155c-4af2-b818-3502f42b5601
+
+	/// Count of injuries with single LSR specifically for a comparison period.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with single LSR Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [Injuries with single LSR],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: 0b69df58-b0d3-4c97-9afe-a05e31d9574d
+
+	/// Percentage change in injuries with multiple LSR compared to a previous period.
+	/// 
+	/// [Type:  Percent,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with multiple LSR Change' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _CanCompare = NOT _Allselected && _IsContiguous
+			VAR _base = [Injuries with multiple LSR]
+			VAR _comparison = IF(_CanCompare, CALCULATE([Injuries with multiple LSR], SAMEPERIODLASTYEAR(dim_calendar[Date])))
+			VAR _percentage =
+			    IF(
+			        _base = BLANK( ) || 0,
+			        BLANK( ),
+			        IF(
+			            _base <> 0 && _comparison = BLANK( ) || 0,
+			            "-",
+			            DIVIDE(( _base - _comparison ) , _comparison)
+			        )
+			    )
+			RETURN
+			    IF(_CanCompare, _percentage, BLANK())
+		formatString: 0.0%;-0.0%;0.0%
+		displayFolder: lsr
+		lineageTag: 22da80e2-90f1-44ba-8f30-9bb2a77dd1bd
+
+	/// Count of injuries with multiple LSR specifically for a comparison period.
+	/// 
+	/// [Type:  Count,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Injuries with multiple LSR Comp. period' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			VAR _Result = IF(_Allselected || NOT _IsContiguous, BLANK(),
+			CALCULATE(
+			    [Injuries with multiple LSR],
+			    SAMEPERIODLASTYEAR(dim_calendar[Date])
+			))
+			RETURN
+			    _Result
+		formatString: 0
+		displayFolder: lsr
+		lineageTag: 9228db9b-a018-43ee-a907-4718ab307f4e
+
+	/// Contextual message indicating whether a specific group is selected, and if so, displays a custom label with a symbol and the group name.
+	/// 
+	/// [Type:  Technical,  Created on: 2025-09-11,  Create by: JPA]
+	measure _text_selected_group =
+			
+			VAR gname =
+			    IF(
+			        SELECTEDVALUE( dim_group[group_name] ) = "",
+			        "",-- UNICHAR(11166) &  " All values shown are at the SHV Holdings level",
+			        UNICHAR( 11166 ) & " Viewing details specific to:  "
+			            & SELECTEDVALUE( dim_group[group_name] )
+			    )
+			RETURN
+			    gname
+		displayFolder: technical
+		lineageTag: 1c066d13-8a78-4b1e-b991-666bb4ff9f6b
+
+		changedProperty = Name
+
+	/// TRCF target value based on selected group context.
+	/// 
+	/// [Type:  Target,  Created on: 2026-03-06,  Create by: JPA]
+	measure 'TRCF Target' = ```
+			
+			 
+			VAR _AllGroupsCount =
+			    COUNTROWS( ALL( dim_group[group_ID] ) )
+			
+			VAR _SelectedGroups =
+			    VALUES( dim_group[group_ID] )
+			
+			VAR _SelectedGroupsCount =
+			    COUNTROWS( _SelectedGroups )
+			
+			VAR _AllGroupsSelected =
+			    _SelectedGroupsCount = _AllGroupsCount
+			
+			VAR _HasSingleGroup =
+			    _SelectedGroupsCount = 1
+			
+			VAR _SelectedGroupID =
+			    MAXX( _SelectedGroups, dim_group[group_ID] )
+			
+			VAR _IsAmbiguousSelection =
+			    NOT _AllGroupsSelected
+			        && NOT _HasSingleGroup
+			
+			VAR _Result =
+			    SWITCH(
+			        TRUE(),
+			
+			        /* All groups selected => force G0 */
+			        _AllGroupsSelected,
+			            CALCULATE(
+			                MAX( 'fct_TRCF_targets'[TRCF_target] ),
+			                REMOVEFILTERS( dim_group ),
+			                TREATAS( { "G0" }, dim_group[group_ID] )
+			            ),
+			
+			        /* Single group selected => force that group */
+			        _HasSingleGroup,
+			            CALCULATE(
+			                MAX( 'fct_TRCF_targets'[TRCF_target] ),
+			                REMOVEFILTERS( dim_group ),
+			                TREATAS( { _SelectedGroupID }, dim_group[group_ID] )
+			            ),
+			
+			        BLANK()
+			    )
+			
+			RETURN _Result
+			/* IF(
+			    _IsAmbiguousSelection,
+			    BLANK(),
+			    COALESCE( _Result, BLANK() )
+			)*/
+			```
+		displayFolder: trcf
+		lineageTag: 991f88da-210b-4726-a821-c96bea8b3e5f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Difference between TRCF target and actual.
+	/// 
+	/// [Type:  Delta,  Created on: 2026-03-06,  Create by: JPA]
+	measure 'TRCF Delta vs Target' = ```
+			
+			        VAR _Actual = [TRCF Mgt]
+			        VAR _Target = [TRCF Target]
+			        RETURN
+			            IF(
+			                ISBLANK(_Actual) || ISBLANK(_Target),
+			                BLANK(),
+			                  _Target - _Actual 
+			            )
+			```
+		displayFolder: trcf
+		lineageTag: 4b2e72b9-6117-4363-88e6-47e109e8babb
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Color code for TRCF delta used in visuals.
+	/// 
+	/// [Type:  Technical,  Created on: 2026-03-06,  Create by: JPA]
+	measure '_TRCF Delta Color' = ```
+			
+			        IF( [TRCF Delta vs Target] < 0,  "#C62828","#1B5E20" )
+			```
+		displayFolder: technical
+		lineageTag: deeed707-ce64-4858-9da3-fd5d12d1ead2
+
+	/// Chart-safe TRCF actuals selector for visuals.
+	/// 
+	/// [Type:  Technical,  Created on: 2026-03-06,  Create by: JPA]
+	measure '_TRCF Actuals (Chart Safe)' =
+			
+			VAR _SelectedCategories =
+			    VALUES( dim_workforce_category[workforce_category_ID] )
+			VAR _CountSelectedCategories =
+			    COUNTROWS( _SelectedCategories )
+			
+			VAR _WC1Selected =
+			    CONTAINSROW( _SelectedCategories, "WC1" )
+			
+			VAR _IsInvalidWCSelection =
+			    _CountSelectedCategories > 1        // multiple categories
+			    || ( _WC1Selected && _CountSelectedCategories > 1 ) // WC1 + others
+			
+			RETURN
+			IF(
+			    _IsInvalidWCSelection,
+			    BLANK(),  // hide actuals
+			    SWITCH(
+			        TRUE(),
+			        SELECTEDVALUE( dim_group[group_ID] ) <> "G0", [TRCF Mgt],
+			        SELECTEDVALUE( dim_group[group_ID] ) = "G0", [_TRCF Consolidated (Chart Safe)],
+			        BLANK()
+			    )
+			)
+		formatString: 0.00
+		displayFolder: technical
+		lineageTag: 2eacc71a-1f09-482e-b97c-4b1a1d1c0db1
+
+	/// Chart-safe consolidated TRCF rate for group G0 context.
+	/// 
+	/// [Type:  Technical,  Created on: 2026-03-06,  Create by: JPA]
+	measure '_TRCF Consolidated (Chart Safe)' = ```
+			
+			
+			VAR _worked_hours = [worked hours multiplier]
+			
+			VAR _injuries =
+			   
+			        CALCULATE(
+			            [Number of Injuries],
+			            KEEPFILTERS( dim_workforce_category[workforce_category_ID] = "WC1" ),
+			            all( dim_group )
+			        )
+			
+			VAR _hours =
+			   
+			        CALCULATE(
+			            [Number of Worked Hours],
+			            KEEPFILTERS( dim_workforce_category[workforce_category_ID] = "WC1" ),
+			            all( dim_group ))
+			
+			
+			RETURN
+			    DIVIDE( _injuries, _hours, 0 ) * _worked_hours
+			```
+		formatString: 0.00
+		displayFolder: technical
+		lineageTag: a7a9b13d-d56f-4fd0-b4eb-6ac533e4a0bd
+
+	/// TRCF target reference line value for chart visuals. Returns the target for the selected group (or G0 when all groups selected), only when workforce category is Employees (WC1). Returns blank for multi-group selections or non-employee categories.
+	/// 
+	/// [Type: Target, Created on: 2025-03-30, Created by: JPA]
+	measure 'TRCF Target Ref' =
+			
+			VAR _SelectedWorkforceCategory =
+			    SELECTEDVALUE( dim_workforce_category[workforce_category_ID] )
+			
+			VAR _ShowTarget =
+			    _SelectedWorkforceCategory = "WC1"
+			
+			VAR _AllGroupsCount =
+			    COUNTROWS( ALL( dim_group[group_ID] ) )
+			
+			VAR _SelectedGroups =
+			    VALUES( dim_group[group_ID] )
+			
+			VAR _SelectedGroupsCount =
+			    COUNTROWS( _SelectedGroups )
+			
+			VAR _AllGroupsSelected =
+			    _SelectedGroupsCount = _AllGroupsCount
+			
+			VAR _HasSingleGroup =
+			    _SelectedGroupsCount = 1
+			
+			VAR _SelectedGroupID =
+			    MAXX( _SelectedGroups, dim_group[group_ID] )
+			
+			VAR _Result =
+			    SWITCH(
+			        TRUE(),
+			
+			        /* All groups selected => force G0 */
+			        _AllGroupsSelected,
+			            CALCULATE(
+			                MAX( 'fct_TRCF_targets'[TRCF_target] ),
+			                REMOVEFILTERS( dim_group ),
+			                TREATAS( { "G0" }, dim_group[group_ID] )
+			            ),
+			
+			        /* Single group selected => force that group */
+			        _HasSingleGroup,
+			            CALCULATE(
+			                MAX( 'fct_TRCF_targets'[TRCF_target] ),
+			                REMOVEFILTERS( dim_group ),
+			                TREATAS( { _SelectedGroupID }, dim_group[group_ID] )
+			            ),
+			
+			        BLANK()
+			    )
+			
+			RETURN
+			    IF(
+			        _ShowTarget,
+			        _Result,
+			        BLANK()
+			    )
+		displayFolder: trcf
+		lineageTag: 83c34d38-2937-4304-8cdf-9dcf6519115d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Static disclaimer text explaining TRCF and target visibility conditions (employees only, single or all groups selected).
+	/// 
+	/// [Type: Technical, Created on: 2025-03-30, Created by: JPA]
+	measure '_TRCF Disclaimer' = "TRCF and targets are only visible when i) employees are selected, and/or when ii) a single, or all Groups are selected"
+		displayFolder: technical
+		lineageTag: a540205e-d1ee-47e5-bfd3-d89ff719e905
+
+		changedProperty = Name
+
+	/// Static disclaimer text explaining that TRCF and targets are only visible when workforce category Employee is selected.
+	/// 
+	/// [Type: Technical, Created on: 2025-03-30, Created by: JPA]
+	measure '_TRCF Disclaimer Targerts' = "TRFC and Targets are only visible when only Workforcae Catergory Employee is selected "
+		displayFolder: technical
+		lineageTag: 41892685-bf01-4161-8d98-823c91227d09
+
+	/// Displays a warning message when non-contiguous years are selected, informing the user that comparison metrics require consecutive year selections.
+	/// 
+	/// [Type: Technical, Created on: 2026-04-13, Created by: JPA]
+	measure '_Comparison Disclaimer' =
+			
+			VAR _TotalDates = CALCULATE(COUNTROWS( 'dim_calendar'), ALL(dim_calendar ))
+			VAR _SelectedDates = COUNTROWS( dim_calendar )
+			VAR _Allselected = _SelectedDates = _TotalDates
+			VAR _YearsSelected = DISTINCTCOUNT(dim_calendar[Year])
+			VAR _YearRange = MAX(dim_calendar[Year]) - MIN(dim_calendar[Year]) + 1
+			VAR _IsContiguous = _YearsSelected = _YearRange
+			RETURN
+			    IF(
+			        _Allselected,
+			        BLANK(),
+			        IF(
+			            NOT _IsContiguous,
+			            UNICHAR(9888) & " Comparison requires consecutive year selection",
+			            BLANK()
+			        )
+			    )
+		displayFolder: technical
+		lineageTag: 1ee862a5-47c5-4c98-a1d9-680b21322938
+
+	column dummy
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e52c7f3f-7063-465c-8304-72dc4454563d
+		summarizeBy: sum
+		sourceColumn: dummy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMlCKjQUA", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [dummy = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"dummy", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

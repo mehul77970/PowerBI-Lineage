@@ -1,0 +1,22 @@
+table table_PSIF
+	isHidden
+	lineageTag: 41344f47-3407-48e5-b64f-68db49f60d89
+	sourceLineageTag: 92943875-9868-41f9-a120-855e593789a6
+
+	column table_PSIF
+		dataType: string
+		isHidden
+		lineageTag: 291af791-8308-411c-993c-d9d008249ace
+		sourceLineageTag: 8f06b026-a8f9-4068-99cb-eb3b255e0dd6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: table_PSIF
+
+		annotation SummarizationSetBy = User
+
+	partition table_PSIF = entity
+		mode: directQuery
+		source
+			entityName: table_PSIF
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

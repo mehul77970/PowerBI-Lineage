@@ -1,0 +1,48 @@
+/// Stores the last dataset refresh timestamp.
+table 'Refresh Time Stamp'
+	lineageTag: 3bc8bad1-c3b9-4dd3-94ff-131707687b98
+	sourceLineageTag: b244689e-5488-4301-b493-efb4ffa9d578
+
+	/// Displays the last refresh date and time of the Health and Safety Gold dataset, formatted as DD, MM, YYYY H:MM AM/PM.
+	/// 
+	/// [Type: Display, Created on: 2025-03-30, Created by: JPA]
+	measure 'Last Update' = EXTERNALMEASURE("Last Update", STRING, "DirectQuery to AS - Health_and_Safety_Gold")
+		lineageTag: dec6cb12-6f2f-47d4-9945-0dcb66c23fdc
+		sourceLineageTag: 829bcb28-b558-4bc2-83b3-1b21c87e5e01
+		dataCategory: Uncategorized
+
+	/// Displays the data refresh date and time formatted as DD, MM, YYYY H:MM AM/PM.
+	/// 
+	/// [Type: Display, Created on: 2025-03-30, Created by: JPA]
+	measure 'Last Update Data' = ```
+			
+			     "Data refreshed on:  " 
+			     & UNICHAR(10) 
+			     & FORMAT(
+			         MAX('Refresh Time Stamp'[RefreshDate]),
+			         "DD,MM, YYYY H:MM AM/PM"
+			     )
+			```
+		lineageTag: d040870d-9f41-4ba3-8111-9d7b1237c202
+
+		changedProperty = Name
+
+	/// Last date of the reporting month.
+	column RefreshDate
+		dataType: dateTime
+		isHidden
+		formatString: General Number
+		lineageTag: 4178a9ee-ccbf-4ab6-960e-0d4f5294f07e
+		sourceLineageTag: 6e49e7a7-4f16-46db-9d22-a1cc11d8e6d0
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: RefreshDate
+
+		annotation SummarizationSetBy = User
+
+	partition 'Refresh Time Stamp' = entity
+		mode: directQuery
+		source
+			entityName: Refresh Time Stamp
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

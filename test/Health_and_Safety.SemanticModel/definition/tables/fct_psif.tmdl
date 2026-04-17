@@ -1,0 +1,200 @@
+/// Fact table recording Potential Serious Injury or Fatality (PSIF) incidents by site and month.
+table fct_psif
+	lineageTag: f1c00065-7ad3-4e49-962f-62eda1962817
+	sourceLineageTag: 619987d1-8cdb-4b98-b34a-ec53656a6121
+
+	/// Number of PSIF
+	/// 
+	/// [Type:  Sum ,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of PSIF' = EXTERNALMEASURE("Number of PSIF", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_fct_PSIF
+		lineageTag: 914862c6-6aa1-4806-a0fc-0d295f338c69
+		sourceLineageTag: e0917472-9fd2-488d-9df8-4932f880eb26
+		dataCategory: Uncategorized
+
+	column first_of_month
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: b2484b6a-2558-49ed-a81c-ee3ca2187ad5
+		sourceLineageTag: 7e6eb934-7385-4ade-a748-3d73b3b2d386
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: first_of_month
+
+		annotation SummarizationSetBy = User
+
+	column end_of_month
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 85ce23ee-ea3c-4c66-9482-8d826e42c6f2
+		sourceLineageTag: 2723a242-9ac6-419f-bc76-6441d6df18da
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: end_of_month
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = User
+
+	column year_month
+		dataType: string
+		lineageTag: e089c506-9d77-4e3e-84df-2d40ac048fcc
+		sourceLineageTag: 29e9c7fb-3d78-4116-bace-045ed78a559a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: year_month
+
+		annotation SummarizationSetBy = User
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: 06404585-b165-4250-b49b-f11f648a2265
+		sourceLineageTag: 2a19a363-0bf6-47c0-87f1-3650bcaef355
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = User
+
+	/// Reporting month of the metrics
+	column reporting_month
+		dataType: string
+		lineageTag: 0a9d606e-1c10-4115-a41b-a28728912ecb
+		sourceLineageTag: 5bfb3c88-6166-47a4-8516-4416d4101116
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = User
+
+	/// ID identifying the site - site_ID can be defined by the groups as long as the first 2 characters are identical to the group_ID. Meaning that a site_ID from SHV_Energy always starts with "G2", for Nutreco with "G3" and for Kiwa "G4" etc.
+	column site_ID
+		dataType: string
+		isHidden
+		lineageTag: cf7dd728-8f01-49af-b317-058e3f3209aa
+		sourceLineageTag: 51cbc8e4-717d-4c6e-9f62-8a1d00c13e16
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Number of potential injuries or fatalities
+	column number_PSIF
+		dataType: int64
+		formatString: 0
+		lineageTag: 854f52d4-61c4-4a25-9a67-5291bc170b4e
+		sourceLineageTag: 40878427-49fa-4357-8dc0-43896ac90302
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: number_PSIF
+
+		annotation SummarizationSetBy = User
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		lineageTag: 7eab485c-6e15-4a6d-8f14-a10d8a030166
+		sourceLineageTag: ecc4638c-dad2-4b62-be06-d892a0f0d249
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 878d46a6-41b5-4413-a8a0-8cb18a0818a1
+		sourceLineageTag: 7225998e-f29a-4d93-8c7f-4336c14d78c8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 3d08dd18-eaa6-4098-864c-cabecdf2ec04
+		sourceLineageTag: 2ea66b69-7534-45b0-a799-66ebfddfdd9a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 33ba6b1e-f83e-4d07-a364-2cea48b05b00
+		sourceLineageTag: fc2e05a5-537e-4e0f-a773-2516ecfd4f0e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 4d387ad8-d741-4771-9ffe-648196e541e4
+		sourceLineageTag: 74d942e0-1508-4f50-97f1-9b9e71363e8c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: c2e9bbc0-2af6-4ee2-8245-eaf6e40c7696
+		sourceLineageTag: ba15fb52-2834-412b-9e35-1408ba7110a3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 94a87633-90f6-4332-a373-fc237f30607b
+		sourceLineageTag: 53ae9ad7-8bf8-4467-b998-77f1e30594bc
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 3310514a-57a8-4f21-af36-f1bf278de34e
+		sourceLineageTag: ad187fc7-0cae-4ed6-9577-f0f42eaaea74
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 1e691dc0-70de-4ec1-80f0-e7edd297b512
+		sourceLineageTag: e9700c10-b34c-4f65-acbf-025e6fb0a5ea
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	partition fct_psif = entity
+		mode: directQuery
+		source
+			entityName: fct_psif
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

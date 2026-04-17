@@ -1,0 +1,81 @@
+/// Date-level mapping table linking each calendar date to its corresponding base date period.
+table 'Date Period NEW Base'
+	isHidden
+	lineageTag: 1f1fade3-0fd2-4116-9456-a5e270cb9652
+	sourceLineageTag: a9dd0605-4122-47d6-9eaf-825305edbc66
+
+	/// Start date for the base period.
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'DateStart Base' = EXTERNALMEASURE("DateStart Base", DATETIME, "DirectQuery to AS - Global_DatePeriod")
+		formatString: mmmm d\, yyyy
+		isHidden
+		lineageTag: aead2d2b-c4c8-4edb-b0a7-61b60ed4081f
+		sourceLineageTag: 5afc94db-0986-438d-ae36-9471ba194786
+		dataCategory: Uncategorized
+
+		changedProperty = IsHidden
+
+	/// End date for the base period.
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'DateEnd Base' = EXTERNALMEASURE("DateEnd Base", DATETIME, "DirectQuery to AS - Global_DatePeriod")
+		formatString: mmmm d\, yyyy
+		isHidden
+		lineageTag: 8b758542-71d2-4824-9376-e9e7dd5491bc
+		sourceLineageTag: 68933361-6b6f-4bc6-91d3-08ac4803ae56
+		dataCategory: Uncategorized
+
+		changedProperty = IsHidden
+
+	/// Calendar date.
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: General Number
+		lineageTag: b6e7564c-f744-4817-a0e5-946180da5be5
+		sourceLineageTag: 0b052327-c888-4a56-81e2-68d337676475
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the base date period.
+	column 'Base Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 68264a8d-0b30-46cf-a872-026b72c04193
+		sourceLineageTag: f7591b0b-250d-4915-9d0e-6ab9b824a6b4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Identifier for the base date period.
+	column 'Base Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: c931f665-539e-44d6-b8cf-d6c086aee6c2
+		sourceLineageTag: 74888ae1-5f9c-4d71-9e88-358a6594b10f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date Period NEW Base' = entity
+		mode: directQuery
+		source
+			entityName: Date Period NEW Base
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+
+	changedProperty = IsHidden
+

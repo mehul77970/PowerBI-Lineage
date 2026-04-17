@@ -1,0 +1,146 @@
+/// Fact table containing Total Recordable Case Frequency (TRCF) targets per group and reporting year.
+table fct_trcf_targets
+	lineageTag: 532cdfd6-145a-4dd6-8271-a815178fffd0
+	sourceLineageTag: 6668c269-0dcf-489d-8ab2-341ca8e34066
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: 5791ee83-5fa7-489a-ba37-01d583d3a87e
+		sourceLineageTag: 597ef20f-bd1f-4bf6-8dfa-647400ecb9ea
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = User
+
+	/// ID identify the group
+	column group_ID
+		dataType: string
+		isHidden
+		lineageTag: b2442e7f-36f4-4c01-a02a-a6476d4d2700
+		sourceLineageTag: 1f68aa18-e0dd-4553-ad18-8917e6535caf
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Total Recordable Case Frequency target value for the group
+	column TRCF_target
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 9ef4e009-91f3-4c6f-8a90-9db01187f0ab
+		sourceLineageTag: 24c1cced-2988-40a4-8218-c3465e8a4fec
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: TRCF_target
+
+		annotation SummarizationSetBy = User
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		isHidden
+		lineageTag: 7d70a362-37a7-444f-ba23-d296d009f518
+		sourceLineageTag: 9afc1443-39e8-452b-a1e7-715a6465430e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: b41bed26-2dad-4889-996d-da3ac28633e8
+		sourceLineageTag: f71dabcb-2ed3-4032-a5cd-4f8c5294901c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 75176597-12e9-4017-a483-005c4b5e5534
+		sourceLineageTag: e8728d79-0c98-47d1-ab9a-4602ae8afe80
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 996069fc-b9fd-45de-b6b5-14b98f6d6b87
+		sourceLineageTag: 9c0755d8-dcba-4c46-b90c-a78c55b93149
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 200e92a4-af93-4c8b-a2d4-e508afa8d541
+		sourceLineageTag: c676832a-3e68-4560-8f9b-1b13ca6a8eff
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 5a08c3b3-4177-452a-92c7-9523c353f5f3
+		sourceLineageTag: f2b1cbce-ac67-4d89-beb6-61f16c9d7ea6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 5c7a83ad-77bc-4bc0-9089-1c4b835650cb
+		sourceLineageTag: 4d3ea2a3-ebd5-4fb6-ba18-aeba95b10150
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 62ab42d3-20b2-4b42-9f6a-2630ec8e863a
+		sourceLineageTag: 0cc30998-4a79-4cc4-b9cb-12a6c7d44f43
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 9393d663-8bde-4b20-8847-bc8c8fccb825
+		sourceLineageTag: dbc88f3d-a004-4eaa-9c50-5614f37448ef
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	partition fct_trcf_targets = entity
+		mode: directQuery
+		source
+			entityName: fct_trcf_targets
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

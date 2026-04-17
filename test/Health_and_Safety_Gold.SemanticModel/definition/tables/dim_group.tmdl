@@ -1,0 +1,257 @@
+/// Group dimension with parent-child hierarchy, calculated hierarchy paths and levels for matrix navigation.
+table dim_group
+	lineageTag: 79451d5f-d6c2-46f5-a321-e1b28d8f9341
+
+	/// Browse depth level within a group hierarchy by checking whether Level1_group and Level2_group are currently in scope—returning a numeric value that reflects the depth of the user's navigation in the report.
+	/// 
+	/// [Type:  Logic / Helper,  Created on: 2025-09-11,  Create by: JPA]
+	measure BrowseDepth_group =
+			
+			ISINSCOPE( dim_group[Level1_group] )
+			    + ISINSCOPE( dim_group[Level2_group] )
+		formatString: 0
+		displayFolder: _measures_dim_group
+		lineageTag: 06cc58e4-8c01-4823-ad35-94324f5370b6
+
+		changedProperty = IsHidden
+
+	/// Maximum depth of the group hierarchy, determined by checking the presence of Level1_group and Level2_group in the current context—returning a numeric value that indicates the deepest level of hierarchy available for navigation.
+	/// 
+	/// [Type:  Logic / Helper,  Created on: 2025-09-11,  Create by: JPA]
+	measure MaxHierarchyDepth_group =
+			
+			MAX( dim_group[HierarchyLength_group] )
+		formatString: 0
+		displayFolder: _measures_dim_group
+		lineageTag: d66a3e8d-2a01-486d-b95d-e2d36fab9d9a
+
+		changedProperty = IsHidden
+
+	/// ID representing a specific group within the organization or hierarchy.
+	column group_ID
+		dataType: string
+		isHidden
+		lineageTag: 0bfb415d-e9a7-4667-92f1-db4300823c52
+		summarizeBy: none
+		sourceColumn: group_ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// The name of a particular group in the structure.
+	column group_name
+		dataType: string
+		lineageTag: c4aaa808-7596-47ac-8205-d02e7b2c14af
+		summarizeBy: none
+		sourceColumn: group_name
+
+		changedProperty = IsHidden
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Calculated DAX path representing the full hierarchy from root to current group.
+	column Hierarchy_Path_group = PATH( dim_group[group_ID], dim_group[parent_ID])
+		lineageTag: 3cb902ab-b671-48a9-a4e3-de13b2092ef8
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Top-level group name extracted from the hierarchy path.
+	column Level1_group =
+			VAR LevelNumber = 1
+			VAR LevelKey =
+			    PATHITEM( dim_group[Hierarchy_Path_group], LevelNumber )
+			VAR LevelName =
+			    LOOKUPVALUE(
+			        dim_group[group_name],
+			        dim_group[group_ID],
+			        LevelKey
+			    )
+			VAR Result = LevelName
+			RETURN
+			    Result
+		lineageTag: 8158e45f-3aec-4e78-bb3f-aca431a9befe
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Second-level group name extracted from the hierarchy path.
+	column Level2_group =
+			VAR LevelNumber = 2
+			VAR LevelKey =
+			    PATHITEM( dim_group[Hierarchy_Path_group], LevelNumber )
+			VAR LevelName =
+			    LOOKUPVALUE(
+			        dim_group[group_name],
+			        dim_group[group_ID],
+			        LevelKey
+			    )
+			VAR Result = LevelName
+			RETURN
+			    Result
+		lineageTag: dca25d3a-1d59-4309-9cca-fceb835ad33d
+		summarizeBy: none
+		sortByColumn: order
+
+		changedProperty = IsHidden
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identifying the direct parent entity in the hierarchy.
+	column parent_ID
+		dataType: string
+		isHidden
+		lineageTag: 0d2d0c88-8818-4a5e-9074-04c8a668a47d
+		summarizeBy: none
+		sourceColumn: parent_ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Calculated depth of the hierarchy path for the group.
+	column HierarchyLength_group = PATHLENGTH( dim_group[Hierarchy_Path_group] )
+		formatString: 0
+		lineageTag: 5d86d253-6f78-4d8f-a02b-52a3bfd89845
+		summarizeBy: sum
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: a2a87d6d-ee38-4932-8c49-2debeb78b5e9
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: c851fbb9-40b9-4811-986c-8245341f3394
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 8cdf1b01-4e77-4824-ac88-c738105ab611
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 731abe4c-02f3-4520-ab5a-d8f4ce471d6c
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 093c1c93-fb00-45c7-8de4-80d425fd3d11
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 84964ace-cd87-4be8-a744-fd0314aec876
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 360d2a27-bb34-4e72-8bc4-ca9862194975
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: c0e6a49c-3bec-4178-a078-247d7a056395
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b9d611a8-4714-4e33-9fce-cb307422a304
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e0c88d6b-4ad3-4db8-ba58-f11a65ab14ab
+		summarizeBy: sum
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Sort order for group display.
+	column order =
+			SWITCH(TRUE(),
+			dim_group[group_ID] = "G2" , 1,
+			dim_group[group_ID] = "G3" , 2,
+			dim_group[group_ID] = "G4" , 3,
+			dim_group[group_ID] = "G5" , 4,
+			dim_group[group_ID] = "G7" , 5,
+			dim_group[group_ID] = "G6" , 6,
+			dim_group[group_ID] = "G1" , 7,
+			dim_group[group_ID] = "G0" , 0 )
+		isHidden
+		formatString: 0
+		lineageTag: 6f310245-0872-4592-8af7-15466e8aa3bc
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_group = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source =
+				let
+				    Source = Sql.Database(Global_Data_House_SQL, Globa_Data_House),
+				    #"load" = Source{[Schema=Global_Dimensions_Schema,Item="dim_group"]}[Data],
+				    #"Filtered Rows" = Table.SelectRows(load, each [is_sdp_active] = true)
+				in
+				    #"Filtered Rows"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

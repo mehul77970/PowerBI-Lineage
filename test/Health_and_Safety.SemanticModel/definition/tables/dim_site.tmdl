@@ -1,0 +1,193 @@
+/// Site dimension with group, country, city, and site type classification.
+table dim_site
+	lineageTag: 72043764-20f8-417e-a319-7eb7fdd26766
+	sourceLineageTag: 814250b6-3cce-41a2-835e-c0a1f34e07c6
+
+	/// ID representing a specific group within the organization or hierarchy.
+	column group_ID
+		dataType: string
+		isHidden
+		lineageTag: 1e1b443e-3d24-4985-9328-7d73cda703f9
+		sourceLineageTag: ca5abb8d-83db-4e70-adab-9803d79c2f1a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_ID
+
+		annotation SummarizationSetBy = User
+
+	/// ID identifying the site, prefixed with the group's 2-character code.
+	column site_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 1d004251-2d46-46fd-bd10-47df8400f4e1
+		sourceLineageTag: 505bcda0-74b9-4fb4-96c8-52f85445a59f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Name of the site.
+	column site_name
+		dataType: string
+		lineageTag: be3ba3bd-824d-46fc-8e3f-3c4922690765
+		sourceLineageTag: 248ec4e3-da95-4af4-8aa0-6dd002ab6687
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: site_name
+
+		annotation SummarizationSetBy = User
+
+	/// ID representing the 3-letter ISO country code.
+	column country_ISO3_ID
+		dataType: string
+		isHidden
+		lineageTag: b55fc444-b213-4c06-b1c8-0b6092bf754d
+		sourceLineageTag: 7c956712-9d1c-4c35-a59f-f8956dafbf2e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: country_ISO3_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Type or classification of the site.
+	column site_type_name
+		dataType: string
+		lineageTag: fb1ea6a1-ccbb-487f-bc6d-190275add24a
+		sourceLineageTag: 0e2fa832-e778-40c3-83aa-96462d5d736e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: site_type_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: fa9a1077-f1e5-4b66-b3ae-66bd568d0440
+		sourceLineageTag: eb364cb9-37a7-452c-ab8d-2fe557706157
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 93bba05e-ce2a-4bd3-8bf9-8e6ab7e286da
+		sourceLineageTag: e423412c-a368-439f-bf12-74c5adb9c06e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: c1a6c571-045e-470d-ba6e-4e978927582d
+		sourceLineageTag: 336060ca-cb7c-4aa9-aab8-c66138124538
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 5ce8be51-73d8-4f04-a164-0d3adbd8ce60
+		sourceLineageTag: 1f4962a1-8243-4aaa-b501-b480b61c7a8f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 478ceb5f-90e1-4940-aad9-2b9683e11f26
+		sourceLineageTag: f3d13522-e88f-4883-9297-b917f67486d9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 473efa0b-5fca-4a32-8c2f-a8d236b915c5
+		sourceLineageTag: 938374c4-95a8-48cd-955c-522ad7615729
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 50e2d98a-c7c4-40b8-be14-4fe22109487d
+		sourceLineageTag: 4c52ae60-12ff-495d-95cf-3884c029922c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 6a31fca1-8679-4884-8bb1-e8da53e1eeaf
+		sourceLineageTag: 506f1a9d-ec57-4a88-943c-d228a2c29dc5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 024a68c3-8b50-4941-a009-571b040cd758
+		sourceLineageTag: ae7a66a9-a242-4c45-8c47-4d628b9ae1d9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = User
+
+	column sdp_effective_end_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 8cdfadc2-c779-48b2-b20e-7e024ceef9af
+		sourceLineageTag: 0d06a7d8-47db-4bbc-9f22-bffa87c44bdf
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// City where the site is located.
+	column city_name
+		dataType: string
+		lineageTag: 3a366e0a-c243-4a39-aefb-196e6e7ec570
+		sourceLineageTag: 5b353169-f782-4e7b-80a7-b89846080d8f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: city_name
+
+		annotation SummarizationSetBy = User
+
+	partition dim_site = entity
+		mode: directQuery
+		source
+			entityName: dim_site
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

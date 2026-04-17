@@ -1,0 +1,7 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/semanticModel/localSettings/1.2.0/schema.json",
+  "userConsent": {
+    "compositeModel": true
+  },
+  "securityBindingsSignature": "AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAA/2tHpMeKnEmtPcKs/bWr7wAAAAACAAAAAAAQZgAAAAEAACAAAACQAva2l7ezr0N99nXkfW2cnPUJyRstN+eybJbNGktU1wAAAAAOgAAAAAIAACAAAAD6bEJBb+uK+9G0RyNV/mL7DgewjU73D7R4gyfpt//Tq1AAAADmiUf9qtiA1Sapi121r3Ja+fvpvmVD1Vkx/BUjQsAagyY/6PIJiJzuhXRru3V4WHGd7AMcvCOFSwzNLW5Oy9H1nbaDGg/nWPlmBUL5ZUIvTkAAAAAoiXdurH1GvniRI1md3S2t9fb8BFITZNWA/JSWfqAdXWdfT+MFKa89UxMqrVX20bmyEbsu7AJhFzvf15+Q9eH6"
+}

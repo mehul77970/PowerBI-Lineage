@@ -1,0 +1,156 @@
+relationship 04476223-f7df-454f-8d71-d3aeb1e50db3
+	crossFilteringBehavior: bothDirections
+	fromColumn: 'Date Period NEW Base'.Date
+	toColumn: 'Date NEW'.Date
+
+relationship 9d0414b2-acc8-4862-b131-d7997269d7bd
+	fromColumn: 'Date Period NEW Base'.'Base Date Period ID'
+	toColumn: 'Date Period NEW Defined'.'Base Date Period ID'
+
+relationship 4b14c06d-6fde-40b9-8f06-5ce2729caa22
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: 'Date NEW'.Date
+	toColumn: dim_calendar.Date
+
+relationship 7e6a2e9c-f5ab-44de-82fb-429da00a4ae5
+	fromColumn: 'Date Period NEW Comparison'.'Comparison Date Period ID'
+	toColumn: 'Date Period NEW Defined'.'Comparison Date Period ID'
+
+relationship 8ffd1faa-68d8-462c-bb19-9521cc775ac0
+	fromColumn: 'Date Period NEW Defined'.'Base Date Period'
+	toColumn: Names.'Base Period Name'
+
+relationship d0b9d9d9-32ce-48dc-81f0-2ce8df98ca0a
+	fromColumn: dim_site.country_ISO3_ID
+	toColumn: dim_country.country_ISO3_ID
+
+relationship 334748e3-045f-4f17-a579-b35024567136
+	fromColumn: dim_site.group_ID
+	toColumn: dim_group.group_ID
+
+relationship 3d17240c-c822-439b-880b-ccf387ed74b4
+	fromColumn: 'Date NEW'.FirstDateInWeek
+	toColumn: LocalDateTable_3c93e122-3535-43c0-9636-2fea0e831d1a.Date
+
+relationship 0bffd532-902e-4d7a-a38b-5fd86c3db0de
+	fromColumn: 'Date NEW'.FirstDateInMonth
+	toColumn: LocalDateTable_23a1d73b-bcfa-4ef3-92f0-d4057c78b0de.Date
+
+relationship ce92f0cf-f455-457e-b6cc-96cf884a1e7c
+	fromColumn: 'Date NEW'.FirstDateInQuarter
+	toColumn: LocalDateTable_17ada190-9f0c-43b7-8d09-1459212dcb22.Date
+
+relationship b357963f-6ec1-42fc-a1e1-6dfa4d6925ba
+	fromColumn: 'Date NEW'.FirstDateInYear
+	toColumn: LocalDateTable_ff40f39c-20b3-4bcc-9ac7-1573fccf80fd.Date
+
+relationship e6760071-98c3-49a2-9380-097bdcf715e7
+	fromColumn: 'Date Period NEW Comparison'.Date
+	toColumn: LocalDateTable_5bc38a5c-da47-44f3-b34e-f7e13c25c7e5.Date
+
+relationship 2721b4da-4cb2-46da-9f13-fd84aef1713a
+	fromColumn: 'Date Period NEW Comparison'.FirstDateInWeek
+	toColumn: LocalDateTable_1157f75d-26b1-4d0a-9f7d-a93660982432.Date
+
+relationship 9ad8cc3c-f5e5-423f-a1fd-a7fbdff3ee83
+	fromColumn: 'Date Period NEW Comparison'.FirstDateInMonth
+	toColumn: LocalDateTable_6e49d4cb-c8a7-4a8e-bec7-07b67d211f20.Date
+
+relationship 95125d77-4a56-491a-9eb4-ad81aa609a4a
+	crossFilteringBehavior: bothDirections
+	fromColumn: dim_calendar.Year
+	toColumn: dim_calendar_year.Year
+
+relationship 2eaf943b-4062-43c5-b46d-9f28c717cf88
+	crossFilteringBehavior: bothDirections
+	fromColumn: dim_calendar.YearMonth
+	toColumn: dim_calendar_month.YearMonth
+
+relationship 5630a2aa-898b-4b6c-9bd1-3fc680e5979e
+	crossFilteringBehavior: bothDirections
+	fromColumn: dim_calendar.Semester
+	toColumn: dim_calendar_semester.Semester
+
+relationship edfa0c5d-6ba4-4e3d-a57c-443859d16cdc
+	crossFilteringBehavior: bothDirections
+	fromColumn: dim_calendar.YearQuarter
+	toColumn: dim_calendar_quarter.YearQuarter
+
+relationship 882b7f79-eb76-4b8b-8858-3f64bda01087
+	fromColumn: fct_health_safety.site_ID
+	toColumn: dim_site.site_ID
+
+relationship 6d60f280-dd8a-4782-abeb-98010a4bba0e
+	fromColumn: fct_injuries.site_ID
+	toColumn: dim_site.site_ID
+
+relationship 24b3bfdb-022e-4b19-9022-b47a20413aa6
+	fromColumn: fct_psif.site_ID
+	toColumn: dim_site.site_ID
+
+relationship 060068d5-ac1c-42e7-af2c-9df41fff289b
+	fromColumn: fct_health_safety.workforce_category_ID
+	toColumn: dim_workforce_category.workforce_category_ID
+
+relationship 3fec1af5-c4e0-4aad-ab01-df4c0f7ead43
+	fromColumn: fct_injuries.workforce_category_ID
+	toColumn: dim_workforce_category.workforce_category_ID
+
+relationship 489f25be-7a58-4464-90ec-c43a1e62fa8f
+	fromColumn: fct_injuries.life_saving_rules_ID
+	toColumn: dim_life_saving_rules.life_saving_rules_ID
+
+relationship 52e441d5-444d-4fa1-9cef-11c88c119495
+	fromColumn: fct_injuries.severe_injury_fatality_ID
+	toColumn: dim_serious_injury_fatality.severe_injury_fatality_ID
+
+relationship 0e8925e6-e9e3-4bf7-94a0-ddc54e03d36f
+	fromColumn: fct_injuries.injury_type_ID
+	toColumn: dim_injury_type.injury_type_ID
+
+relationship da400344-58f0-4988-a1a4-6d9eee4c49a8
+	fromColumn: dim_freetext_summary.group_id
+	toColumn: dim_group.group_ID
+
+relationship 02900b55-975d-47a7-9cb8-62d980339ab8
+	fromColumn: fct_trcf_targets.group_ID
+	toColumn: dim_group.group_ID
+
+relationship 4c3c90e0-8c60-75cd-1b48-af3c0d68047a
+	securityFilteringBehavior: none
+	fromColumn: fct_trcf_targets.reporting_year
+	toColumn: dim_calendar_year.Year
+
+relationship 621dbb58-4642-462e-8a7c-27e219fb5324
+	fromColumn: dim_calendar.Date
+	toColumn: LocalDateTable_d83df253-46f2-489a-8ebe-c664af3d9fea.Date
+
+relationship 57e0f528-9084-4453-8045-7884d804af9a
+	fromColumn: dim_calendar.EndOfMonth
+	toColumn: LocalDateTable_10a54981-0e64-4feb-819e-b53b1ed412a0.Date
+
+relationship 5a6a86e1-65d1-4928-ace0-24ab5136c7da
+	fromColumn: dim_calendar.YearEndDate
+	toColumn: LocalDateTable_1cc8bc22-7813-492e-8aa0-8a88a9b28e13.Date
+
+relationship e4076a62-7e6f-c355-4338-c95151dbead1
+	securityFilteringBehavior: none
+	fromColumn: dim_freetext_summary.year_month
+	toColumn: dim_calendar_month.YearMonth
+
+relationship 0b2865b8-d3b9-8259-9810-052b34f9ce4a
+	securityFilteringBehavior: none
+	fromColumn: fct_psif.year_month
+	toColumn: dim_calendar_month.YearMonth
+
+relationship 93658581-0c4a-57da-6c1f-d558ca755a7d
+	securityFilteringBehavior: none
+	fromColumn: fct_health_safety.year_month
+	toColumn: dim_calendar_month.YearMonth
+
+relationship 4fdf424e-22f1-8517-2d99-4698fe8a8550
+	securityFilteringBehavior: none
+	fromColumn: fct_injuries.year_month
+	toColumn: dim_calendar_month.YearMonth
+

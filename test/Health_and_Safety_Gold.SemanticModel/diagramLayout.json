@@ -1,0 +1,343 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 1755.9712848255006,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 939.86000579380459,
+            "y": -50
+          },
+          "nodeIndex": "dim_country",
+          "nodeLineageTag": "36f71b7f-cfde-404d-8d5d-4aef9b9fe69c",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 936.38400540991165,
+            "y": 746.174493492333
+          },
+          "nodeIndex": "dim_group",
+          "nodeLineageTag": "79451d5f-d6c2-46f5-a321-e1b28d8f9341",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 626.70962200617134
+          },
+          "nodeIndex": "dim_injury_type",
+          "nodeLineageTag": "b38cab1e-2920-4caf-b773-1134b0dc11e5",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 613.35379246574666,
+            "y": 98.5077600926272
+          },
+          "nodeIndex": "dim_life_saving_rules",
+          "nodeLineageTag": "f45fb972-857e-48ec-9ee6-ba46c3e19c69",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 50.003770686611915,
+            "y": 324.85285675707291
+          },
+          "nodeIndex": "dim_serious_injury_fatality",
+          "nodeLineageTag": "04ec71f6-3e34-4c6e-b05f-b4e044821418",
+          "size": {
+            "height": 199,
+            "width": 234
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 776.87921506008956,
+            "y": 363.94314008452739
+          },
+          "nodeIndex": "dim_site",
+          "nodeLineageTag": "814250b6-3cce-41a2-835e-c0a1f34e07c6",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 280.46832712798511,
+            "y": 815.33518525033583
+          },
+          "nodeIndex": "dim_workforce_category",
+          "nodeLineageTag": "7eb17766-bc23-444c-97a6-d9becec3ed40",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 618.487205320434,
+            "y": 709.144527572872
+          },
+          "nodeIndex": "fct_health_safety",
+          "nodeLineageTag": "8951c6fb-a94b-4096-bbd2-e73955c7802d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 355.53396378921138,
+            "y": 336.46237595605749
+          },
+          "nodeIndex": "fct_injuries",
+          "nodeLineageTag": "21d6f184-d7e2-4671-a1b5-c9b42825ae58",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 1213.9930973972689,
+            "y": 300.18508918243288
+          },
+          "nodeIndex": "fct_psif",
+          "nodeLineageTag": "619987d1-8cdb-4b98-b34a-ec53656a6121",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 25
+        },
+        {
+          "location": {
+            "x": 2299.9930973972687,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Globa_Data_House",
+          "nodeLineageTag": "d1bbe6fd-5d81-4ef2-b928-45d71d70bb9b",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 16
+        },
+        {
+          "location": {
+            "x": 2583.9930973972687,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Global_Data_House_SQL",
+          "nodeLineageTag": "2eb19ea7-82c2-494c-a0d9-0381bf652c33",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 17
+        },
+        {
+          "location": {
+            "x": 2867.9930973972687,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Global_Dimensions_Schema",
+          "nodeLineageTag": "dc30690b-8e86-47c4-8931-5daf663d0c70",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 18
+        },
+        {
+          "location": {
+            "x": 2015.9930973972689,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Domain_Health_and_Safety_WH",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 19
+        },
+        {
+          "location": {
+            "x": 1731.9930973972689,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Domain_Health_and_Safety_SQL",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 20
+        },
+        {
+          "location": {
+            "x": 1725.9930973972689,
+            "y": 608.572263786436
+          },
+          "nodeIndex": "Domain_Health_and_Safety_Schema",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 21
+        },
+        {
+          "location": {
+            "x": 3853.9930973972687,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "_Rollup_measures",
+          "nodeLineageTag": "0a2ba32c-af3a-4edf-97d8-d098a3c259d0",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 22
+        },
+        {
+          "location": {
+            "x": 1314.627365015227,
+            "y": 646.76564960465373
+          },
+          "nodeIndex": "dim_freetext_summary",
+          "nodeLineageTag": "f18cc940-bb03-4beb-8343-c2d9d1df0c9d",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 23
+        },
+        {
+          "location": {
+            "x": 4371.9930973972687,
+            "y": 477.572263786436
+          },
+          "nodeIndex": "Global_Dimensions_Text_Summary",
+          "nodeLineageTag": "449a4f14-6497-4d8d-a023-e89d513f87ed",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 24
+        },
+        {
+          "location": {
+            "x": 4605.9930973972687,
+            "y": 496.08724674616656
+          },
+          "nodeIndex": "table_HS",
+          "nodeLineageTag": "1ca2c111-918d-4502-a226-d4f1d662ca6f",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 4889.9930973972687,
+            "y": 496.08724674616656
+          },
+          "nodeIndex": "table_injury",
+          "nodeLineageTag": "9ed2b514-0c4c-4630-a48d-ba70598a9798",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 5173.9930973972687,
+            "y": 496.08724674616656
+          },
+          "nodeIndex": "table_PSIF",
+          "nodeLineageTag": "92943875-9868-41f9-a120-855e593789a6",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 5407.9930973972687,
+            "y": 496.08724674616656
+          },
+          "nodeIndex": "table_trcf_targets",
+          "nodeLineageTag": "5123f4b8-2f16-4c38-827e-5403023fa62a",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 93.449847501248541,
+            "y": 1000.9302523601178
+          },
+          "nodeIndex": "fct_trcf_targets",
+          "nodeLineageTag": "6668c269-0dcf-489d-8ab2-341ca8e34066",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 6393.9930973972687,
+            "y": 635.4018375
+          },
+          "nodeIndex": "Refresh Time Stamp",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 56.447393005377741,
+      "pinKeyFieldsToTop": true,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

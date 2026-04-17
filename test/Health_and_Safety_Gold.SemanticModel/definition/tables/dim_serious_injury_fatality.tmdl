@@ -1,0 +1,153 @@
+/// Dimension classifying incidents as severe injuries or fatalities.
+table dim_serious_injury_fatality
+	lineageTag: 04ec71f6-3e34-4c6e-b05f-b4e044821418
+
+	/// ID to identify a severe injury or fatality classification.
+	column severe_injury_fatality_ID
+		dataType: string
+		isHidden
+		lineageTag: d00f3366-4171-4817-ab49-f44e8ccfac6d
+		summarizeBy: none
+		sourceColumn: severe_injury_fatality_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Type of severe injury or fatality.
+	column severe_injury_fatality_type
+		dataType: string
+		lineageTag: 35081070-d97d-4428-a49f-68ac7a2b68cf
+		summarizeBy: none
+		sourceColumn: severe_injury_fatality_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column _order = right(dim_serious_injury_fatality[severe_injury_fatality_ID],1)
+		isHidden
+		lineageTag: e87ed996-15a8-4561-bff1-44f8144f2092
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column order
+		dataType: string
+		isHidden
+		lineageTag: 567117d4-12d5-4447-bcd1-eae913de6a32
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: a0d0cb0e-96a3-4658-9eab-ba32c19ba52d
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 7f22f2fa-d851-4688-8c95-3de3414634c4
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 42e18a86-716a-4980-8d84-a251e763322e
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 8dacac12-33b5-4e88-a842-8bac6139b3f3
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: b44dd977-c82c-4a43-b44b-cacf7c4a20f7
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 63130005-d00f-44d3-ab9d-ff21c1deff00
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 83242621-aac3-4c7e-bfba-22ea2cf54a3b
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: c21de8a3-59d7-49fa-b3fe-8aa34a4ffca8
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2a1ecce7-26f6-47bf-b5a7-0db4981df591
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7b358ef2-43b2-4113-a97d-1ad44f3058f4
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_serious_injury_fatality = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source =
+				let
+				    Source = Sql.Database(Global_Data_House_SQL, Globa_Data_House),
+				    Load = Source{[Schema=Global_Dimensions_Schema,Item="dim_severe_injury_fatality"]}[Data],
+				        // Add Order column to maintain dimesional ordering in visuals
+				    AddOrder = Table.AddColumn(
+				        Load,
+				        "order",
+				        each Text.End([severe_injury_fatality_ID], 1),
+				        type text
+				    ),
+				    #"Filtered Rows" = Table.SelectRows(AddOrder, each [is_sdp_active] = true)
+				in
+				    #"Filtered Rows"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

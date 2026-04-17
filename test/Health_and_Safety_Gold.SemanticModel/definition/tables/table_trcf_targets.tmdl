@@ -1,0 +1,26 @@
+table table_trcf_targets
+	isHidden
+	lineageTag: 5123f4b8-2f16-4c38-827e-5403023fa62a
+
+	column table_trcf_targets
+		dataType: string
+		isHidden
+		lineageTag: 0dade9a7-b9ca-4472-a35f-9232c7f4005e
+		summarizeBy: none
+		sourceColumn: table_trcf_targets
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition table_trcf_targets = m
+		mode: import
+		queryGroup: Tables
+		source = "fct__csrd_esg_soc__trcf_targets" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

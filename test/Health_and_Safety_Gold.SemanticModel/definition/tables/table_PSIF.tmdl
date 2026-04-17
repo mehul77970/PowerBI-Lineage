@@ -1,0 +1,26 @@
+table table_PSIF
+	isHidden
+	lineageTag: 92943875-9868-41f9-a120-855e593789a6
+
+	column table_PSIF
+		dataType: string
+		isHidden
+		lineageTag: 8f06b026-a8f9-4068-99cb-eb3b255e0dd6
+		summarizeBy: none
+		sourceColumn: table_PSIF
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition table_PSIF = m
+		mode: import
+		queryGroup: Tables
+		source = "fct__csrd_esg_soc__psif" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

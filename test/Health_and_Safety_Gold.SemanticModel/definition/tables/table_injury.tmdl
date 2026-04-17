@@ -1,0 +1,26 @@
+table table_injury
+	isHidden
+	lineageTag: 9ed2b514-0c4c-4630-a48d-ba70598a9798
+
+	column table_injury
+		dataType: string
+		isHidden
+		lineageTag: c944fefb-df01-4a0f-af7d-eba4798de338
+		summarizeBy: none
+		sourceColumn: table_injury
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition table_injury = m
+		mode: import
+		queryGroup: Tables
+		source = "fct__csrd_esg_soc__injuries" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

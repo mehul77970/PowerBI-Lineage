@@ -1,0 +1,230 @@
+/// Customer dimension. One row per customer. Demographics and geographic attributes for segmentation and geographic drill-down.
+table Customer
+	lineageTag: 7b434333-f698-4a4b-b0f5-afdd914a6865
+
+	/// Primary key uniquely identifying each customer.
+	column CustomerKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: cfa006ae-f97b-4261-b699-3101b659bdd7
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Customer's gender (e.g. Male, Female).
+	column Gender
+		dataType: string
+		lineageTag: 7259f0fe-9bef-4c70-bf5c-d53f7681b7da
+		summarizeBy: none
+		sourceColumn: Gender
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// City of the customer's address.
+	column City
+		dataType: string
+		lineageTag: 9b1b71d3-a566-4afe-b235-35c45fef26d2
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Full name of the state or region.
+	column State
+		dataType: string
+		lineageTag: 42189f04-b230-4239-812f-844c00731b7b
+		dataCategory: StateOrProvince
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Full country name of the customer's address.
+	column Country
+		dataType: string
+		lineageTag: 06eba712-eace-44c6-b3d7-b3739f4e2ab9
+		dataCategory: County
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Continent grouping for geographic rollup (e.g. Europe, North America).
+	column Continent
+		dataType: string
+		lineageTag: df8d874c-d840-4fc6-930d-0a0fec9a5dd7
+		dataCategory: Continent
+		summarizeBy: none
+		sourceColumn: Continent
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Customer's date of birth. Used to calculate Age.
+	column Birthday
+		dataType: dateTime
+		isHidden
+		formatString: mm/dd/yyyy
+		lineageTag: 3176a742-cb89-4782-ab14-45bea998ee26
+		summarizeBy: none
+		sourceColumn: Birthday
+
+		changedProperty = FormatString
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	/// Customer's age in years at time of data load.
+	column Age
+		dataType: int64
+		formatString: 0
+		lineageTag: 5620c72b-b9c9-4816-9c2a-6ccec01044f5
+		summarizeBy: none
+		sourceColumn: Age
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Customer age grouped into bands for demographic analysis: 18-29, 30-44, 45-59, 60-74, 75+.
+	column 'Age Band' =
+			SWITCH(
+			    TRUE(),
+			    Customer[Age] >= 18 && Customer[Age] <= 29, "18-29",
+			    Customer[Age] >= 30 && Customer[Age] <= 44, "30-44",
+			    Customer[Age] >= 45 && Customer[Age] <= 59, "45-59",
+			    Customer[Age] >= 60 && Customer[Age] <= 74, "60-74",
+			    Customer[Age] >= 75,                        "75+",
+			    "Unknown"
+			)
+		dataType: string
+		lineageTag: f31a399b-3bba-4829-91d5-93ac97213394
+		summarizeBy: none
+		sortByColumn: 'Age Band Sort'
+
+	/// Numeric sort key for Age Band. Hidden — used as Sort By Column.
+	column 'Age Band Sort' =
+			SWITCH(
+			    TRUE(),
+			    Customer[Age] >= 18 && Customer[Age] <= 29, 1,
+			    Customer[Age] >= 30 && Customer[Age] <= 44, 2,
+			    Customer[Age] >= 45 && Customer[Age] <= 59, 3,
+			    Customer[Age] >= 60 && Customer[Age] <= 74, 4,
+			    Customer[Age] >= 75,                        5,
+			    99
+			)
+		dataType: int64
+		isHidden
+		lineageTag: ad82729f-7e03-4dfe-b04c-3f279087a7e4
+		summarizeBy: none
+
+	/// Street address of the customer.
+	column Address
+		dataType: string
+		isHidden
+		lineageTag: 2884498c-1766-461a-8e5c-2a3f1ed07ab3
+		summarizeBy: none
+		sourceColumn: Address
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Postal or ZIP code of the customer's address.
+	column 'Zip Code'
+		dataType: string
+		isHidden
+		lineageTag: 72e2a053-7f3e-47a7-9f1f-317f57a66400
+		summarizeBy: none
+		sourceColumn: Zip Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Full name of the customer.
+	column Name
+		dataType: string
+		lineageTag: e1fb5983-006e-4c34-99a5-4f482781ebd5
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Abbreviated state or region code (e.g. CA, TX).
+	column 'State Code'
+		dataType: string
+		isHidden
+		lineageTag: e22d53c9-d298-4d1d-9e9a-3ec43342e704
+		summarizeBy: none
+		sourceColumn: State Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ISO 2-letter country code (e.g. US, DE).
+	column 'Country Code'
+		dataType: string
+		isHidden
+		lineageTag: 8ae9eff3-f7e4-4d91-811f-5ad31bdd8c35
+		summarizeBy: none
+		sourceColumn: Country Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Four-level geographic drill-down for customer location analysis: Continent → Country → State → City.
+	hierarchy Geography
+		lineageTag: 07ae4e19-8d83-4ed4-99dc-5788344dd674
+
+		/// Top level. Groups customers by continent (e.g. Europe, North America).
+		level Continent
+			lineageTag: 16856cfe-abc2-483c-9bc8-050b30040d1e
+			column: Continent
+
+		/// Second level. Full country name within the selected continent.
+		level Country
+			lineageTag: b6eec68e-716e-49b1-9409-e4eea2b5aab7
+			column: Country
+
+		/// Third level. State or region within the selected country.
+		level State
+			lineageTag: a741cd5b-f3ca-49ec-83dd-c7220320bb84
+			column: State
+
+		/// Lowest level. City within the selected state.
+		level City
+			lineageTag: d9990c9a-b040-49f3-a8eb-4a74272bbe24
+			column: City
+
+	partition Customer-bee8b62a-fee2-49b8-a0b6-5518e67a2d59 = m
+		mode: import
+		source =
+				let
+				    Source = Parquet.Document(File.Contents("C:\Users\JonathanPapworth\Downloads\parquet-1m\customer.parquet")),
+				    #"Added Name" = Table.AddColumn(Source, "Name", each [GivenName] & " " & [Surname], type text),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Name", {
+				        {"StreetAddress", "Address"},
+				        {"State", "State Code"},
+				        {"StateFull", "State"},
+				        {"Country", "Country Code"},
+				        {"CountryFull", "Country"},
+				        {"ZipCode", "Zip Code"}
+				    }),
+				    #"Selected Columns" = Table.SelectColumns(#"Renamed Columns", {"CustomerKey", "Gender", "Name", "Address", "City", "State Code", "State", "Zip Code", "Country Code", "Country", "Continent", "Birthday", "Age"})
+				in
+				    #"Selected Columns"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

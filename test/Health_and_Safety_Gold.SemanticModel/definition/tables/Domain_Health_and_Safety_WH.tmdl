@@ -1,0 +1,24 @@
+/// Connection string to the global data house for dimension tables, measure catalog, metric catalog and metric for dashboard.
+table Domain_Health_and_Safety_WH
+	isHidden
+	lineageTag: 94026d86-7395-4cc3-8a65-dacf7c59ac31
+
+	column Domain_Health_and_Safety_WH
+		dataType: string
+		lineageTag: 969fa183-6ef6-4ba7-917d-c168fe4fea85
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_WH
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Domain_Health_and_Safety_WH = m
+		mode: import
+		queryGroup: 'Domain Connections'
+		source = "Gold__WH" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

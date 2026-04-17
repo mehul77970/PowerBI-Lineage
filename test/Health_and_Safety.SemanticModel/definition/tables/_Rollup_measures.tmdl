@@ -1,0 +1,64 @@
+/// Contains Hierarchy rollup measures. These measures are used as a base to calculate at holdings level..
+table _Rollup_measures
+	lineageTag: 5a757fb2-d508-4d3a-a0b9-ae31a294d819
+	sourceLineageTag: 0a2ba32c-af3a-4edf-97d8-d098a3c259d0
+
+	/// Total Recordable Case Frequency (TRCF) by normalizing injury counts against worked hours, and conditionally displays the result only for relevant group levels.
+	/// 
+	/// [Type:  Rate,  Created on: 2025-09-11,  Create by: JPA]
+	measure TRCF = EXTERNALMEASURE("TRCF", DOUBLE, "DirectQuery to AS - Health_and_Safety_Gold")
+		lineageTag: 714f7635-2030-4b35-a528-c2eb282a76d8
+		sourceLineageTag: f1160d98-4a7a-4178-8da3-04babf88af06
+		dataCategory: Uncategorized
+
+	/// Number of fatal injuries, combining both injury-related and health-related fatalities, filtered by site and workforce category, and conditionally displays the result based on hierarchy depth
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Fatalities' = EXTERNALMEASURE("Total Fatalities", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: #,0
+		lineageTag: 6b19c82e-6f98-4dbb-b5e2-072cebd5448c
+		sourceLineageTag: eb8ade70-d7c0-463c-9620-b02e44c0ea42
+		dataCategory: Uncategorized
+
+		changedProperty = FormatString
+
+	/// Total number of injuries for rows within a specified hierarchy depth or total rows.
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries' = EXTERNALMEASURE("Total Injuries", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: #,0
+		lineageTag: 0a4934c1-8f10-46e4-9ac9-638ad3440fb2
+		sourceLineageTag: 05b8bc51-f19e-4a2a-b435-2977788c6a64
+		dataCategory: Uncategorized
+
+		changedProperty = FormatString
+
+	/// Number of PSIF (Potential Serious Injury or Fatality) cases based on hierarchy depth and total row visibility.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure PSIF = EXTERNALMEASURE("PSIF", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: #,0
+		lineageTag: e3bd0c18-782d-437e-af33-1360cecb1324
+		sourceLineageTag: ca0b0fe4-01ab-4904-b095-ccb098d87f72
+		dataCategory: Uncategorized
+
+		changedProperty = FormatString
+
+	column dummy
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b46ceb4d-4e5b-41b0-8428-987d6c7eac88
+		sourceLineageTag: 4559f4f0-b629-44a2-9c57-163d20b1fa41
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: dummy
+
+		annotation SummarizationSetBy = User
+
+	partition _Rollup_measures = entity
+		mode: directQuery
+		source
+			entityName: _Rollup_measures
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

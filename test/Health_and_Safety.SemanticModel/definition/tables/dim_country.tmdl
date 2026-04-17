@@ -1,0 +1,239 @@
+/// Country dimension with SAP codes, ISO codes, parent group hierarchy, and regional classification.
+table dim_country
+	lineageTag: fa3f91ab-7805-42ba-8fe9-a3e780828288
+	sourceLineageTag: 36f71b7f-cfde-404d-8d5d-4aef9b9fe69c
+
+	/// ID representing the 3-letter ISO country code.
+	column country_ISO3_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: ac33e207-fc22-4368-9c89-73ee0778e1b0
+		sourceLineageTag: 57b4df1c-9d9d-42cb-b66d-ecf9b47ca235
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: country_ISO3_ID
+
+		annotation SummarizationSetBy = User
+
+	/// ID representing the 2-letter ISO country code.
+	column country_ISO2_ID
+		dataType: string
+		isHidden
+		lineageTag: bfc672d7-58b6-463b-9a30-546324a259b7
+		sourceLineageTag: 57f1cf1a-3cc7-4461-884c-730c87ee6058
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: country_ISO2_ID
+
+		annotation SummarizationSetBy = User
+
+	/// ID used for the country within SAP systems.
+	column country_SAP_ID
+		dataType: string
+		isHidden
+		lineageTag: a45738ef-f467-4558-bc36-30178c1c5522
+		sourceLineageTag: f4428afe-c871-4fb2-adfd-bb5f37f58c79
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: country_SAP_ID
+
+		annotation SummarizationSetBy = User
+
+	/// The name of the country as referenced in SAP systems.
+	column country_SAP_name
+		dataType: string
+		lineageTag: 243b0f68-282c-42a4-9210-16a9e9973a4e
+		sourceLineageTag: dd841298-19e8-473c-a187-1820ac72fcaa
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: country_SAP_name
+
+		annotation SummarizationSetBy = User
+
+	/// ID representing the parent group of a given entity.
+	column parent_group_ID
+		dataType: string
+		isHidden
+		lineageTag: 22060b4c-3699-48bd-840d-d62f00601de8
+		sourceLineageTag: fcc97387-7ee5-48cc-aca9-c2a5a41674fb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: parent_group_ID
+
+		annotation SummarizationSetBy = User
+
+	/// The name of the parent group associated with a specific entity.
+	column parent_group_name
+		dataType: string
+		lineageTag: 609ffe08-19fb-4de7-9064-fcf26c0ab2fa
+		sourceLineageTag: be1e9cfd-2214-4e31-aa8c-ef360f3d7cb9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: parent_group_name
+
+		annotation SummarizationSetBy = User
+
+	/// Geographic region of the country.
+	column region
+		dataType: string
+		lineageTag: c4f7ec81-0ae4-412b-b7bf-b6196d6a8773
+		sourceLineageTag: aa93d6be-d9b2-42a4-be08-02c77ec63f07
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: region
+
+		annotation SummarizationSetBy = User
+
+	/// ID identifying the highest-level parent entity within the hierarchy.
+	column ultimate_parent_ID
+		dataType: string
+		isHidden
+		lineageTag: 19bbb6f7-ea1b-40c7-b419-95143909f2d6
+		sourceLineageTag: 33600718-5852-4087-9ef7-c60267996dda
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: ultimate_parent_ID
+
+		annotation SummarizationSetBy = User
+
+	/// The name of the highest-level parent entity.
+	column ultimate_parent_name
+		dataType: string
+		lineageTag: 6ee71de7-3094-426a-ae29-f4d76e9fe8e5
+		sourceLineageTag: 92e07d58-ef2e-4f57-923d-549cd9799b31
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: ultimate_parent_name
+
+		annotation SummarizationSetBy = User
+
+	/// Region of the ultimate parent entity.
+	column ultimate_region
+		dataType: string
+		lineageTag: 0dfdacc8-9d5e-4ff8-9f81-977627e2054b
+		sourceLineageTag: daa414c4-24c0-474d-a69f-7bc052b67bca
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: ultimate_region
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 04bfc38a-9d37-44b4-be97-a0980aeb93a7
+		sourceLineageTag: b39eda82-8c27-4ba6-b7d8-e45e6f8cbde5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 653dfbab-7e03-411c-9cdf-52df137bf7c3
+		sourceLineageTag: 104e77bb-ce33-4178-8349-be1327044c95
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: b0b60957-cbb6-48de-8f19-0f1154f771db
+		sourceLineageTag: bd3baa0e-c255-449b-9d65-6db17f28769b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 82e01590-7bb4-4cd9-bcb5-135f5ccadf0a
+		sourceLineageTag: c8b4bdb4-fc3f-4092-9991-1dcab03946f3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 55723cc4-fec9-4b44-80b9-db9b157c9cd1
+		sourceLineageTag: 20e63102-e4b3-45b4-9d78-75a8dac952b6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: a09b0d22-4511-4eca-b22b-461374bd174d
+		sourceLineageTag: af4f1298-b60a-4791-85dc-f04efdd07723
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 8cb03d3e-ad7b-4628-969c-f1d9caa22562
+		sourceLineageTag: 922acd53-7ad7-447e-8c8f-5be1be1139fb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 6d4a1265-0c8a-48e4-a806-82e24607dc6b
+		sourceLineageTag: 4bd4eecd-27fe-4057-883a-63c4c0ff7fd8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 88e3d8d6-c89c-48e8-8c99-c54f4df96e8b
+		sourceLineageTag: c4bc59c5-6780-495e-86d8-841a2eeb94c9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6bccb7e7-8d63-46a2-87d4-40b1722fffe1
+		sourceLineageTag: 00b05695-141e-4379-9a11-6a67f3dc58ac
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	partition dim_country = entity
+		mode: directQuery
+		source
+			entityName: dim_country
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

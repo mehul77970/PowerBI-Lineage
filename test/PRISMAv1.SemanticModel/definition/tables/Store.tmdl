@@ -1,0 +1,139 @@
+/// Store dimension. One row per store. Geographic, size, and lifecycle attributes including open/close dates and status.
+table Store
+	lineageTag: aca9499e-9ded-4d0a-835d-f1f04b9d2e92
+
+	/// Primary key uniquely identifying each store.
+	column StoreKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d808ff79-ebed-42c7-a2cc-e5819db00ac0
+		summarizeBy: none
+		sourceColumn: StoreKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	/// State or region where the store is located.
+	column State
+		dataType: string
+		lineageTag: d3331643-69c3-4865-a20e-a88041f23a9c
+		dataCategory: StateOrProvince
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Store status indicator. Blank = open/active; populated = closed or inactive.
+	column Status
+		dataType: string
+		lineageTag: 9d1fa82f-d400-4ef6-a90a-9824c27acd5c
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isText":true}
+
+	/// Channel type: 'Online' for the online store, 'Physical' for all brick-and-mortar stores.
+	column Channel = IF( Store[Country] = "Online", "Online", "Physical" )
+		dataType: string
+		lineageTag: f50e26d4-74b7-4125-8645-d4f0e320b802
+		summarizeBy: none
+
+	/// Store operating status. 'Open' = currently active (Status is blank in source), 'Closed' = permanently closed, 'Restructured' = relocated or rebuilt as a new store.
+	column 'Store Status' =
+			IF(
+			    ISBLANK( 'Store'[Status] ) || 'Store'[Status] = "",
+			    "Open",
+			    'Store'[Status]
+			)
+		dataType: string
+		lineageTag: 61e3092e-01c4-4963-b87a-aafab35263ab
+		summarizeBy: none
+
+	/// Business-facing store identifier code.
+	column 'Store Code'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: eeb2c30e-d3d2-4034-8663-996f015ca196
+		summarizeBy: none
+		sourceColumn: Store Code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Country where the store is located.
+	column Country
+		dataType: string
+		lineageTag: 5ed66c20-bd44-4c38-9b2a-2caa9946a1ef
+		summarizeBy: none
+		sourceColumn: Country
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the store opened for business.
+	column 'Open Date'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: eaf10aa6-3978-4e2d-b28e-59ba47da9eec
+		summarizeBy: none
+		sourceColumn: Open Date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the store closed. Blank if the store is currently active.
+	column 'Close Date'
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 2c46b5aa-3450-4fe9-b82e-839600849bdf
+		summarizeBy: none
+		sourceColumn: Close Date
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Store name or label.
+	column Name
+		dataType: string
+		lineageTag: d2da7c54-a1fd-488e-8ecb-84a02205ea28
+		summarizeBy: none
+		sourceColumn: Name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Floor area of the store in square metres. Used in revenue density calculations.
+	column 'Square Meters'
+		dataType: int64
+		formatString: 0
+		lineageTag: 1647ebc8-771d-482b-b497-c89dc303e9c2
+		summarizeBy: none
+		sourceColumn: Square Meters
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Store-4e2fa8b8-517f-4c17-ae5a-7d36051099bc = m
+		mode: import
+		source =
+				let
+				    Source = Parquet.Document(File.Contents("C:\Users\JonathanPapworth\Downloads\parquet-1m\store.parquet")),
+				    #"Renamed Columns" = Table.RenameColumns(Source, {
+				        {"StoreCode", "Store Code"},
+				        {"CountryName", "Country"},
+				        {"Description", "Name"},
+				        {"SquareMeters", "Square Meters"},
+				        {"OpenDate", "Open Date"},
+				        {"CloseDate", "Close Date"}
+				    }),
+				    #"Selected Columns" = Table.SelectColumns(#"Renamed Columns", {"StoreKey", "Store Code", "Country", "State", "Name", "Square Meters", "Open Date", "Close Date", "Status"})
+				in
+				    #"Selected Columns"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

@@ -1,0 +1,150 @@
+/// Dimension classifying workforce into categories (e.g. employees, contractors).
+table dim_workforce_category
+	lineageTag: 7eb17766-bc23-444c-97a6-d9becec3ed40
+
+	/// Name of the workforce category
+	column workforce_category
+		dataType: string
+		lineageTag: 2f0ea9fc-9430-4741-af05-b7863982ae5d
+		summarizeBy: none
+		sourceColumn: workforce_category
+		sortByColumn: order
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID of the workforce category
+	column workforce_category_ID
+		dataType: string
+		isHidden
+		lineageTag: 2f1e360a-7a33-49bd-8552-cd0e87a08e0d
+		summarizeBy: none
+		sourceColumn: workforce_category_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	column order
+		dataType: string
+		isHidden
+		lineageTag: 6f0e731b-9cfc-4b99-a427-d27ea3c529d9
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 9bf274d9-1031-458d-95ae-48ced1ed0ea7
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 8cc91053-e97b-4c67-91eb-941a8a373185
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: abecdca7-512e-4145-82ce-31f24aa610f3
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 860d0599-55c2-440a-9025-96de22fe65e7
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 95dd8c88-d06d-46b8-86eb-1b34d77149ef
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: ca57b334-67b5-4bf4-ab75-8537d11141ea
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 900ee727-887f-4c88-90c5-193661685953
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: e62e9f78-79eb-4f25-9d99-d81a42739e66
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 35733507-b729-4357-9a51-059677529687
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 944b3708-b24c-4ba3-a390-2d80a7243b37
+		summarizeBy: sum
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_workforce_category = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source = ```
+				let
+				    Source = Sql.Database(Global_Data_House_SQL, Globa_Data_House),
+				    Load = Source{[Schema=Global_Dimensions_Schema,Item="dim_workforce_category"]}[Data],
+				    AddOrder = Table.AddColumn(
+				        Load,
+				        "order",
+				        each Text.End([workforce_category_ID], 1),
+				        type text
+				    ),
+				    #"Filtered Rows" = Table.SelectRows(AddOrder, each [is_sdp_active] = true)
+				    
+				in
+				    #"Filtered Rows"
+				```
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

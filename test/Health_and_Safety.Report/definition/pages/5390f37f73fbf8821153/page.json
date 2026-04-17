@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "5390f37f73fbf8821153",
+  "displayName": "tt_lsr_matrix",
+  "displayOption": "ActualSize",
+  "height": 312,
+  "width": 350,
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

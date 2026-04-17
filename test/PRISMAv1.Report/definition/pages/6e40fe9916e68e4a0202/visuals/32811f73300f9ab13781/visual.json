@@ -1,0 +1,340 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "32811f73300f9ab13781",
+  "position": {
+    "x": 24.285046462573398,
+    "y": 311.90348326777263,
+    "z": 4000,
+    "height": 303.87662625585341,
+    "width": 553.71105367320229,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Column Example",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "14pt",
+                      "color": "#ffffff"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "StoreKey",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| store id, location id, shop id |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Store Code",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t"
+                  },
+                  {
+                    "value": "| store number, shop code, location code |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Country",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t\t"
+                  },
+                  {
+                    "value": "| store country, country name |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "State",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t\t\t"
+                  },
+                  {
+                    "value": "| store state, region, store region |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Name",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t\t\t"
+                  },
+                  {
+                    "value": "| store name, shop name, location name |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| S",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "quare Meters",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t"
+                  },
+                  {
+                    "value": "| store size, floor area, sq m, sqm, size |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Open Date",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| opening date, store opening, launch date |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Close Date",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t"
+                  },
+                  {
+                    "value": "| closing date, store closure, closed date |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Status",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t\t"
+                  },
+                  {
+                    "value": "| store status, open or closed, active status |",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 4,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,196 @@
+/// Contains Hierarchy rollup measures. These measures are used as a base to calculate at holdings level..
+table _Rollup_measures
+	lineageTag: 0a2ba32c-af3a-4edf-97d8-d098a3c259d0
+
+	/// Total Recordable Case Frequency (TRCF) by normalizing injury counts against worked hours, and conditionally displays the result only for relevant group levels.
+	/// 
+	/// [Type:  Rate,  Created on: 2025-09-11,  Create by: JPA]
+	measure TRCF =
+			
+			/*
+			    Purpose
+			    Calculates Total Recordable Case Frequency (TRCF) as:
+			        (Injuries / Worked Hours) * 1,000,000
+			
+			    Display rules
+			    -------------
+			    - Returns a value (including 0) when at least one of the inputs exists.
+			    - Returns BLANK() only when both inputs are blank.
+			    - Suppresses non-allowed hierarchy levels based on BrowseDepth/MaxHierarchyDepth,
+			      but still shows the total row.
+			*/
+			VAR _worked_hours =
+			    1000000
+			
+			VAR _injuries =
+			    CALCULATE( [Number of Injuries],KEEPFILTERS(dim_workforce_category[workforce_category_ID] = "WC1" ))
+			
+			VAR _hours =
+			    CALCULATE( [Number of Worked Hours],KEEPFILTERS(dim_workforce_category[workforce_category_ID] = "WC1" ))
+			
+			VAR _value =
+			    DIVIDE( _injuries, _hours ) * _worked_hours
+			
+			/*
+			    Data presence check
+			    We consider "has data" when at least one input exists. This allows returning 0
+			    when the computed ratio resolves to 0, while still returning BLANK() when
+			    absolutely no data is present.
+			-*/
+			VAR _has_data =
+			    NOT ( ISBLANK( _injuries ) && ISBLANK( _hours ) )
+			
+			/*
+			    Hierarchy visibility
+			    - Show rows within the allowed browse depth.
+			    - Always show the total row (when Level1_group is not in scope).
+			*/
+			VAR _is_total_row =
+			    NOT ISINSCOPE( dim_group[Level1_group] )
+			
+			VAR _show_row =
+			    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+			        || _is_total_row
+			
+			VAR _result = CALCULATE(
+			    IF(
+			        _show_row,
+			        IF(
+			            _has_data,
+			            COALESCE( _value, 0 ),
+			            BLANK()
+			        )
+			    ) ,KEEPFILTERS(dim_workforce_category[workforce_category_ID] = "WC1"       ))
+			
+			RETURN
+			   _result
+		lineageTag: f1160d98-4a7a-4178-8da3-04babf88af06
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Number of fatal injuries, combining both injury-related and health-related fatalities, filtered by site and workforce category, and conditionally displays the result based on hierarchy depth
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Fatalities' = ```
+			
+			VAR _FatalInjury =
+			    SUM(fct_health_safety[number_fatal_injury])
+			
+			VAR _FatalHealth =
+			    SUM(fct_health_safety[number_fatal_health])
+			
+			VAR _TotalFatalities = _FatalInjury + _FatalHealth
+			
+			/* Check whether the current site has any PSIF records;
+			   used to suppress zeros for sites with no underlying data */
+			
+			VAR _HasDaata  =
+			    NOT (
+			        ISBLANK(_FatalInjury) &&
+			        ISBLANK(_FatalHealth)
+			    )
+			
+			/* Control row visibility based on hierarchy depth;
+			   totals always show, detail rows only up to max depth */
+			
+			VAR _IsTotalRow =
+			    NOT ISINSCOPE(dim_group[Level1_group]) &&
+			    NOT ISINSCOPE(dim_group[Level2_group]) 
+			
+			
+			VAR _ShowRow =
+			    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+			    || _IsTotalRow
+			
+			VAR _Result =     IF(
+			     _ShowRow,
+			        IF(_HasDaata , _TotalFatalities)  
+			    )
+			RETURN
+			    _Result
+			
+			```
+		formatString: 0
+		lineageTag: eb8ade70-d7c0-463c-9620-b02e44c0ea42
+
+	/// Total number of injuries for rows within a specified hierarchy depth or total rows.
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Total Injuries' = ```
+			
+			VAR _TotalInuries = [Number of Injuries]
+			VAR _IsTotalRow =
+			    ISINSCOPE( dim_group[Level1_group] ) = FALSE
+			
+			/* Control row visibility based on hierarchy depth;
+			   totals always show, detail rows only up to max depth */
+			       
+			VAR _ShowRow =
+			    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+			        || _IsTotalRow
+			VAR _result = IF( _ShowRow, IF( _TotalInuries <> 0, _TotalInuries ) )
+			RETURN
+			    _result
+			```
+		formatString: 0
+		lineageTag: 05b8bc51-f19e-4a2a-b435-2977788c6a64
+
+	/// Number of PSIF (Potential Serious Injury or Fatality) cases based on hierarchy depth and total row visibility.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure PSIF = ```
+			
+			VAR _PSIF =
+			    [Number of PSIF]
+			/* Check whether the current site has any PSIF records;
+			   used to suppress zeros for sites with no underlying data */
+			
+			VAR _HasData =
+			    CALCULATE (
+			        COUNTROWS ( fct_psif ),
+			        KEEPFILTERS ( VALUES ( dim_site[site_ID] ) )
+			    ) > 0
+			VAR _IsTotalRow =
+			    ISINSCOPE ( dim_group[Level1_group] ) = FALSE
+			
+			/* Control row visibility based on hierarchy depth;
+			   totals always show, detail rows only up to max depth */
+			       
+			VAR _ShowRow =
+			    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+			        || _IsTotalRow
+			VAR _Result =     IF (
+			        _ShowRow,
+			        IF ( _HasData, _PSIF, BLANK() )
+			    )
+			RETURN
+			    _Result
+			```
+		formatString: 0
+		lineageTag: ca0b0fe4-01ab-4904-b095-ccb098d87f72
+
+	column dummy
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4559f4f0-b629-44a2-9c57-163d20b1fa41
+		summarizeBy: sum
+		sourceColumn: dummy
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Rollup_measures = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMlCKjQUA", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [dummy = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"dummy", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

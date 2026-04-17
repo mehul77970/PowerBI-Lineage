@@ -1,0 +1,23 @@
+/// Plan year calendar for transition plan and target year forecasting.
+table dim_calendar_plan_year
+	lineageTag: f96b4e5a-dff7-4fa2-a330-a999c6663856
+	sourceLineageTag: 9c985538-ea5c-4a60-9ac7-6e648a8156b7
+
+	/// Plan year for transition plan or target forecasting.
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: ccbaa512-0057-4529-ba0c-2627e6f2a357
+		sourceLineageTag: 10258320-f0b6-447b-964e-47a4c76d8a1a
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar_plan_year = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar_plan_year
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

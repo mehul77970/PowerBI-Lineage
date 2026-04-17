@@ -1,0 +1,149 @@
+/// Fact table containing Total Recordable Case Frequency (TRCF) targets per group and reporting year.
+table fct_trcf_targets
+	lineageTag: 6668c269-0dcf-489d-8ab2-341ca8e34066
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: 597ef20f-bd1f-4bf6-8dfa-647400ecb9ea
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identify the group
+	column group_ID
+		dataType: string
+		isHidden
+		lineageTag: 1f68aa18-e0dd-4553-ad18-8917e6535caf
+		summarizeBy: none
+		sourceColumn: group_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Total Recordable Case Frequency target value for the group
+	column TRCF_target
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 24c1cced-2988-40a4-8218-c3465e8a4fec
+		summarizeBy: sum
+		sourceColumn: TRCF_target
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		isHidden
+		lineageTag: 9afc1443-39e8-452b-a1e7-715a6465430e
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: f71dabcb-2ed3-4032-a5cd-4f8c5294901c
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: e8728d79-0c98-47d1-ab9a-4602ae8afe80
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 9c0755d8-dcba-4c46-b90c-a78c55b93149
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: c676832a-3e68-4560-8f9b-1b13ca6a8eff
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: f2b1cbce-ac67-4d89-beb6-61f16c9d7ea6
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 4d3ea2a3-ebd5-4fb6-ba18-aeba95b10150
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 0cc30998-4a79-4cc4-b9cb-12a6c7d44f43
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: dbc88f3d-a004-4eaa-9c50-5614f37448ef
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_trcf_targets = m
+		mode: import
+		queryGroup: 'Fact Tables\Pilot Wave'
+		source =
+				let
+				    Source = Sql.Database(Domain_Health_and_Safety_SQL, Domain_Health_and_Safety_WH),
+				    dbo_fct_psif_cu_fct_PSIF = Source{[Schema=Domain_Health_and_Safety_Schema,Item=table_trcf_targets]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(dbo_fct_psif_cu_fct_PSIF,{{"TRCF_target", type number}}),
+				    #"Rounded Off" = Table.TransformColumns(#"Changed Type",{{"TRCF_target", each Number.Round(_, 2), type number}})
+				in
+				    #"Rounded Off"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

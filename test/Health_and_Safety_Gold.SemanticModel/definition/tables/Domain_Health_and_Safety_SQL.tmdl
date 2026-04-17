@@ -1,0 +1,24 @@
+/// SQL end point for the global data house
+table Domain_Health_and_Safety_SQL
+	isHidden
+	lineageTag: a7bbadcf-e300-470a-8a7a-2081c961c407
+
+	column Domain_Health_and_Safety_SQL
+		dataType: string
+		lineageTag: b72bed4f-45e6-42c0-b0e7-4b6e2cbbe9b2
+		summarizeBy: none
+		sourceColumn: Domain_Health_and_Safety_SQL
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Domain_Health_and_Safety_SQL = m
+		mode: import
+		queryGroup: 'Domain Connections'
+		source = "kofiw757zz3e7dbq7joahvxrgy-a2iu4i325j5uff5gooirdf44gi.datawarehouse.fabric.microsoft.com" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

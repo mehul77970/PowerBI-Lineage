@@ -1,0 +1,202 @@
+/// Free-text summary narratives provided by groups for monthly health and safety reporting.
+table dim_freetext_summary
+	lineageTag: d934de68-92b2-459e-95c7-d8413dc61a19
+	sourceLineageTag: f18cc940-bb03-4beb-8343-c2d9d1df0c9d
+
+	/// Reporting year of the metrics.
+	column reporting_year
+		dataType: string
+		lineageTag: 7ca12712-d65f-4d6d-a7b5-1912058b4bee
+		sourceLineageTag: 9d848ce7-2af3-44d5-ab3b-413d6bf4b5fe
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = User
+
+	/// Reporting month of the metrics.
+	column reporting_month
+		dataType: string
+		lineageTag: 2fbca792-cf11-420e-a716-a586fb12b35c
+		sourceLineageTag: 2273cef9-e737-4648-9630-40aca91a5672
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = User
+
+	/// ID representing the group.
+	column group_id
+		dataType: string
+		isHidden
+		lineageTag: 72b4cdc8-e108-4fe3-9663-318f34bef9ce
+		sourceLineageTag: bff278f9-2b07-4ba8-a915-8d797bad11f2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: group_id
+
+		annotation SummarizationSetBy = User
+
+	/// Free-text summary narrative provided by the group.
+	column free_text
+		dataType: string
+		lineageTag: 5fe2a384-0cf3-4f57-9bbf-df471d93c55a
+		sourceLineageTag: f7287ec8-55de-466e-8933-56ee4f6a48a1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: free_text
+
+		annotation SummarizationSetBy = User
+
+	/// Name of the report associated with the free-text summary.
+	column report_name
+		dataType: string
+		lineageTag: b1e66fe6-5426-4ef4-bf09-7d3f652302f9
+		sourceLineageTag: 4a77975b-1d5e-4682-9a0b-b4325d923d46
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: report_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 1907688e-cf35-4d09-8f0c-c1ef4ea50580
+		sourceLineageTag: e0a15edd-5060-4c83-b223-56a6ecf6296c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 6fdf6dd2-ca55-4de8-8156-9ad485d46258
+		sourceLineageTag: ab371e98-73ff-4868-aef1-fc6b236a3b2c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 9c8927b3-daeb-4707-b789-a6f1af625d97
+		sourceLineageTag: 666f7ca4-0ed4-4243-b390-699139ec9766
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 4cb3b998-a96c-4abe-94c4-e020312f3a75
+		sourceLineageTag: 89d429bd-5b2c-4c95-b889-8c87178236df
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 9dafcbe8-eaa2-4c95-9acd-8114c43224b4
+		sourceLineageTag: b5a581e7-6c46-4e46-a12d-e71886317037
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 19076dc5-14e5-455c-a9c7-01c89facf572
+		sourceLineageTag: b2d66891-f91c-41f5-a0b1-899630a4ead6
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 1af482f8-4c63-4634-bfc4-8fddba68dfd5
+		sourceLineageTag: 08c9d866-9630-4fb2-8692-bc076c373cca
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 6462f446-12b7-4da4-9f5e-b8d1705b625d
+		sourceLineageTag: 91bf8b06-0844-41f9-8724-90237dcff712
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column end_of_month
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 6b78a389-920a-47b0-b4ee-9c25569ee180
+		sourceLineageTag: d89f2f84-eecf-4770-8d4d-b66695424181
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: end_of_month
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f6ca099a-1aca-4b83-85bc-33399876c730
+		sourceLineageTag: 85fc2a65-932b-4623-9e59-014d8078f853
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = User
+
+	column sdp_effective_end_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: a50fa0c4-f41f-4f45-b872-34d69ae5ffa0
+		sourceLineageTag: 028b851d-be0a-439e-a7f2-c0a1546e3a2b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	column year_month
+		dataType: string
+		lineageTag: 20321a0e-440c-44b7-a33e-6c1e36af4bda
+		sourceLineageTag: eb765622-9c63-4394-b6c9-eed99cb2986c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: year_month
+
+		annotation SummarizationSetBy = User
+
+	partition dim_freetext_summary = entity
+		mode: directQuery
+		source
+			entityName: dim_freetext_summary
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

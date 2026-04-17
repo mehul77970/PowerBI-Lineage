@@ -1,0 +1,107 @@
+createOrReplace
+
+	/// Returns a self-contained SVG trend icon with RAG colouring.
+	/// - Positive (normal) or Negative (inverse) → Green UP trend arrow
+	/// - Negative (normal) or Positive (inverse) → Red DOWN trend arrow
+	/// - Blank / zero → Amber NEUTRAL horizontal dash
+	/// Same direction/inversion logic as udf.adaptfy.color.ragHex.
+	/// SizePx sets the rendered pixel dimensions (default 48). viewBox fixed at 0 0 48 48.
+	/// Output is a data URI string. Set dataCategory=ImageUrl on the calling measure.
+	function 'udf.adaptfy.svg.ragArrow' =
+			
+			//
+			
+			//  Signature:
+			//    BaseMeasure  : ANYREF EXPR   -- the measure to evaluate
+			//    Direction    : STRING        -- NORMAL | INVERSE | NEG | LOWER_IS_BETTER | TRUE | YES | 1
+			//    SizePx       : DOUBLE        -- rendered pixel size, e.g. 24, 32, 48, 64  (default 48)
+			//    Style        : STRING        -- ARROW | TRIANGLE
+			
+			( BaseMeasure : ANYREF EXPR, Direction : STRING, SizePx : DOUBLE, Style : STRING ) =>
+			
+			VAR MeasureValue        = BaseMeasure
+			VAR DirectionNormalised = UPPER ( TRIM ( Direction ) )
+			VAR StyleNormalised     = UPPER ( TRIM ( Style ) )
+			VAR PixelSize           = FORMAT ( SizePx, "0" )
+			
+			VAR IsInverted =
+			    SWITCH (
+			        DirectionNormalised,
+			        "INVERSE",         TRUE(),
+			        "INVERT",          TRUE(),
+			        "NEG",             TRUE(),
+			        "LOWER_IS_BETTER", TRUE(),
+			        "TRUE",            TRUE(),
+			        "YES",             TRUE(),
+			        "1",               TRUE(),
+			        FALSE()
+			    )
+			
+			// ── SVG wrapper ─────────────────────────────────────────────
+			// Outer SVG sets the canvas Power BI uses for the image cell.
+			// Inner SVG maps the fixed 48-unit design space to that canvas.
+			VAR SvgWrapperStart =
+			    "<svg xmlns='http://www.w3.org/2000/svg' width='" & PixelSize & "' height='" & PixelSize & "'>" &
+			    "<svg x='0' y='0' width='" & PixelSize & "' height='" & PixelSize & "' viewBox='0 0 48 48' fill='none'>"
+			VAR SvgWrapperEnd = "</svg></svg>"
+			
+			// ── ARROW style ─────────────────────────────────────────────
+			// Rising trend line with top-right corner bracket (green)
+			VAR ArrowUp =
+			    "data:image/svg+xml;utf8," & SvgWrapperStart &
+			    "<path d='M40.9999 27.0005V15.0005H29' stroke='%2300C853' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+			    "<path d='M6 37L16.3385 24.5L26.1846 30.5L41 15' stroke='%2300C853' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+			    SvgWrapperEnd
+			
+			// Falling trend line with bottom-right corner bracket (red)
+			VAR ArrowDown =
+			    "data:image/svg+xml;utf8," & SvgWrapperStart &
+			    "<path d='M29 34.9999H41V23' stroke='%23D50000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+			    "<path d='M6 13L16.3385 25.5L26.1846 19.5L41 35' stroke='%23D50000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>" &
+			    SvgWrapperEnd
+			
+			// ── TRIANGLE style ───────────────────────────────────────────
+			// Solid filled upward triangle centred on 48x48 canvas
+			// Points: apex (24,8)  bottom-left (6,40)  bottom-right (42,40)
+			VAR TriangleUp =
+			    "data:image/svg+xml;utf8," & SvgWrapperStart &
+			    "<polygon points='24,8 6,40 42,40' fill='%2300C853'/>" &
+			    SvgWrapperEnd
+			
+			// Solid filled downward triangle centred on 48x48 canvas
+			// Points: apex-bottom (24,40)  top-left (6,8)  top-right (42,8)
+			VAR TriangleDown =
+			    "data:image/svg+xml;utf8," & SvgWrapperStart &
+			    "<polygon points='24,40 6,8 42,8' fill='%23D50000'/>" &
+			    SvgWrapperEnd
+			
+			// ── NEUTRAL ─ shared across both styles ─────────────────────
+			// Simple horizontal dash centred on canvas (amber)
+			VAR NeutralDash =
+			    "data:image/svg+xml;utf8," & SvgWrapperStart &
+			    "<line x1='10' y1='24' x2='38' y2='24' stroke='%23FFC107' stroke-width='3' stroke-linecap='round'/>" &
+			    SvgWrapperEnd
+			
+			// ── Icon selection ───────────────────────────────────────────
+			VAR IconUp      = IF ( StyleNormalised = "TRIANGLE", TriangleUp,   ArrowUp   )
+			VAR IconDown    = IF ( StyleNormalised = "TRIANGLE", TriangleDown, ArrowDown )
+			VAR IconNeutral = NeutralDash
+			
+			RETURN
+			    IF (
+			        IsInverted,
+			        SWITCH ( TRUE(),
+			            ISBLANK ( MeasureValue ), IconNeutral,
+			            MeasureValue = 0,         IconNeutral,
+			            MeasureValue < 0,         IconUp,
+			                                      IconDown
+			        ),
+			        SWITCH ( TRUE(),
+			            ISBLANK ( MeasureValue ), IconNeutral,
+			            MeasureValue = 0,         IconNeutral,
+			            MeasureValue > 0,         IconUp,
+			                                      IconDown
+			        )
+			    )
+		lineageTag: 3d29a004-2002-4e09-bca5-9316579e3255
+

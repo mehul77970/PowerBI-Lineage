@@ -1,0 +1,209 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "827b951292c56f3c7e0c",
+  "position": {
+    "x": 24.285046462573398,
+    "y": 426.71915881293467,
+    "z": 4000,
+    "height": 241.86098824445477,
+    "width": 977.18926752246739,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Measure Example",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "14pt",
+                      "color": "#ffffff"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Margin SPLY",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| Gross margin dollars for Same Period Last Year.",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Margin % SPLY",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t"
+                  },
+                  {
+                    "value": "| Gross margin percent for Same Period Last Year.",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Margin Delta pp",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t"
+                  },
+                  {
+                    "value": "| Change in margin rate versus last year, expressed in percentage points.",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Total Line Items SPLY",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t"
+                  },
+                  {
+                    "value": "| Order line count for Same Period Last Year",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 4,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,170 @@
+/// Dimension classifying recordable injuries by type.
+table dim_injury_type
+	lineageTag: 156553be-a1bd-4529-b7c3-b0d0e64430d5
+	sourceLineageTag: b38cab1e-2920-4caf-b773-1134b0dc11e5
+
+	/// ID of the injury
+	column injury_type_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 490a25ae-88ef-42f3-8753-ee7ca648d1c5
+		sourceLineageTag: 639d7298-9f02-44f9-9efe-667d9e75e2aa
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: injury_type_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Namr of the injuiry
+	column injury_type
+		dataType: string
+		lineageTag: 64971392-2e95-49c5-8f17-a1ecc9c9b52a
+		sourceLineageTag: 60a12b64-f73c-49c5-b354-f9d93d536bf5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: injury_type
+		sortByColumn: _order
+
+		annotation SummarizationSetBy = User
+
+	column order
+		dataType: string
+		isHidden
+		lineageTag: c731275b-732c-44ae-9355-0cb79b934725
+		sourceLineageTag: 04d69db3-bea0-4c62-b3b9-9e35e42936c2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = User
+
+	column _order
+		dataType: string
+		isHidden
+		lineageTag: aee2b6f2-6dc8-4105-a818-92e5415aa9c5
+		sourceLineageTag: 5f2d46eb-7e03-4ec4-ae17-49e7aa071a17
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: _order
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 9dc71108-f596-44ef-9634-ad7480dd4db9
+		sourceLineageTag: cd4176db-dca0-488e-859c-f223adaeb9a9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: fecfb544-62ba-4427-9825-70cf58a0dff8
+		sourceLineageTag: 1d8b1f46-aa0a-47ab-b79e-d4d70e086304
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 43087f0d-dd6d-4237-b1b6-21c3239c2473
+		sourceLineageTag: cd24829d-25e4-4a56-b4c0-e9d4f1199b89
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: b610fe28-baa0-483d-853e-9c801ba8b0eb
+		sourceLineageTag: 253ffc6d-0b7f-489c-a0d7-7a7ed7abf46d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: dcab775b-369c-49d8-a5ab-5d7c5f842aef
+		sourceLineageTag: 668a3f16-491d-4c20-95f4-b09cac57ffce
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 6f2709dc-1b87-41df-b21d-a48880d9d6d5
+		sourceLineageTag: 33939d5a-7f6d-4510-83b5-b4754ac4f8f0
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: a97caeb2-7833-4c63-8296-3c47fff27749
+		sourceLineageTag: 0ed3ef27-3e2c-4eee-951e-6c9c54927802
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: fe99c26f-d6d3-4217-8de6-47c3e351ba2a
+		sourceLineageTag: 13788f46-48c8-42b9-b389-f2182199d26b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 89fef3cb-fb80-48dd-9b20-5a28ed3f1f0c
+		sourceLineageTag: 9b7397c6-e777-4480-be01-1c9a325c06cc
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: e47920c2-f2d5-4e98-8d74-aabb598a44e7
+		sourceLineageTag: 36ffcebc-dc86-4e02-9ce6-19e52a37d21e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_injury_type = entity
+		mode: directQuery
+		source
+			entityName: dim_injury_type
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

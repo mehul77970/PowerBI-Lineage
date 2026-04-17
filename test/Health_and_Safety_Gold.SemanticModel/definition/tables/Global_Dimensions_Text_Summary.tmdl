@@ -1,0 +1,27 @@
+/// Schema for dimension tables.
+table Global_Dimensions_Text_Summary
+	isHidden
+	lineageTag: 449a4f14-6497-4d8d-a023-e89d513f87ed
+
+	column Global_Dimensions_Text_Summary
+		dataType: string
+		isHidden
+		lineageTag: 2308847c-19c0-420c-bfa4-e5292a49d727
+		summarizeBy: none
+		sourceColumn: Global_Dimensions_Text_Summary
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Global_Dimensions_Text_Summary = m
+		mode: import
+		queryGroup: 'Global Data House Connections'
+		source = "local_gpe__reference_data" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,247 @@
+/// Fact table recording health and safety metrics including fatalities, ill-health deaths, and worked hours by site, workforce category, and month.
+table fct_health_safety
+	lineageTag: 8951c6fb-a94b-4096-bbd2-e73955c7802d
+
+	/// Sum of all fatal injuries.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Fatal Injuries' =
+			
+			SUM( fct_health_safety[number_fatal_injury] )
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: 8f19ad72-add4-466f-b7f4-94c96321b3e1
+
+	/// Sum of all fatal health.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Fatal Health' =
+			
+			SUM( fct_health_safety[number_fatal_health] )
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: ae511743-86ed-42d6-956e-099647b4874d
+
+	/// Sum of all worked hours.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Worked Hours' =
+			
+			SUM( fct_health_safety[number_worked_hours] )
+		formatString: #,0.00
+		displayFolder: _measures_fct_health_safety
+		lineageTag: acda4e41-ab4e-414c-b945-5e0a97b30d41
+
+	/// Total number of fatalities for rows within a specified hierarchy depth or total rows.
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Sum of Fatalities' =
+			
+			[Number of Fatal Health] + [Number of Fatal Injuries]
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: 3e5df733-5cdb-4ece-901a-58d56f23a0c6
+
+	column end_of_month = EOMONTH(date('fct_health_safety'[Reporting_year],fct_health_safety[Reporting_month],1),0)
+		formatString: General Date
+		lineageTag: 9cd653a1-13f1-4ee8-b94d-2c34ce4ada85
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_of_month = DATE('fct_health_safety'[Reporting_year],fct_health_safety[Reporting_month],01)
+		formatString: Short Date
+		lineageTag: 3dd488e3-6aa9-4d08-880f-466852624245
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column year_month = FORMAT(date('fct_health_safety'[Reporting_year],fct_health_safety[Reporting_month],1),"YYYY-MM")
+		lineageTag: be7501f5-b75b-48fb-86a2-c270594b1265
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: e72c5f30-a283-4ede-9e51-9e056cd7812c
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Reporting month of the metrics
+	column reporting_month
+		dataType: string
+		lineageTag: 3c52d5f4-6c3c-4bc6-966d-7ab5d102f2c0
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID identifying the site - site_ID can be defined by the groups as long as the first 2 characters are identical to the group_ID. Meaning that a site_ID from SHV_Energy always starts with "G2", for Nutreco with "G3" and for Kiwa "G4" etc.
+	column site_ID
+		dataType: string
+		isHidden
+		lineageTag: 67c978c2-f630-44f6-854f-409c790978e2
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// ID to identify the workforce category
+	column workforce_category_ID
+		dataType: string
+		isHidden
+		lineageTag: 9450a431-f021-4f95-b869-5500505e7b88
+		summarizeBy: none
+		sourceColumn: workforce_category_ID
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of fatalities as result of work-related injuries
+	column number_fatal_injury
+		dataType: int64
+		formatString: 0
+		lineageTag: b07221d6-c9c4-44a9-a1a8-804c20346515
+		summarizeBy: sum
+		sourceColumn: number_fatal_injury
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of fatalities as result of ill health
+	column number_fatal_health
+		dataType: int64
+		formatString: 0
+		lineageTag: daea0739-6266-4162-b8fe-c031ca435e88
+		summarizeBy: sum
+		sourceColumn: number_fatal_health
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Number of worked hours
+	column number_worked_hours
+		dataType: decimal
+		formatString: 0.0
+		lineageTag: 75b5cb51-a0f3-44a3-bb9d-e2faa635b348
+		summarizeBy: none
+		sourceColumn: number_worked_hours
+
+		changedProperty = DataType
+
+		annotation SummarizationSetBy = User
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		lineageTag: 3aa4acdc-08a3-4bd2-8914-382fe7aac0d4
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 000265ac-ebf3-4539-b4ff-2500580a9fcb
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 3c5866b0-b46c-47ac-81af-30a590d7c5c5
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 30b12506-3640-4db9-ac3f-9b0ca2d0dc75
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 07549a9e-c754-4c8a-beea-9dc0133c47ae
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 0904beae-cc84-4804-9d15-27314c7ee5be
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 9050d94d-812b-43e5-ad8c-c0bbcf238da4
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: e3f2f3a4-7430-4fe5-806a-ff1dbee8e077
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: dbc9b847-588b-40a0-b9aa-da51a352359e
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_health_safety = m
+		mode: import
+		queryGroup: 'Fact Tables\Pilot Wave'
+		source =
+				let
+				    Source = Sql.Database(Domain_Health_and_Safety_SQL, Domain_Health_and_Safety_WH),
+				    #"load" = Source{[Schema=Domain_Health_and_Safety_Schema,Item=table_HS]}[Data],
+				    #"Changed Type" = Table.TransformColumnTypes(load,{{"number_worked_hours", type number}, {"number_fatal_injury", Int64.Type}, {"number_fatal_health", Int64.Type}}),
+				    #"Rounded Off" = Table.TransformColumns(#"Changed Type",{{"number_worked_hours", each Number.Round(_, 2), type number}})
+				in
+				    #"Rounded Off"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navigation
+

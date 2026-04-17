@@ -1,0 +1,64 @@
+/// Stores the last dataset refresh timestamp.
+table 'Refresh Time Stamp'
+	lineageTag: b244689e-5488-4301-b493-efb4ffa9d578
+
+	/// Displays the last refresh date and time of the Health and Safety Gold dataset, formatted as DD, MM, YYYY H:MM AM/PM.
+	/// 
+	/// [Type: Display, Created on: 2025-03-30, Created by: JPA]
+	measure 'Last Update' = ```
+			
+			     "Last Update on " 
+			     & UNICHAR(10) 
+			     & FORMAT(
+			         MAX('Refresh Time Stamp'[RefreshDate]),
+			         "DD, MM, YYYY H:MM AM/PM"
+			     )
+			```
+		lineageTag: 829bcb28-b558-4bc2-83b3-1b21c87e5e01
+
+	/// Last date of the reporting month.
+	column RefreshDate
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: 6e49e7a7-4f16-46db-9d22-a1cc11d8e6d0
+		summarizeBy: none
+		sourceColumn: RefreshDate
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Refresh Time Stamp' = m
+		mode: import
+		queryGroup: 'Dimension & Reference Tables'
+		source =
+				let
+				    Source = #table(
+				        type table [dtDSTStart = date, dtDSTEnd = date],
+				        {
+				            {#date(2024, 3, 31), #date(2024, 10, 27)},
+				            {#date(2025, 3, 30), #date(2025, 10, 26)},
+				            {#date(2026, 3, 29), #date(2026, 10, 25)},
+				            {#date(2027, 3, 28), #date(2027, 10, 31)},
+				            {#date(2028, 3, 26), #date(2028, 10, 29)},
+				            {#date(2029, 3, 25), #date(2029, 10, 28)},
+				            {#date(2030, 3, 31), #date(2030, 10, 27)}
+				        }
+				    ),
+				    varCurrentDate = Date.From(DateTimeZone.UtcNow() + #duration(0,1,0,0)),
+				    Filtered = Table.SelectRows(Source, each [dtDSTStart] <= varCurrentDate and [dtDSTEnd] > varCurrentDate),
+				    varDSTOffset = Table.RowCount(Filtered),
+				    LastRefreshDate = #table(
+				        type table [RefreshDate = datetimezone],
+				        {
+				            {DateTimeZone.SwitchZone(DateTimeZone.UtcNow(), 1 + varDSTOffset)}
+				        }
+				    )
+				in
+				    LastRefreshDate
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

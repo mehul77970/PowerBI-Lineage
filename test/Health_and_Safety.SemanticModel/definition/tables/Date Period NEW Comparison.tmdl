@@ -1,0 +1,184 @@
+/// Date-level mapping table linking each calendar date to its corresponding comparison period with rolling date offset.
+table 'Date Period NEW Comparison'
+	isHidden
+	lineageTag: 2e908b1d-ea65-4ded-a4cd-6269f4b49e13
+	sourceLineageTag: ce6cd7db-d1ac-42df-ad2d-801c970179a1
+
+	/// End date for the comparison period.
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'DateEnd Comparison' = EXTERNALMEASURE("DateEnd Comparison", DATETIME, "DirectQuery to AS - Global_DatePeriod")
+		formatString: mmmm d\, yyyy
+		isHidden
+		lineageTag: 7ccc47b1-4d1f-4075-bfa7-1ac9d8151730
+		sourceLineageTag: 128da9eb-4d5b-4db3-9f5c-8d7085f124c7
+		dataCategory: Uncategorized
+
+		changedProperty = IsHidden
+
+	/// start date for the comparison period.
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'DateStart Comparison' = EXTERNALMEASURE("DateStart Comparison", DATETIME, "DirectQuery to AS - Global_DatePeriod")
+		formatString: mmmm d\, yyyy
+		isHidden
+		lineageTag: 1b6c9bf1-42dc-4699-acfe-98e64607f632
+		sourceLineageTag: c1c1192c-dd3f-4c36-bf8e-04b046c11268
+		dataCategory: Uncategorized
+
+		changedProperty = IsHidden
+
+	/// Rolling date offset indicator.
+	column 'Rolling Date'
+		dataType: int64
+		isHidden
+		lineageTag: d67f1205-1e93-4d2d-a38d-04aeea52928e
+		sourceLineageTag: b902de8d-b332-4c51-85a2-32d973d97206
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Rolling Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Calendar date.
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: 76926471-2f2e-4681-8578-c35bbd7ff948
+		sourceLineageTag: 7e7479a5-9ad7-4292-b1d3-e71bebd5830f
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: e6760071-98c3-49a2-9380-097bdcf715e7
+			defaultHierarchy: LocalDateTable_5bc38a5c-da47-44f3-b34e-f7e13c25c7e5.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// ISO calendar week number.
+	column 'Calender Week'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e43b758c-0b34-4e51-ae30-c8833bd79644
+		sourceLineageTag: ab762817-2870-464d-ac33-1f3b2bd6191d
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Calender Week
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the week.
+	column FirstDateInWeek
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: c2ed393d-8df0-4ff7-aedc-fa6b042894f9
+		sourceLineageTag: 87df1048-1d86-435f-b908-2e4e7f5d3289
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInWeek
+
+		variation Variation
+			isDefault
+			relationship: 2721b4da-4cb2-46da-9f13-fd84aef1713a
+			defaultHierarchy: LocalDateTable_1157f75d-26b1-4d0a-9f7d-a93660982432.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// First date of the month.
+	column FirstDateInMonth
+		dataType: dateTime
+		isHidden
+		formatString: Short Date
+		lineageTag: d5686271-f4ec-4e32-8a70-b1d928bf3dcb
+		sourceLineageTag: 87d937f9-477d-444d-89b7-a3aa4a1f5eb9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: FirstDateInMonth
+
+		variation Variation
+			isDefault
+			relationship: 9ad8cc3c-f5e5-423f-a1fd-a7fbdff3ee83
+			defaultHierarchy: LocalDateTable_6e49d4cb-c8a7-4a8e-bec7-07b67d211f20.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Quarter label with year.
+	column Quarternum_Long
+		dataType: string
+		isHidden
+		lineageTag: cafa2fc8-5bea-4085-91e3-6a7eb37c497d
+		sourceLineageTag: 0fa0e74d-21de-4f7c-b24b-b129a37d74e3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Quarternum_Long
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 36b7a51f-cffb-4fbf-b1e4-f15396a46b46
+		sourceLineageTag: f3ebc9ee-143f-4614-a347-0b607e2fea7e
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Year
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the comparison date period.
+	column 'Comparison Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 1e097787-da66-49e9-93ce-e45abe2cb0cb
+		sourceLineageTag: 51488b5d-1f66-4c5d-b35b-56603f9353a9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	/// Identifier for the comparison date period.
+	column 'Comparison Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 05dc666a-4f4d-44bf-8c92-c694f424db12
+		sourceLineageTag: dd3f8aec-a22b-4caf-abbf-03f271b8f2cb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date Period NEW Comparison' = entity
+		mode: directQuery
+		source
+			entityName: Date Period NEW Comparison
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+
+	changedProperty = IsHidden
+

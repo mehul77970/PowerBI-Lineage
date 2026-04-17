@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "49310930b3bc540fefc7",
+  "displayName": "Health and Safety  Summary",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "width": {
+            "expr": {
+              "Literal": {
+                "Value": "364L"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "e86db97dcddf27cc9cf8",
+      "target": "b7cb111f4d0648e1837e",
+      "type": "NoFilter"
+    },
+    {
+      "source": "e86db97dcddf27cc9cf8",
+      "target": "14deb3298277056a6754",
+      "type": "NoFilter"
+    },
+    {
+      "source": "7bfbcaa866eb6e963121",
+      "target": "5943675a06598425e42c",
+      "type": "DataFilter"
+    },
+    {
+      "source": "7bfbcaa866eb6e963121",
+      "target": "b7cb111f4d0648e1837e",
+      "type": "DataFilter"
+    },
+    {
+      "source": "7bfbcaa866eb6e963121",
+      "target": "14deb3298277056a6754",
+      "type": "DataFilter"
+    },
+    {
+      "source": "7bfbcaa866eb6e963121",
+      "target": "9410d6c3912125d1f975",
+      "type": "DataFilter"
+    },
+    {
+      "source": "5943675a06598425e42c",
+      "target": "b7cb111f4d0648e1837e",
+      "type": "DataFilter"
+    },
+    {
+      "source": "5943675a06598425e42c",
+      "target": "14deb3298277056a6754",
+      "type": "DataFilter"
+    },
+    {
+      "source": "5943675a06598425e42c",
+      "target": "9410d6c3912125d1f975",
+      "type": "DataFilter"
+    }
+  ]
+}

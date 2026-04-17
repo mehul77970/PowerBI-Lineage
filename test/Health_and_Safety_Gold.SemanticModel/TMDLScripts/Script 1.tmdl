@@ -1,0 +1,75 @@
+createOrReplace
+
+	ref table fct_health_safety_management
+
+		/// Sum of Number of Headcount
+		/// 
+		/// [Type:  Sum,  Created on: 2026-03-27,  Create by: JPA]
+		measure 'Sum of Number Headcount' = sum(fct_health_safety_management[number_headcount])
+			formatString: 0
+			displayFolder: _measures_health_safety_management
+			lineageTag: ced48ac6-50a4-4f34-8905-406c32fe6865
+
+		/// Sum of Number covered Health Safety
+		/// 
+		/// [Type:  Sum,  Created on: 2026-03-27,  Create by: JPA]
+		measure 'Sum of Number Covered Health Safety' = sum(fct_health_safety_management[number_covered_health_safety])
+			formatString: 0
+			displayFolder: _measures_health_safety_management
+			lineageTag: 4e759a13-ea48-41db-8e9c-d2a03f58675b
+
+	ref table _Rollup_measures
+
+		/// Calculates the percentage of headcount covered by Health & Safety management systems.
+		/// Returns the ratio of total headcount to the number of employees covered, expressed as a percentage. The measure respects hierarchy browse depth settings—displaying values only at permitted levels while always showing the total row. Returns blank when no underlying data exists; returns zero when data exists but the computed ratio is zero.
+		/// 
+		/// [Type:  Percentage,  Created on: 2026-04-27,  Create by: JPA]
+		measure 'Total Management System Coverage Percent' = ```
+				
+				
+				VAR _NumberHeadcount =
+				    [Sum of Number Headcount]
+				
+				VAR _NumberCovered =
+				    [Sum of Number Covered Health Safety]
+				
+				VAR _value =
+				    DIVIDE( _NumberCovered, _NumberHeadcount ) 
+				
+				/*
+				    Data presence check
+				    We consider "has data" when at least one input exists. This allows returning 0
+				    when the computed ratio resolves to 0, while still returning BLANK() when
+				    absolutely no data is present.
+				-*/
+				VAR _has_data =
+				    NOT ( ISBLANK( _NumberHeadcount ) && ISBLANK( _NumberCovered ) )
+				
+				/*
+				    Hierarchy visibility
+				    - Show rows within the allowed browse depth.
+				    - Always show the total row (when Level1_group is not in scope).
+				*/
+				VAR _is_total_row =
+				    NOT ISINSCOPE( dim_group[Level1_group] )
+				
+				VAR _show_row =
+				    [BrowseDepth_group] <= [MaxHierarchyDepth_group]
+				        || _is_total_row
+				
+				VAR _result = CALCULATE(
+				    IF(
+				        _show_row,
+				        IF(
+				            _has_data,
+				            COALESCE( _value, 0 ),
+				            BLANK()
+				        )
+				    ) )
+				
+				RETURN
+				   _result
+				```
+			formatString: 0.00%;-0.00%;0.00%
+			lineageTag: f7b142dc-cde8-405d-adc3-fdb7c34f7a36
+

@@ -1,0 +1,268 @@
+/// Fact table recording health and safety metrics including fatalities, ill-health deaths, and worked hours by site, workforce category, and month.
+table fct_health_safety
+	lineageTag: ed3bd4c8-61b9-4cc3-a1b4-b4571333e5ed
+	sourceLineageTag: 8951c6fb-a94b-4096-bbd2-e73955c7802d
+
+	/// Sum of all fatal injuries.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Fatal Injuries' = EXTERNALMEASURE("Number of Fatal Injuries", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: 271451b0-3423-4c3d-bcac-135e2bd9e006
+		sourceLineageTag: 8f19ad72-add4-466f-b7f4-94c96321b3e1
+		dataCategory: Uncategorized
+
+	/// Sum of all fatal health.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Fatal Health' = EXTERNALMEASURE("Number of Fatal Health", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: 01e24883-5e36-4220-b3b8-8cd89b2335cf
+		sourceLineageTag: ae511743-86ed-42d6-956e-099647b4874d
+		dataCategory: Uncategorized
+
+	/// Sum of all worked hours.
+	/// 
+	/// [Type:  Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Number of Worked Hours' = EXTERNALMEASURE("Number of Worked Hours", CURRENCY, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: #,0.00
+		displayFolder: _measures_fct_health_safety
+		lineageTag: 99eda8d4-6f28-446a-9b0d-c8361d9b9bd9
+		sourceLineageTag: acda4e41-ab4e-414c-b945-5e0a97b30d41
+		dataCategory: Uncategorized
+
+	/// Total number of fatalities for rows within a specified hierarchy depth or total rows.
+	/// 
+	/// [Type: Sum,  Created on: 2025-09-11,  Create by: JPA]
+	measure 'Sum of Fatalities' = EXTERNALMEASURE("Sum of Fatalities", INTEGER, "DirectQuery to AS - Health_and_Safety_Gold")
+		formatString: 0
+		displayFolder: _measures_fct_health_safety
+		lineageTag: c96b8f0c-6f62-41fe-9a82-0d78ef300fdf
+		sourceLineageTag: 3e5df733-5cdb-4ece-901a-58d56f23a0c6
+		dataCategory: Uncategorized
+
+	column end_of_month
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 68a57a15-6104-43ec-af71-e0f7611921e4
+		sourceLineageTag: 9cd653a1-13f1-4ee8-b94d-2c34ce4ada85
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: end_of_month
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = User
+
+	column first_of_month
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 024ef59c-7ec7-4675-9d47-7e53dcf17056
+		sourceLineageTag: 3dd488e3-6aa9-4d08-880f-466852624245
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: first_of_month
+
+		annotation SummarizationSetBy = User
+
+	column year_month
+		dataType: string
+		lineageTag: 1e905028-baa4-4875-b5ac-bc8fe0eb27dd
+		sourceLineageTag: be7501f5-b75b-48fb-86a2-c270594b1265
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: year_month
+
+		annotation SummarizationSetBy = User
+
+	/// Reporting year of the metrics
+	column reporting_year
+		dataType: string
+		lineageTag: cad96031-3cec-42a9-9c4b-6f9145538b68
+		sourceLineageTag: e72c5f30-a283-4ede-9e51-9e056cd7812c
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_year
+
+		annotation SummarizationSetBy = User
+
+	/// Reporting month of the metrics
+	column reporting_month
+		dataType: string
+		lineageTag: 2f466617-fa9d-4352-a269-6c2cbdf223d0
+		sourceLineageTag: 3c52d5f4-6c3c-4bc6-966d-7ab5d102f2c0
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: reporting_month
+
+		annotation SummarizationSetBy = User
+
+	/// ID identifying the site - site_ID can be defined by the groups as long as the first 2 characters are identical to the group_ID. Meaning that a site_ID from SHV_Energy always starts with "G2", for Nutreco with "G3" and for Kiwa "G4" etc.
+	column site_ID
+		dataType: string
+		isHidden
+		lineageTag: c7910712-182d-412d-a680-6e372ecd2afb
+		sourceLineageTag: 67c978c2-f630-44f6-854f-409c790978e2
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: site_ID
+
+		annotation SummarizationSetBy = User
+
+	/// ID to identify the workforce category
+	column workforce_category_ID
+		dataType: string
+		isHidden
+		lineageTag: c728d055-609a-460f-ba99-72c65110d17b
+		sourceLineageTag: 9450a431-f021-4f95-b869-5500505e7b88
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: workforce_category_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Number of fatalities as result of work-related injuries
+	column number_fatal_injury
+		dataType: int64
+		formatString: 0
+		lineageTag: 8677e35e-6d35-45e4-84fa-34d52d5dc8e3
+		sourceLineageTag: b07221d6-c9c4-44a9-a1a8-804c20346515
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: number_fatal_injury
+
+		annotation SummarizationSetBy = User
+
+	/// Number of fatalities as result of ill health
+	column number_fatal_health
+		dataType: int64
+		formatString: 0
+		lineageTag: 1fa60923-13d2-45f4-b283-e2b082dc80b9
+		sourceLineageTag: daea0739-6266-4162-b8fe-c031ca435e88
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: number_fatal_health
+
+		annotation SummarizationSetBy = User
+
+	/// Number of worked hours
+	column number_worked_hours
+		dataType: decimal
+		formatString: #,0.00
+		lineageTag: 1b352bb0-5a8b-48d9-b023-57bdbb30e2ac
+		sourceLineageTag: 75b5cb51-a0f3-44a3-bb9d-e2faa635b348
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: number_worked_hours
+
+		changedProperty = FormatString
+
+		annotation SummarizationSetBy = User
+
+	/// Group source system
+	column consolidated_source
+		dataType: string
+		lineageTag: 0f511c48-7cbe-402f-a0f0-76dfb04cba57
+		sourceLineageTag: 3aa4acdc-08a3-4bd2-8914-382fe7aac0d4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: consolidated_source
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 265267a0-08c2-4c38-b9b9-72aa1eeea910
+		sourceLineageTag: 000265ac-ebf3-4539-b4ff-2500580a9fcb
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: a2f3d453-d6af-49be-ab32-de5b19917ac1
+		sourceLineageTag: 3c5866b0-b46c-47ac-81af-30a590d7c5c5
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: acd6313c-7ddd-4a2a-81e0-9dcde17eb990
+		sourceLineageTag: 30b12506-3640-4db9-ac3f-9b0ca2d0dc75
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 1147e42c-5dd1-4f71-a16d-071db51d690c
+		sourceLineageTag: 07549a9e-c754-4c8a-beea-9dc0133c47ae
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 0b219114-08fa-4d7d-87f2-41ff7c0a60dc
+		sourceLineageTag: 0904beae-cc84-4804-9d15-27314c7ee5be
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: c6dda2a7-ddf7-457e-82b8-8d5a5c8fcb5a
+		sourceLineageTag: 9050d94d-812b-43e5-ad8c-c0bbcf238da4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: a6443631-a016-4b81-98e6-9508f98079cb
+		sourceLineageTag: e3f2f3a4-7430-4fe5-806a-ff1dbee8e077
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: fd9fec4e-340b-42dd-bf34-fec8145709df
+		sourceLineageTag: dbc9b847-588b-40a0-b9aa-da51a352359e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	partition fct_health_safety = entity
+		mode: directQuery
+		source
+			entityName: fct_health_safety
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

@@ -1,0 +1,256 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "7cbdf3bbf12d1029e12c",
+  "position": {
+    "x": 24.285046462573398,
+    "y": 114.33937931717433,
+    "z": 3000,
+    "height": 180.73128791893322,
+    "width": 841.64080158326749,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Table Example",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontSize": "14pt",
+                      "color": "#ffffff"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Sales",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "|",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t"
+                  },
+                  {
+                    "value": "transactions, orders, revenue, sales data, order lines, purchases, invoices, line items ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Customer",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t"
+                  },
+                  {
+                    "value": "| customers, clients, buyers, shoppers, consumer, account, people, members",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Product",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t"
+                  },
+                  {
+                    "value": "| products, items, goods, catalogue, catalog, SKUs, merchandise, article",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Store",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| stores, locations, shops, outlets, branches, retail locations, sites",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "Date",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t\t\t"
+                  },
+                  {
+                    "value": "| date, calendar, time, period, dates, day, fiscal calendar",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "| ",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "_measures",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  },
+                  {
+                    "value": "\t\t"
+                  },
+                  {
+                    "value": "| measures, metrics, KPIs, calculations",
+                    "textStyle": {
+                      "fontFamily": "Consolas, Courier New, monospace",
+                      "fontSize": "14px"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 4,
+                      "Percent": 0
+                    }
+                  }
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

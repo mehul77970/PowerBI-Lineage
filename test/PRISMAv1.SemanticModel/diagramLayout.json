@@ -1,0 +1,108 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 60.959871319610976
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 862.3
+          },
+          "nodeIndex": "Customer",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1087.4,
+            "y": 559.8
+          },
+          "nodeIndex": "Date",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 493.9,
+            "y": 1060.4
+          },
+          "nodeIndex": "Product",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 443.84667124378245,
+            "y": 640.59586480100438
+          },
+          "nodeIndex": "Sales",
+          "nodeLineageTag": "94d3ea3b-4449-4e27-903d-c961f1df5413",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 724,
+            "y": 121.5
+          },
+          "nodeIndex": "Store",
+          "nodeLineageTag": "aca9499e-9ded-4d0a-835d-f1f04b9d2e92",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 1150.6,
+            "y": 170.5
+          },
+          "nodeIndex": "Currency Exchange",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 1434.6,
+            "y": 661.95
+          },
+          "nodeIndex": "_measures",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 62.336089590424194,
+      "pinKeyFieldsToTop": true,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

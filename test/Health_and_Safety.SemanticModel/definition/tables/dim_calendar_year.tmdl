@@ -1,0 +1,24 @@
+/// Year Calendar
+table dim_calendar_year
+	lineageTag: 652c581e-e00f-4e27-951e-f821849e224b
+	sourceLineageTag: 7e53e3f2-c42f-4d1c-bc26-7b1303d2b818
+
+	/// Calendar year.
+	column Year
+		dataType: int64
+		isNullable: false
+		formatString: 0
+		lineageTag: 9e2844c6-faa2-457b-b6c2-d153a2cdae4e
+		sourceLineageTag: b8b4a8a1-1097-4b7a-b199-bd6484f9828a
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Year
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendar_year = entity
+		mode: directQuery
+		source
+			entityName: dim_calendar_year
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "ad7da51ecc073b1bd5f3",
+  "displayName": "tt_summary_trend",
+  "displayOption": "ActualSize",
+  "height": 180,
+  "width": 350,
+  "visibility": "HiddenInViewMode",
+  "type": "Tooltip"
+}

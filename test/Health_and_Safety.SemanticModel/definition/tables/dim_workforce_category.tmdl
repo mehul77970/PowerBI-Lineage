@@ -1,0 +1,159 @@
+/// Dimension classifying workforce into categories (e.g. employees, contractors).
+table dim_workforce_category
+	lineageTag: 4dd75288-4470-47d7-854f-ab3980a91927
+	sourceLineageTag: 7eb17766-bc23-444c-97a6-d9becec3ed40
+
+	/// Name of the workforce category
+	column workforce_category
+		dataType: string
+		lineageTag: 2912ed60-836c-4bab-b286-e1be8fdfd587
+		sourceLineageTag: 2f0ea9fc-9430-4741-af05-b7863982ae5d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: workforce_category
+		sortByColumn: order
+
+		annotation SummarizationSetBy = User
+
+	/// ID of the workforce category
+	column workforce_category_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: d3e1489e-1c8e-4121-a5f8-ec6b30ca94d1
+		sourceLineageTag: 2f1e360a-7a33-49bd-8552-cd0e87a08e0d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: workforce_category_ID
+
+		annotation SummarizationSetBy = User
+
+	column order
+		dataType: string
+		isHidden
+		lineageTag: b602c215-0e72-47d8-b991-f9e51255faef
+		sourceLineageTag: 6f0e731b-9cfc-4b99-a427-d27ea3c529d9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 24cbb9bd-7c80-4bf5-9a90-f2c12710d551
+		sourceLineageTag: 9bf274d9-1031-458d-95ae-48ced1ed0ea7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 71902b9b-1afd-4378-afc1-e1aac2b56df0
+		sourceLineageTag: 8cc91053-e97b-4c67-91eb-941a8a373185
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 6a0f3277-e4e5-4e85-b9ff-10f52a87f650
+		sourceLineageTag: abecdca7-512e-4145-82ce-31f24aa610f3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: 81aa51b3-e54d-4275-96b2-0a07b9b282f9
+		sourceLineageTag: 860d0599-55c2-440a-9025-96de22fe65e7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: 90886d06-b9a8-4709-affb-0f97bca45be3
+		sourceLineageTag: 95dd8c88-d06d-46b8-86eb-1b34d77149ef
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 815e825c-9d8a-4f90-85b4-b7271a237a74
+		sourceLineageTag: ca57b334-67b5-4bf4-ab75-8537d11141ea
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 2a9b9db7-cc9c-43e1-9f43-62a9da9120f1
+		sourceLineageTag: 900ee727-887f-4c88-90c5-193661685953
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: 039ffee4-73c7-4249-ab47-9f2a74114991
+		sourceLineageTag: e62e9f78-79eb-4f25-9d99-d81a42739e66
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 0571c18e-434f-4dbd-9a9e-53b110bc9636
+		sourceLineageTag: 35733507-b729-4357-9a51-059677529687
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = User
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 04323f1b-2f6a-4628-ae36-fda0d6758c59
+		sourceLineageTag: 944b3708-b24c-4ba3-a390-2d80a7243b37
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	partition dim_workforce_category = entity
+		mode: directQuery
+		source
+			entityName: dim_workforce_category
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+

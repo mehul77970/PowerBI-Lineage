@@ -1,0 +1,143 @@
+/// Configuration table defining period parameters including unit type, roll count, duration, and weekday alignment settings.
+table 'Date Period NEW Config'
+	isHidden
+	lineageTag: 2f8343ce-11e8-473f-8ee5-66112f11d8f9
+	sourceLineageTag: bd51238f-8398-4a16-ba1a-7a27c135d8fe
+
+	/// Current date using TODAY(),
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure RefToDate = EXTERNALMEASURE("RefToDate", DATETIME, "DirectQuery to AS - Global_DatePeriod")
+		formatString: General Number
+		isHidden
+		lineageTag: 88d59daf-38ee-46d2-a1a2-755e918cf98c
+		sourceLineageTag: 3088d354-f927-4308-b5c5-29b1e89a8382
+		dataCategory: Uncategorized
+
+	/// Reference start year by subtracting 3 years from RefToDate
+	/// 
+	/// [Type:  Date Reference,  Created on: 2025-09-11,  Create by: JPA]
+	measure RefStartDate = EXTERNALMEASURE("RefStartDate", INTEGER, "DirectQuery to AS - Global_DatePeriod")
+		formatString: 0
+		isHidden
+		lineageTag: a31544f3-dbb5-4492-8c52-eced63a2942c
+		sourceLineageTag: 5d62a0b1-667d-4c02-963d-688127eeca97
+		dataCategory: Uncategorized
+
+	/// Identifier for the base date period.
+	column 'Base Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 5243fd25-4265-4662-9cd3-b144f3f93921
+		sourceLineageTag: d574b97c-e91e-4fa3-bd17-873f55380aaa
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the base date period.
+	column 'Base Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 36d4db2d-5fcb-4ea3-a1fe-56fe5b41ac22
+		sourceLineageTag: 9b692609-afde-469b-9a96-8920562a7d78
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Base Date Period
+
+		annotation SummarizationSetBy = User
+
+	/// Identifier for the comparison date period.
+	column 'Comparison Date Period ID'
+		dataType: string
+		isHidden
+		lineageTag: 254bf106-2319-475a-81b0-fdb071ed4b66
+		sourceLineageTag: 59bbab6a-8949-4d53-b459-0f30250b9aad
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period ID
+
+		annotation SummarizationSetBy = User
+
+	/// Display name of the comparison date period.
+	column 'Comparison Date Period'
+		dataType: string
+		isHidden
+		lineageTag: 0d3b6405-834d-43da-b875-b419adf378c5
+		sourceLineageTag: 5f67779c-4fbf-4190-a13a-3adbd2996939
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Comparison Date Period
+
+		annotation SummarizationSetBy = User
+
+	/// Time unit for the period (e.g. Day, Week, Month).
+	column Unit
+		dataType: string
+		isHidden
+		lineageTag: f77299ac-8359-4e9e-8f60-55e369ab7f06
+		sourceLineageTag: d4d2637d-e915-4d8d-a9af-ff64c50140a9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Unit
+
+		annotation SummarizationSetBy = User
+
+	/// Number of units to roll for period calculation.
+	column 'Unit Roll'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4f2d309a-d767-4f30-b0b0-bfde4cd39cc7
+		sourceLineageTag: dd7ae31f-f7ed-49be-8c6c-dd60f0c2c44f
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Unit Roll
+
+		annotation SummarizationSetBy = User
+
+	/// Duration of each unit in the period.
+	column 'Unit Duration'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8b4f15ab-5d8a-4f7f-9de1-8c11401af497
+		sourceLineageTag: 60e55a7c-7766-472a-96ee-8bc32d6e84b9
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Unit Duration
+
+		annotation SummarizationSetBy = User
+
+	/// Length descriptor for the time unit.
+	column 'Unit Length'
+		dataType: string
+		isHidden
+		lineageTag: f991347c-021c-4094-bc43-88b5a38e4473
+		sourceLineageTag: b08bab20-e0da-40e0-b17f-5dbad98816b1
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: Unit Length
+
+		annotation SummarizationSetBy = User
+
+	/// Flag indicating whether to align to the same weekday.
+	column 'Same Weekday'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 789db627-046b-4687-b8c4-fdb3e24868fc
+		sourceLineageTag: 05c7cfb1-3d88-443b-a249-ef3d661aa837
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: Same Weekday
+
+		annotation SummarizationSetBy = User
+
+	partition 'Date Period NEW Config' = entity
+		mode: directQuery
+		source
+			entityName: Date Period NEW Config
+			expressionSource: 'DirectQuery to AS - Global_DatePeriod'
+

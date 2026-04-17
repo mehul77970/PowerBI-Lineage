@@ -1,0 +1,172 @@
+/// Dimension classifying incidents as severe injuries or fatalities.
+table dim_serious_injury_fatality
+	lineageTag: e8a6dd0a-db87-4723-ba6a-adb0cafe4467
+	sourceLineageTag: 04ec71f6-3e34-4c6e-b05f-b4e044821418
+
+	column order
+		dataType: string
+		isHidden
+		lineageTag: ee66ca32-45f9-4e65-b16a-d60484a3f659
+		sourceLineageTag: 567117d4-12d5-4447-bcd1-eae913de6a32
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: order
+
+		annotation SummarizationSetBy = User
+
+	/// ID to identify a severe injury or fatality classification.
+	column severe_injury_fatality_ID
+		dataType: string
+		isHidden
+		isNullable: false
+		lineageTag: 9449b725-006c-4b36-aa19-746456d6452c
+		sourceLineageTag: d00f3366-4171-4817-ab49-f44e8ccfac6d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: severe_injury_fatality_ID
+
+		annotation SummarizationSetBy = User
+
+	/// Type of severe injury or fatality.
+	column severe_injury_fatality_type
+		dataType: string
+		lineageTag: f4220034-2cdb-404d-94e5-182e020f5f4e
+		sourceLineageTag: 35081070-d97d-4428-a49f-68ac7a2b68cf
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: severe_injury_fatality_type
+		sortByColumn: _order
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = User
+
+	column _order
+		dataType: string
+		isHidden
+		lineageTag: e50c9bc5-2cb8-46ab-9848-4a6d533efaf9
+		sourceLineageTag: e87ed996-15a8-4561-bff1-44f8144f2092
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: _order
+
+		annotation SummarizationSetBy = User
+
+	column sdp_id
+		dataType: string
+		isHidden
+		lineageTag: 2cab16f7-dfd1-436c-afcb-73a8ca881ede
+		sourceLineageTag: a0d0cb0e-96a3-4658-9eab-ba32c19ba52d
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_name
+		dataType: string
+		isHidden
+		lineageTag: 5bfbd95a-3e98-4aa4-9775-9f583ad4327b
+		sourceLineageTag: 7f22f2fa-d851-4688-8c95-3de3414634c4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_name
+
+		annotation SummarizationSetBy = User
+
+	column sdp_partition_col
+		dataType: string
+		isHidden
+		lineageTag: 590e4914-57aa-4eed-962a-b9f5404a2c92
+		sourceLineageTag: 42e18a86-716a-4980-8d84-a251e763322e
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_partition_col
+
+		annotation SummarizationSetBy = User
+
+	column sdp_pipeline_run_id
+		dataType: string
+		isHidden
+		lineageTag: c110fcad-921b-4edc-9daf-272edc6bd190
+		sourceLineageTag: 8dacac12-33b5-4e88-a842-8bac6139b3f3
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_pipeline_run_id
+
+		annotation SummarizationSetBy = User
+
+	column sdp_group_filename
+		dataType: string
+		isHidden
+		lineageTag: ccd3027b-f551-43ab-b7f9-3352e51e889a
+		sourceLineageTag: b44dd977-c82c-4a43-b44b-cacf7c4a20f7
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_group_filename
+
+		annotation SummarizationSetBy = User
+
+	column sdp_load_date
+		dataType: string
+		isHidden
+		lineageTag: 673bfbf3-23e1-4ee2-960b-701cea57df7d
+		sourceLineageTag: 63130005-d00f-44d3-ab9d-ff21c1deff00
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_load_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_created_date
+		dataType: string
+		isHidden
+		lineageTag: 4c5f9509-fb72-4042-8b29-056866eb4d81
+		sourceLineageTag: 83242621-aac3-4c7e-bfba-22ea2cf54a3b
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_created_date
+
+		annotation SummarizationSetBy = User
+
+	column sdp_updated_date
+		dataType: string
+		isHidden
+		lineageTag: f1a47493-9316-4733-8f5c-724d10c01784
+		sourceLineageTag: c21de8a3-59d7-49fa-b3fe-8aa34a4ffca8
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_updated_date
+
+		annotation SummarizationSetBy = User
+
+	column is_sdp_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: ff6339c3-85dd-481f-b5c8-12d7376bad79
+		sourceLineageTag: 2a1ecce7-26f6-47bf-b5a7-0db4981df591
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: is_sdp_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column sdp_effective_end_date
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7e598c75-19ab-4233-9d50-f96067340fe9
+		sourceLineageTag: 7b358ef2-43b2-4113-a97d-1ad44f3058f4
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: sdp_effective_end_date
+
+		annotation SummarizationSetBy = User
+
+	partition dim_serious_injury_fatality = entity
+		mode: directQuery
+		source
+			entityName: dim_serious_injury_fatality
+			expressionSource: 'DirectQuery to AS - Health_and_Safety_Gold'
+
