@@ -149,6 +149,7 @@ document.addEventListener('click', function(e){
     case 'page-toggle':     togglePage(d.name); break;
     case 'table-toggle':    toggleTableCard(d.name); break;
     case 'orphan-toggle':   toggleOrphanSection(d.section); break;
+    case 'toggle-auto-date': toggleAutoDate(); break;
     case 'card-toggle':     el.parentElement.classList.toggle('open'); break;
   }
 });
@@ -174,14 +175,26 @@ function renderSummary(){
   `;
 }
 
+// Auto-generated `LocalDateTable_<guid>` / `DateTableTemplate_<guid>`
+// tables are infrastructure, not user content. We hide them from
+// default counts and rendering; a toggle on the Tables / Sources tab
+// lets users opt into seeing them. On the H&S composite model this
+// cuts 10 noise entries out of the 53-table list.
+let showAutoDate = false;
+function visibleTables(){ return (DATA.tables||[]).filter(t=>showAutoDate||t.origin!=="auto-date"); }
+function autoDateCount(){ return (DATA.tables||[]).filter(t=>t.origin==="auto-date").length; }
+function toggleAutoDate(){ showAutoDate = !showAutoDate; renderTabs(); renderTables(); renderSources(); }
+
 function renderTabs(){
   const um=DATA.totals.measuresUnused+DATA.totals.columnsUnused;
+  const vt=visibleTables();
+  const adc=autoDateCount();
   // Bottom-up build order: data foundations first, then calculation logic,
   // then consumption (pages), then analysis (unused/lineage), then docs.
   document.getElementById("tabs").innerHTML=[
     // Data layer
-    {id:"sources",l:"Sources",b:(DATA.tables||[]).filter(function(t){return (t.partitions||[]).length>0;}).length},
-    {id:"tables",l:"Tables",b:DATA.tables.length},
+    {id:"sources",l:"Sources",b:vt.filter(function(t){return (t.partitions||[]).length>0;}).length},
+    {id:"tables",l:"Tables",b:vt.length},
     {id:"columns",l:"Columns",b:DATA.columns.length},
     {id:"relationships",l:"Relationships",b:DATA.relationships.length},
     // Calculation layer
@@ -286,9 +299,16 @@ function navigateLineage(type,name){
     });
     const usedFuncs=DATA.functions.filter(f=>!f.name.endsWith('.About')&&(m.daxExpression.includes("'"+f.name+"'")||m.daxExpression.includes(f.name+'(')));
     const feedsInto=DATA.measures.filter(x=>x.daxDependencies.includes(m.name));
-    const extMatch=(m.daxExpression||'').match(/EXTERNALMEASURE\s*\(\s*"([^"]*)"\s*,\s*\w+\s*,\s*"DirectQuery to AS - ([^"]+)"\s*\)/i);
-    const extModel=extMatch?extMatch[2]:null;
-    const extRemoteName=extMatch?extMatch[1]:null;
+    // EXTERNALMEASURE proxy is now detected server-side (data-builder.ts)
+    // and attached to the measure as a structured `externalProxy` field.
+    // The regex fallback stays for back-compat with older DATA payloads.
+    let proxy = m.externalProxy;
+    if (!proxy) {
+      const extMatch = (m.daxExpression||'').match(/EXTERNALMEASURE\s*\(\s*"([^"]*)"\s*,\s*(\w+)\s*,\s*"DirectQuery to AS - ([^"]+)"\s*\)/i);
+      if (extMatch) proxy = { remoteName: extMatch[1], type: extMatch[2], externalModel: extMatch[3], cluster: null };
+    }
+    const extModel = proxy ? proxy.externalModel : null;
+    const extRemoteName = proxy ? proxy.remoteName : null;
 
     el.innerHTML=`
       <div class="lineage-back" data-action="tab" data-tab="${escAttr(backTab)}">← Back to ${backTab==='measures'?'Measures':'Columns'}</div>
@@ -477,7 +497,7 @@ function toggleTableCard(name){
 }
 
 function renderTables(){
-  const tables=DATA.tables||[];
+  const tables=visibleTables();
   // Precompute slicer lookup once per render so the per-row badge stays cheap.
   // TableColumnData doesn't carry isSlicerField — it lives on the flat ModelColumn.
   const slicerSet=new Set((DATA.columns||[]).filter(c=>c.isSlicerField).map(c=>c.table+'|'+c.name));
@@ -569,11 +589,23 @@ function renderTables(){
   }).join("")||'<div style="text-align:center;padding:60px 20px;color:var(--text-faint);font-size:13px">No tables found</div>';
   var totalCols=tables.reduce(function(a,t){return a+(t.columnCount||0);},0);
   var totalMs=tables.reduce(function(a,t){return a+(t.measureCount||0);},0);
+  var adc=autoDateCount();
   var pf=document.getElementById("tables-content");
-  if(pf)pf.insertAdjacentHTML("beforeend",
-    '<div class="panel-footer"><div class="left">'+
-      tables.length+' tables · '+totalCols+' columns · '+totalMs+' measures'+
-    '</div></div>');
+  if(pf){
+    // Footer shows visible-table totals + a toggle for the auto-date
+    // tables Power BI generates as calendar infrastructure. The toggle
+    // is only rendered when the model actually has some to hide/show.
+    var autoToggle = adc > 0
+      ? '<button class="filter-btn'+(showAutoDate?' active':'')+'" data-action="toggle-auto-date" title="'+
+          (showAutoDate?'Hide':'Show')+' LocalDateTable_* and DateTableTemplate_* auto-generated tables">'+
+        (showAutoDate?'Hide':'Show')+' auto-date ('+adc+')</button>'
+      : '';
+    pf.insertAdjacentHTML("beforeend",
+      '<div class="panel-footer"><div class="left">'+
+        tables.length+' tables · '+totalCols+' columns · '+totalMs+' measures'+
+        (adc>0 && !showAutoDate ? ' · <span style="color:var(--text-faint)">+'+adc+' auto-date hidden</span>' : '')+
+      '</div><div class="right">'+autoToggle+'</div></div>');
+  }
 }
 
 var openOrphanSections=new Set();
@@ -662,7 +694,7 @@ function renderSources(){
       '</div>'+
     '</div>';
 
-  var tablesWithSources=(DATA.tables||[]).filter(function(t){return (t.partitions||[]).length>0;});
+  var tablesWithSources=visibleTables().filter(function(t){return (t.partitions||[]).length>0;});
   var modeCounts={};
   var totalParts=0;
   tablesWithSources.forEach(function(t){

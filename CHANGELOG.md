@@ -11,6 +11,35 @@ Sections in each release follow the Keep-a-Changelog vocabulary: **Added**, **Ch
 
 ---
 
+## [0.5.0] — 2026-04-18 · Stop 6 — composite-model fixes (branch `stop-6/composite-model-fixes`)
+
+Closes every known gap the Health_and_Safety composite-model fixture exposed. Four discrete fixes, each with its own regression test, plus a new auto-date toggle in the Tables tab.
+
+### Fixed
+- **Task 6.1 — Multi-line TMDL expressions with quoted names parse correctly.** The `expression 'NAME'` regex used `\S+` for the name, which stopped at the first space inside quoted identifiers like `'DirectQuery to AS - Health_and_Safety_Gold'`. Every composite model silently parsed **zero** expressions, cascading into every DQ partition collapsing to "Unknown / M". Switched to `'[^']+'|"[^"]+"|[\w.-]+` so quoted names are captured.
+- **Task 6.2 — Entity-partition source resolution via shared expressions.** TMDL composite partitions use `source` + nested `entityName: …` + `expressionSource: 'NAME'`, not inline M. The previous extractor only handled the `source = <inline M>` form. `extractTmdlPartitions` now accepts an expression table, follows `expressionSource` references, and runs `inferSource` against the resolved body. Result on H&S: 48 DQ partitions previously "Unknown / M" now resolve to **Analysis Services** with the real cluster URL (`powerbi://api.powerbi.com/…`). The partition-name regex was also fixed to handle quoted names with spaces (`partition 'Date NEW' = entity`).
+
+### Added
+- **Task 6.3 — Structured `externalProxy` field on `ModelMeasure`.** EXTERNALMEASURE proxy detection moved from render-time regex into `buildFullData`, populating `{ remoteName, type, externalModel, cluster }`. `cluster` resolves from the corresponding shared expression's `AnalysisServices.Database(...)` first argument. Downstream consumers (dashboard lineage card, measures MD export, future Quality rules) now read a structured field instead of each re-implementing the regex. Client keeps the render-time regex as a back-compat fallback for older `DATA` payloads.
+- **Task 6.4 — `origin: "user" | "auto-date"` on `TableData`.** Tables matching `LocalDateTable_*` or `DateTableTemplate_*` are tagged as auto-date infrastructure. The client hides them from default counts on the Tables tab, Sources tab, and tab-count badges. A **toggle button** in the Tables-tab footer ("Show auto-date (N)" / "Hide auto-date (N)") opts them in. Default tab-count footer notes `+N auto-date hidden` so the count difference is discoverable.
+- **`tests/composite-model.test.ts`** — 5 integration tests against the real H&S fixture covering every task above:
+  1. expressions with quoted names parse
+  2. every DQ partition resolves to Analysis Services
+  3. EXTERNALMEASURE proxies get structured `externalProxy`
+  4. proxy `cluster` URL resolves from the shared expression
+  5. auto-date classification matches the naming convention exactly
+  Tests gracefully skip if the fixture isn't checked out.
+
+### Test results
+54 / 54 green (was 49, +5). Typecheck and build clean. Live smoke against `test/Health_and_Safety.Report`:
+- 53 tables total → 43 user + 10 auto-date
+- 48 DQ partitions resolve to Analysis Services (was 0 before)
+- 4 "Unknown / M" remaining are user-authored import `switch_*` dimension tables whose M doesn't match any built-in pattern and isn't expression-referenced (correctly out-of-scope)
+- 19 EXTERNALMEASURE proxies tagged with full `externalProxy` incl. cluster URL
+- Toggle button present in Tables-tab footer
+
+---
+
 ## [0.4.0] — 2026-04-18 · Stop 5 pass 1 — client code extracted to `src/client/` (branch `stop-5/client-split`)
 
 Architectural refactor. Client runtime is no longer embedded inside a template literal inside `src/html-generator.ts`; it now lives as a real TypeScript file that's compiled alongside the server and inlined at generation time. No user-visible behaviour change.
@@ -225,5 +254,6 @@ First release to properly support Power BI **composite models** (mixed-storage w
 | 0.3.0 | `stop-4/event-delegation` (open) | Structural XSS fix |
 | 0.3.1 | `feat/dax-syntax-highlighting` (open) | DAX syntax highlighting |
 | 0.4.0 | `stop-5/client-split` (open) | Client code extracted to `src/client/main.ts` |
+| 0.5.0 | `stop-6/composite-model-fixes` (open) | Composite-model fixes (TMDL, entity partitions, EXTERNALMEASURE, auto-date) |
 
 The v0.2 track was merged to `main` via cherry-pick on 2026-04-18 after the stacked PRs #4–#6 each landed on their feature-branch base rather than main. See the Stop-3 commit message for the reconciliation detail. v0.3.0 is on its own branch awaiting merge.

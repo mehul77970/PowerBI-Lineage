@@ -32,6 +32,26 @@ export interface ModelMeasure {
   usageCount: number;
   pageCount: number;
   status: "direct" | "indirect" | "unused";
+  /**
+   * Populated when daxExpression is an `EXTERNALMEASURE(...)` proxy
+   * pointing at a remote Analysis Services cube via a shared
+   * DirectQuery expression. `null` for regular (local) measures.
+   *
+   *   remoteName    first arg of EXTERNALMEASURE — the measure name
+   *                 as it exists in the external model
+   *   type          second arg (INTEGER, STRING, DOUBLE, etc.)
+   *   externalModel model name parsed from the third arg
+   *                 ("DirectQuery to AS - <ModelName>")
+   *   cluster       Analysis Services cluster URL resolved from the
+   *                 shared expression body, or null if the expression
+   *                 couldn't be found / doesn't match the AS pattern
+   */
+  externalProxy: null | {
+    remoteName: string;
+    type: string;
+    externalModel: string;
+    cluster: string | null;
+  };
 }
 
 export interface ModelColumn {
@@ -92,6 +112,15 @@ export interface TableData {
   name: string;
   description: string;
   isCalcGroup: boolean;
+  /**
+   * `"auto-date"` for tables Power BI auto-generates to back a
+   * calendar hierarchy — named `LocalDateTable_<guid>` or
+   * `DateTableTemplate_<guid>`. Clients hide these from default counts
+   * and summaries because they're infrastructure, not user content;
+   * the Sources tab can opt in to displaying them.
+   * `"user"` for everything else.
+   */
+  origin: "user" | "auto-date";
   columnCount: number;
   measureCount: number;
   keyCount: number;
@@ -181,6 +210,26 @@ export function buildFullData(reportPath: string): FullData {
   const allMeasureNames = rawModel.measures.map(m => m.name);
   const { bindings, pageCount, visualCount, hiddenPages, allPages } = scanReportBindings(reportPath);
 
+  // Build a lookup from shared-expression name to its AS cluster URL
+  // (first string literal argument to `AnalysisServices.Database(...)`).
+  // Used by the EXTERNALMEASURE proxy detection below to populate
+  // externalProxy.cluster without needing the client to re-parse the
+  // expression body at render time.
+  const expressionClusterByName = new Map<string, string>();
+  for (const expr of rawModel.expressions || []) {
+    const m = expr.value.match(/AnalysisServices\.Database\s*\(\s*"([^"]+)"/i);
+    if (m) expressionClusterByName.set(expr.name, m[1]);
+  }
+
+  // Detect `EXTERNALMEASURE("name", TYPE, "DirectQuery to AS - <ModelName>")`
+  // proxy measures. Composite Power BI models use this DAX call to
+  // re-expose a measure from a remote AS cube; we tag them here once
+  // so every downstream consumer (dashboard lineage card, MD export,
+  // Quality rules) can read a structured `externalProxy` field
+  // instead of regexing `daxExpression` each time.
+  const EXTERNAL_MEASURE_RX =
+    /EXTERNALMEASURE\s*\(\s*"([^"]*)"\s*,\s*(\w+)\s*,\s*"DirectQuery to AS - ([^"]+)"\s*\)/i;
+
   // Build measures
   const measures: ModelMeasure[] = rawModel.measures.map(m => {
     const deps = parseDaxDependencies(m.daxExpression, allMeasureNames.filter(n => n !== m.name));
@@ -198,6 +247,16 @@ export function buildFullData(reportPath: string): FullData {
     }
     const dedupedUsedIn = [...uniqueVisuals.values()];
 
+    const extMatch = m.daxExpression.match(EXTERNAL_MEASURE_RX);
+    const externalProxy = extMatch
+      ? {
+          remoteName: extMatch[1],
+          type: extMatch[2].toUpperCase(),
+          externalModel: extMatch[3],
+          cluster: expressionClusterByName.get(`DirectQuery to AS - ${extMatch[3]}`) ?? null,
+        }
+      : null;
+
     return {
       name: m.name,
       table: m.table,
@@ -211,6 +270,7 @@ export function buildFullData(reportPath: string): FullData {
       usageCount: dedupedUsedIn.length,
       pageCount: new Set(dedupedUsedIn.map(u => u.pageName)).size,
       status: "unused", // classified below
+      externalProxy,
     };
   });
 
@@ -412,10 +472,20 @@ export function buildFullData(reportPath: string): FullData {
       ...incomingRels.map(r => ({ direction: "incoming" as const, fromTable: r.fromTable, fromColumn: r.fromColumn, toTable: r.toTable, toColumn: r.toColumn, isActive: r.isActive })),
     ];
 
+    // Classify auto-generated date tables so clients can hide them
+    // from default counts. Power BI creates one `LocalDateTable_<guid>`
+    // per date column (when Auto Date/Time is on) plus one
+    // `DateTableTemplate_<guid>` — they're infrastructure, not user
+    // content, and on the H&S composite model 10 out of 53 tables
+    // are auto-date noise.
+    const isAutoDate =
+      /^LocalDateTable_/.test(tableName) || /^DateTableTemplate_/.test(tableName);
+
     return {
       name: tableName,
       description: tableDescByName.get(tableName) || "",
       isCalcGroup: calcGroupNames.has(tableName),
+      origin: isAutoDate ? "auto-date" as const : "user" as const,
       columnCount: tableColumns.length,
       measureCount: tableMeasures.length,
       keyCount: tableColumns.filter(c => c.isKey || c.isInferredPK).length,

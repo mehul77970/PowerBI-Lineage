@@ -331,15 +331,39 @@ function inferSource(m: string): { sourceType: string; sourceLocation: string } 
  * Captures the multi-line `source =` body so we can infer the source type.
  * The body itself is not exposed on the returned RawPartition (per design).
  */
-function extractTmdlPartitions(content: string): RawPartition[] {
+function extractTmdlPartitions(
+  content: string,
+  expressions: RawExpression[] = [],
+): RawPartition[] {
   const lines = content.split("\n");
   const out: RawPartition[] = [];
-  let current: { name: string; mode: string; sourceLines: string[] } | null = null;
+  // Build a lookup so entity partitions can resolve `expressionSource: 'NAME'`
+  // back to the body captured by parseTmdlExpressions. Composite models
+  // point every directQuery partition at a shared AnalysisServices.Database
+  // expression; without this resolution step they all collapse to
+  // "Unknown / M" even though we know the source kind.
+  const expressionByName = new Map<string, string>();
+  for (const e of expressions) expressionByName.set(e.name, e.value);
+
+  let current: {
+    name: string;
+    mode: string;
+    sourceLines: string[];
+    /** Set when we hit `expressionSource: '…'` in an entity partition. */
+    expressionSource: string | null;
+  } | null = null;
   let inSource = false;
 
   const flush = () => {
     if (!current) return;
-    const mCode = current.sourceLines.join("\n").trim();
+    let mCode = current.sourceLines.join("\n").trim();
+    // Entity partition → use the body of the referenced shared expression
+    // for source inference. Falls back to the inline M code if the
+    // reference can't be resolved (typo, missing expression, etc.).
+    if (current.expressionSource) {
+      const body = expressionByName.get(current.expressionSource);
+      if (body) mCode = body;
+    }
     const { sourceType, sourceLocation } = inferSource(mCode);
     out.push({
       name: current.name,
@@ -358,8 +382,17 @@ function extractTmdlPartitions(content: string): RawPartition[] {
     // New partition declaration at depth 1.
     if (tabCount === 1 && /^partition\s+/.test(trimmed)) {
       flush();
-      const m = trimmed.match(/^partition\s+(\S+)\s*=\s*(\w+)/);
-      current = { name: m ? m[1] : "", mode: "", sourceLines: [] };
+      // Partition name can be a bare identifier OR a quoted name with
+      // spaces (e.g. `partition 'Date NEW' = entity`). Previous regex
+      // used \S+ which stopped at the first space inside quoted names.
+      const m = trimmed.match(/^partition\s+('[^']+'|"[^"]+"|[\w.-]+)\s*=\s*(\w+)/);
+      const rawName = m ? m[1] : "";
+      current = {
+        name: rawName.replace(/^['"]|['"]$/g, ""),
+        mode: "",
+        sourceLines: [],
+        expressionSource: null,
+      };
       continue;
     }
 
@@ -376,15 +409,28 @@ function extractTmdlPartitions(content: string): RawPartition[] {
       if (trimmed.startsWith("mode:")) {
         current.mode = trimmed.replace("mode:", "").trim();
       } else if (trimmed.startsWith("source")) {
+        // Two TMDL source forms:
+        //   source = <inline M>            (import / query partitions)
+        //   source                         (entity partition — nested
+        //     entityName: …                 fields on following lines)
+        //     expressionSource: '…'
         const eq = trimmed.indexOf("=");
         if (eq >= 0) {
           const rest = trimmed.substring(eq + 1).trim();
           if (rest) current.sourceLines.push(rest);
-          inSource = true;
         }
+        inSource = true;  // Walk into the source block either way.
       }
     } else if (tabCount >= 3 && inSource) {
-      current.sourceLines.push(line);
+      // Entity partition: capture the expressionSource reference so
+      // the flush() step can resolve it against the expression map.
+      const mExprSource = trimmed.match(/^expressionSource:\s*(['"]?)([^'"\n]+)\1/);
+      if (mExprSource) {
+        current.expressionSource = mExprSource[2];
+      } else {
+        // Inline M body line — keep accumulating.
+        current.sourceLines.push(line);
+      }
     }
   }
   flush();
@@ -505,7 +551,13 @@ function parseTmdlExpressions(modelPath: string): RawExpression[] {
     if (/^expression\s+/.test(trimmed)) {
       flush();
       // expression NAME = VALUE [meta [...]]
-      const m = trimmed.match(/^expression\s+(\S+)\s*=\s*(.*)$/);
+      // NAME is either a bare identifier (\w+) or a quoted name that
+      // can contain spaces (`'DirectQuery to AS - Foo'`) — previous
+      // regex used \S+ which stopped at the first space inside quoted
+      // names, so every expression in a composite model failed to
+      // parse (0 out of N) and all DQ partitions resolved to
+      // "Unknown / M". Match quoted or bare.
+      const m = trimmed.match(/^expression\s+('[^']+'|"[^"]+"|[\w.-]+)\s*=\s*(.*)$/);
       if (m) {
         const name = m[1].replace(/^['"]|['"]$/g, "");
         let rest = m[2];
@@ -655,7 +707,7 @@ function parseTmdlModel(modelPath: string): RawModel {
     const content = fs.readFileSync(path.join(tablesDir, file), "utf8");
     const lines = content.split("\n");
     // Extract partition (datasource) info and hierarchy definitions up-front.
-    const filePartitions = extractTmdlPartitions(content);
+    const filePartitions = extractTmdlPartitions(content, expressions);
     const fileHierarchies = extractTmdlHierarchies(content);
     let tableName = "";
     let pendingDocComment = "";  // Accumulates /// lines to claim as description of the next table/column/measure
