@@ -32,8 +32,10 @@ const __dirname_html = path.dirname(fileURLToPath(import.meta.url));
  *   4. Run `npm test` — the integrity test re-verifies live.
  */
 const VENDOR_SHA256: Record<string, string> = {
-  "dax-highlight/dax-highlight.js":  "07bb1b1e6fa859def53e69d6410841cc758fcb7aa0c168cc2abdf5341a5fa58c",
-  "dax-highlight/dax-highlight.css": "fcbf17025b1da90d91055acf6407062da6687a8440b60da6aacfd2ea1ec09f1d",
+  // LF-normalised content hashes — stable across Windows/Linux checkouts.
+  // Recompute via: node -e "const fs=require('fs'),c=require('crypto'); for (const f of ['...']) console.log(c.createHash('sha256').update(fs.readFileSync(f,'utf8').replace(/\r\n/g,'\n')).digest('hex'))"
+  "dax-highlight/dax-highlight.js":  "841edee157392b89c7465592916627025d06bb94646bc98f27f7371bc8e37c54",
+  "dax-highlight/dax-highlight.css": "a8b9363397533cfcf2ac7b9010886ff8b4858defb8bbcfb0f1db5fdb3fa675d0",
 };
 
 function readVendor(relative: string): string {
@@ -44,10 +46,16 @@ function readVendor(relative: string): string {
   ];
   for (const p of candidates) {
     try {
-      const bytes = fs.readFileSync(p);
+      // Normalise line endings before hashing. Git's autocrlf setting
+      // checks text files out as CRLF on Windows and LF on Linux; raw-
+      // byte hashing would then mismatch between platforms — CI on
+      // Ubuntu would disagree with a Windows dev's locally-computed
+      // hash. Integrity is a content-identity check, and content
+      // identity should be platform-independent.
+      const text = fs.readFileSync(p, "utf8").replace(/\r\n/g, "\n");
       const expected = VENDOR_SHA256[relative];
       if (expected) {
-        const actual = crypto.createHash("sha256").update(bytes).digest("hex");
+        const actual = crypto.createHash("sha256").update(text).digest("hex");
         if (actual !== expected) {
           throw new Error(
             `vendor integrity check failed for ${relative}\n` +
@@ -57,7 +65,7 @@ function readVendor(relative: string): string {
           );
         }
       }
-      return bytes.toString("utf8");
+      return text;
     } catch (e) {
       // Integrity failures bubble up — they're fatal. ENOENT just
       // means "try the next candidate".

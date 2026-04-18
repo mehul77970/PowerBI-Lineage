@@ -56,18 +56,28 @@ test("DAX highlighter — vendor CSS tokens are inlined", () => {
   }
 });
 
-test("DAX highlighter — theme bridge maps --dax-* onto our --clr-* palette", () => {
+test("DAX highlighter — uses Power BI Desktop's native palette on both themes", () => {
   const html = generateHTML(minimalData(), "t", "", "", "", "", "", "", "0");
-  // The theme-bridge block in html-generator.ts wires the highlighter's
-  // token colours to the dashboard's semantic design tokens, so both
-  // our dark and light themes follow the rest of the UI.
+  // Dark theme (default .code-dax block) uses VS-Code-ish colours
+  // tuned for AA contrast on our #0B0D11 canvas; light theme
+  // ([data-theme="light"] .code-dax) mirrors Power BI Desktop's
+  // exact DAX formula-bar palette (blue keywords, red functions,
+  // green numbers). Both blocks must be present.
   assert.ok(
-    /--dax-keyword:\s*var\(--clr-upstream\)/.test(html),
-    "theme bridge missing — DAX keyword colour not wired to --clr-upstream"
+    /\.code-dax\s*\{[^}]*--dax-keyword:\s*#569CD6/.test(html),
+    "dark-theme DAX keyword (blue) missing — theme bridge regressed"
   );
   assert.ok(
-    /--dax-function:\s*var\(--clr-function\)/.test(html),
-    "theme bridge missing — DAX function colour not wired to --clr-function"
+    /\[data-theme="light"\]\s+\.code-dax\s*\{[^}]*--dax-keyword:\s*#035AC2/.test(html),
+    "light-theme DAX keyword (PB Desktop blue #035AC2) missing"
+  );
+  assert.ok(
+    /\[data-theme="light"\]\s+\.code-dax\s*\{[^}]*--dax-function:\s*#C41E3A/.test(html),
+    "light-theme DAX function (PB Desktop crimson #C41E3A) missing"
+  );
+  assert.ok(
+    /\[data-theme="light"\]\s+\.code-dax\s*\{[^}]*--dax-number:\s*#098658/.test(html),
+    "light-theme DAX number (PB Desktop green #098658) missing"
   );
 });
 
@@ -80,10 +90,12 @@ test("DAX highlighter — vendor integrity hash matches the shipped file", () =>
   // the two manifests is caught during review.
   const p = path.resolve(process.cwd(), "vendor/dax-highlight/dax-highlight.js");
   assert.ok(fs.existsSync(p), "vendor dax-highlight.js not at expected path: " + p);
-  const actual = crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
+  // Hash LF-normalised content — stable across Windows (CRLF) and Linux (LF) checkouts.
+  const text = fs.readFileSync(p, "utf8").replace(/\r\n/g, "\n");
+  const actual = crypto.createHash("sha256").update(text).digest("hex");
   assert.equal(
     actual,
-    "07bb1b1e6fa859def53e69d6410841cc758fcb7aa0c168cc2abdf5341a5fa58c",
+    "841edee157392b89c7465592916627025d06bb94646bc98f27f7371bc8e37c54",
     "vendor dax-highlight.js hash drift — update VENDOR_SHA256 in src/html-generator.ts",
   );
 });
@@ -91,27 +103,33 @@ test("DAX highlighter — vendor integrity hash matches the shipped file", () =>
 test("DAX highlighter — named variables and measure refs use DISTINCT tokens", () => {
   const html = generateHTML(minimalData(), "t", "", "", "", "", "", "", "0");
   // VAR _rows = … RETURN _rows should render in a different colour
-  // from [Measure Name]. Collapsing them back onto the same --clr-*
-  // slot makes DAX harder to read. The design system has a dedicated
-  // --clr-variable token (orange) specifically for this.
-  assert.ok(
-    /--dax-variable:\s*var\(--clr-variable\)/.test(html),
-    "--dax-variable is not wired to --clr-variable"
-  );
-  assert.ok(
-    /--dax-measure:\s*var\(--clr-measure\)/.test(html),
-    "--dax-measure is not wired to --clr-measure"
-  );
-  // And the underlying --clr-* tokens must themselves be different.
-  const varMatch = html.match(/--clr-variable:\s*(#[0-9A-Fa-f]+)/);
-  const measureMatch = html.match(/--clr-measure:\s*(#[0-9A-Fa-f]+)/);
-  assert.ok(varMatch, "--clr-variable not declared");
-  assert.ok(measureMatch, "--clr-measure not declared");
-  assert.notEqual(
-    varMatch![1].toLowerCase(),
-    measureMatch![1].toLowerCase(),
-    "--clr-variable and --clr-measure resolved to the same colour"
-  );
+  // from [Measure Name]. Variable stays on our semantic orange
+  // (--clr-variable) so it reads as "local data", while measure
+  // picks up the PB Desktop blue. The two MUST resolve differently
+  // on each theme — otherwise long VAR/RETURN blocks blur together.
+  //
+  // Extract the dark-theme and light-theme palettes separately and
+  // assert variable vs. measure are distinct on both.
+  function extract(block: RegExp, token: string): string | null {
+    const blockMatch = html.match(block);
+    if (!blockMatch) return null;
+    const valueMatch = blockMatch[0].match(new RegExp(`--dax-${token}:\\s*([^;]+);`));
+    return valueMatch ? valueMatch[1].trim().toLowerCase() : null;
+  }
+  const DARK = /\.code-dax\s*\{[^}]+\}/;
+  const LIGHT = /\[data-theme="light"\]\s+\.code-dax\s*\{[^}]+\}/;
+  const darkVar = extract(DARK, "variable");
+  const darkMeasure = extract(DARK, "measure");
+  const lightVar = extract(LIGHT, "variable");
+  const lightMeasure = extract(LIGHT, "measure");
+  assert.ok(darkVar, "dark-theme --dax-variable not declared");
+  assert.ok(darkMeasure, "dark-theme --dax-measure not declared");
+  assert.ok(lightVar, "light-theme --dax-variable not declared");
+  assert.ok(lightMeasure, "light-theme --dax-measure not declared");
+  assert.notEqual(darkVar, darkMeasure,
+    `dark-theme variable and measure resolved identically: ${darkVar}`);
+  assert.notEqual(lightVar, lightMeasure,
+    `light-theme variable and measure resolved identically: ${lightVar}`);
 });
 
 test("DAX highlighter — client wiring calls highlightDaxBlocks at the right moments", () => {

@@ -1,0 +1,21 @@
+# Force LF line endings for files whose content identity matters across
+# platforms (hashes, deterministic builds, line-diff stability).
+#
+# Vendor files: their SHA-256 is pinned in src/html-generator.ts and
+# double-checked in tests/render-dax-highlight.test.ts. LF normalisation
+# at read time handles the runtime check; this keeps the checkout LF
+# too so Windows devs and Linux CI see byte-identical files.
+vendor/**                 text eol=lf
+
+# Stylesheet — template-literal splice target with a load-time marker
+# substitution. Keep stable for diffing.
+src/styles/**             text eol=lf
+
+# Source files — follow OS default for developer ergonomics but emit
+# LF on commit. Git normalises automatically.
+*.ts                      text
+*.js                      text
+*.json                    text
+*.md                      text
+*.yml                     text
+*.yaml                    text

@@ -422,23 +422,40 @@
   /* ── DAX syntax highlighter (vendor/dax-highlight) ───────────────── */
   /*__DAX_HIGHLIGHT_CSS__*/
 
-  /* ── Theme bridge — blend DAX colours with our --clr-* palette ───── */
-  /* The highlighter ships with a neutral dark palette. We keep its
-     default behaviour in dark mode and override for light mode via
-     our existing [data-theme="light"] attribute — no media-query
-     flicker. Tokens mapped to semantic --clr-* colours that already
-     theme-switch elsewhere in the dashboard (measure amber, function
-     teal, upstream purple, source emerald). */
+  /* ── DAX palette: Power BI Desktop native colours ─────────────────── */
+  /* Mirrors the DAX formula bar in Power BI Desktop: blue keywords,
+     red functions, red table references, blue bare column/measure
+     refs, green numbers, red strings, muted-green comments, default-
+     text variables. Two palettes — one for each theme — because PB
+     Desktop is always light-mode and those colours (navy / crimson /
+     forest) don't have the contrast we need on our dark canvas.
+     Variable (`_name` / ident after VAR) stays on --clr-variable
+     (orange) — PB Desktop leaves variables in default text which on
+     our themes already works (--text handles it), but the orange
+     distinguishes them more clearly in a long VAR/RETURN block. */
   .code-dax {
+    /* Dark theme defaults — bright for AA contrast on #0B0D11 */
     --dax-fg:        var(--text);
-    --dax-comment:   var(--text-fainter);
-    --dax-keyword:   var(--clr-upstream);
-    --dax-function:  var(--clr-function);
-    --dax-variable:  var(--clr-variable);  /* orange — named VARs + _prefixed idents */
-    --dax-measure:   var(--clr-measure);
-    --dax-ref:       var(--clr-source);
-    --dax-string:    var(--clr-success);
-    --dax-number:    var(--clr-calc);
+    --dax-comment:   #6A9955;  /* muted forest — VS Code's comment colour */
+    --dax-keyword:   #569CD6;  /* bright blue — VAR RETURN IF SWITCH TRUE FALSE BLANK IN AND OR NOT */
+    --dax-function:  #DCDCAA;  /* pale yellow — SUM( CALCULATE( FILTER( … */
+    --dax-variable:  var(--clr-variable);  /* orange — _name / ident after VAR */
+    --dax-measure:   #9CDCFE;  /* light blue — bare [Measure] / [Column] refs */
+    --dax-ref:       #CE9178;  /* warm orange-red — 'Table'[Column] */
+    --dax-string:    #CE9178;  /* warm orange-red — string literals */
+    --dax-number:    #B5CEA8;  /* pale green — numeric literals */
+  }
+  [data-theme="light"] .code-dax {
+    /* Light theme: Power BI Desktop's exact DAX palette */
+    --dax-fg:        #212121;
+    --dax-comment:   #008000;  /* PB green */
+    --dax-keyword:   #035AC2;  /* PB blue */
+    --dax-function:  #C41E3A;  /* PB crimson */
+    --dax-variable:  var(--clr-variable);
+    --dax-measure:   #035AC2;  /* PB blue — bare [Measure]/[Column] */
+    --dax-ref:       #A31515;  /* PB dark red — 'Table'[Column] */
+    --dax-string:    #A31515;
+    --dax-number:    #098658;  /* PB dark green */
   }
   /* When embedded in our .lineage-dax block, inherit the block's
      monospace font / size from the existing rule and add our token

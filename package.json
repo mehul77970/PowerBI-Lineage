@@ -12,7 +12,7 @@
     "start": "node dist/app.js",
     "dev": "tsc && node dist/app.js",
     "typecheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && node --test dist-test/tests/"
+    "test": "tsc -p tsconfig.test.json && node scripts/run-tests.mjs"
   },
   "engines": {
     "node": ">=18"
