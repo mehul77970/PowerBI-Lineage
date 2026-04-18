@@ -50,12 +50,25 @@ src/
   report-scanner.ts  Walks visuals/filters/objects to extract field bindings
   data-builder.ts    Cross-references model + report into FullData
   html-generator.ts  Dashboard HTML template
+  render/safe.ts     HTML/JS/JSON escape helpers (single source of truth)
   app.ts             HTTP server + landing page + folder picker
+
+tests/               Unit tests (compiled via tsconfig.test.json -> dist-test/)
 ```
 
 ## Zero runtime dependencies
 
 Runtime deps: none. Only Node builtins (`fs`, `path`, `http`, `crypto`, `child_process`). The `typescript` and `@types/node` dev-deps are only needed to build.
+
+## Developing
+
+```
+npm run typecheck    # tsc --noEmit
+npm test             # compile tests + run Node's built-in test runner
+npm run build        # compile to dist/
+```
+
+Tests use the stdlib `node:test` module (Node 18+). No framework deps — the test tsconfig emits to `dist-test/` and `node --test dist-test/tests/` runs everything.
 
 ## Screenshot
 

@@ -1,6 +1,7 @@
 # Build + dependencies
 node_modules/
 dist/
+dist-test/
 
 # Editor/agent state
 .claude/
