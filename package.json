@@ -1,6 +1,6 @@
 {
   "name": "powerbi-lineage",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Standalone Power BI lineage/usage dashboard — reads a .Report folder + .SemanticModel sibling, serves an interactive HTML dashboard.",
   "type": "module",
   "bin": {

@@ -52,10 +52,17 @@ function bucketLetter(name: string): string {
   return ch >= "A" && ch <= "Z" ? ch : "#";
 }
 
-type TableRole = "Fact" | "Dimension" | "Bridge" | "Disconnected" | "Calculation Group";
+type TableRole = "Fact" | "Dimension" | "Bridge" | "Disconnected" | "Calculation Group" | "Auto-date";
 
-/** Infer a table's role from its relationship topology. */
+/**
+ * Infer a table's role. Auto-date infrastructure tables (origin=auto-date)
+ * short-circuit to the "Auto-date" label regardless of their relationship
+ * topology — Power BI wires every LocalDateTable_<guid> into its date
+ * column via a relationship, which would otherwise misclassify them as
+ * "Dimension" and flood the user-table counts.
+ */
 function classifyTable(t: TableData): TableRole {
+  if (t.origin === "auto-date") return "Auto-date";
   if (t.isCalcGroup) return "Calculation Group";
   const out = t.relationships.filter(r => r.direction === "outgoing").length;
   const inc = t.relationships.filter(r => r.direction === "incoming").length;
@@ -63,6 +70,35 @@ function classifyTable(t: TableData): TableRole {
   if (out === 0 && inc > 0) return "Dimension";
   if (out > 0 && inc > 0) return "Bridge";
   return "Disconnected";
+}
+
+/** True for Power-BI-generated `LocalDateTable_<guid>` / `DateTableTemplate_<guid>` infrastructure. */
+function isAutoDate(t: TableData): boolean { return t.origin === "auto-date"; }
+
+/** User-authored tables only — the default audience for the MD exports. Hides
+ *  auto-date infrastructure so counts, lists, and navs don't drown in noise
+ *  on composite models (H&S has 10 auto-date tables out of 53 total).
+ *  Sections that need every table (header summary, infrastructure appendix)
+ *  read `data.tables` directly. */
+function userTables(data: FullData): TableData[] {
+  return (data.tables || []).filter(t => !isAutoDate(t));
+}
+
+/** Badge + inline label for an EXTERNALMEASURE proxy measure. Composite
+ *  models re-expose measures from a remote AS cube via this DAX call; the
+ *  local measure is a structural pointer, not a computation. Removing one
+ *  breaks the composite contract, so every list that shows "unused" or
+ *  "safe to remove" must distinguish them. */
+const BADGE_PROXY = '<span class="badge badge--calc">EXTERNAL</span>';
+
+/** Inline descriptor rendered next to a proxy measure's name. Includes the
+ *  remote model and (when the remote name differs from the local one) the
+ *  original measure name. Degrades gracefully in raw-MD viewers. */
+function proxyTag(m: ModelMeasure): string {
+  const p = m.externalProxy;
+  if (!p) return "";
+  const remote = p.remoteName && p.remoteName !== m.name ? ` · remote name \`${esc(p.remoteName)}\`` : "";
+  return ` ${BADGE_PROXY} <small>→ ${esc(p.externalModel)}${remote}</small>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -75,15 +111,25 @@ export function generateMarkdown(data: FullData, reportName: string): string {
   const lines: string[] = [];
 
   const tables = [...data.tables].sort((a, b) => a.name.localeCompare(b.name));
+  // User tables exclude `LocalDateTable_<guid>` and `DateTableTemplate_<guid>`
+  // auto-date infrastructure. Every user-facing section counts, lists, and
+  // navigates on `userTablesSorted`; the full list is kept for an
+  // infrastructure appendix.
+  const userTablesSorted = tables.filter(t => !isAutoDate(t));
+  const autoDateTables = tables.filter(isAutoDate);
   const pages = [...data.pages].sort((a, b) => a.name.localeCompare(b.name));
   const functions = data.functions.filter(f => !f.name.endsWith(".About"));
   const calcGroups = data.calcGroups;
   const rolesByTable = new Map<string, TableRole>();
   for (const t of tables) rolesByTable.set(t.name, classifyTable(t));
   const roleCounts: Record<TableRole, number> = {
-    "Fact": 0, "Dimension": 0, "Bridge": 0, "Disconnected": 0, "Calculation Group": 0,
+    "Fact": 0, "Dimension": 0, "Bridge": 0, "Disconnected": 0, "Calculation Group": 0, "Auto-date": 0,
   };
-  for (const r of rolesByTable.values()) roleCounts[r]++;
+  // Only user tables contribute to the role counts in the Schema summary —
+  // auto-date tables would otherwise inflate the "Dimension" bucket (PB
+  // wires every LocalDateTable to its date column via a relationship).
+  for (const t of userTablesSorted) roleCounts[rolesByTable.get(t.name)!]++;
+  roleCounts["Auto-date"] = autoDateTables.length;
   const activeRelCount = data.relationships.filter(r => r.isActive).length;
   const inactiveRelCount = data.relationships.length - activeRelCount;
   const isStar = roleCounts.Bridge === 0 && roleCounts.Disconnected === 0 && roleCounts.Fact > 0;
@@ -119,7 +165,15 @@ export function generateMarkdown(data: FullData, reportName: string): string {
   lines.push(`| **Cultures** | ${esc(culturesLabel)} |`);
   lines.push(`| **Implicit measures** | ${implicitLabel} |`);
   lines.push(`| **Value filter behavior** | ${esc(valueFilterLabel)} |`);
-  lines.push(`| **Model entities** | ${data.totals.tables} tables · ${data.totals.columnsInModel} columns · ${data.totals.measuresInModel} measures · ${data.totals.relationships} relationships |`);
+  // User tables only in the headline count; auto-date infrastructure
+  // is noted separately so "53 tables" doesn't suggest 53 things the
+  // modeller owns.
+  const userTableCount = userTablesSorted.length;
+  const userColumnCount = userTablesSorted.reduce((a, t) => a + t.columnCount, 0);
+  const autoDateDisplay = autoDateTables.length > 0
+    ? ` (+${autoDateTables.length} auto-date infrastructure, excluded)`
+    : "";
+  lines.push(`| **Model entities** | ${userTableCount} tables · ${userColumnCount} columns · ${data.totals.measuresInModel} measures · ${data.totals.relationships} relationships${autoDateDisplay} |`);
   lines.push(`| **User-defined functions** | ${udfCount} |`);
   lines.push(`| **Calculation groups** | ${calcGroups.length}${calcGroups.length > 0 ? ` (${cgItemCount} item${cgItemCount === 1 ? "" : "s"})` : ""} |`);
   lines.push(`| **Report surface** | ${data.totals.pages} pages · ${data.totals.visuals} visuals |`);
@@ -217,12 +271,15 @@ export function generateMarkdown(data: FullData, reportName: string): string {
 
   lines.push("### 2.1 Schema summary");
   lines.push("");
-  lines.push(`- **${tables.length}** tables: ` +
+  lines.push(`- **${userTablesSorted.length}** user tables: ` +
     `${roleCounts.Fact} fact · ${roleCounts.Dimension} dimension · ` +
     `${roleCounts.Bridge} bridge · ${roleCounts["Calculation Group"]} calc group · ` +
     `${roleCounts.Disconnected} disconnected.`);
+  if (autoDateTables.length > 0) {
+    lines.push(`- **${autoDateTables.length}** Power BI auto-date infrastructure tables (\`LocalDateTable_<guid>\` / \`DateTableTemplate_<guid>\`) — excluded from role counts above. Disable Auto Date/Time in report settings to remove them.`);
+  }
   lines.push(`- **${data.relationships.length}** relationships (${activeRelCount} active, ${inactiveRelCount} inactive).`);
-  lines.push(`- **${data.totals.columnsInModel}** columns, **${data.totals.measuresInModel}** measures, **${data.totals.functions}** user-defined functions, **${data.totals.calcGroups}** calculation groups.`);
+  lines.push(`- **${userColumnCount}** user columns, **${data.totals.measuresInModel}** measures, **${data.totals.functions}** user-defined functions, **${data.totals.calcGroups}** calculation groups.`);
   lines.push(`- Topology: ${isStar ? "**star schema**" : "**not a pure star schema** (bridge or disconnected tables present)"}.`);
   lines.push("");
 
@@ -230,11 +287,23 @@ export function generateMarkdown(data: FullData, reportName: string): string {
   lines.push("");
   lines.push("| Table | Role | Columns | Measures | Keys | FKs | Hidden cols |");
   lines.push("|-------|------|--------:|---------:|-----:|----:|-----------:|");
-  for (const t of tables) {
+  for (const t of userTablesSorted) {
     const role = rolesByTable.get(t.name) || "Disconnected";
     lines.push(`| [${t.name}](#${slug(t.name)}) | ${role} | ${t.columnCount} | ${t.measureCount} | ${t.keyCount} | ${t.fkCount} | ${t.hiddenColumnCount} |`);
   }
   lines.push("");
+  if (autoDateTables.length > 0) {
+    lines.push(`<details><summary>Auto-date infrastructure (${autoDateTables.length} tables) — not user content, collapsed</summary>`);
+    lines.push("");
+    lines.push("| Table | Columns |");
+    lines.push("|-------|--------:|");
+    for (const t of autoDateTables) {
+      lines.push(`| ${esc(t.name)} | ${t.columnCount} |`);
+    }
+    lines.push("");
+    lines.push("</details>");
+    lines.push("");
+  }
 
   lines.push("### 2.3 Relationship inventory");
   lines.push("");
@@ -288,23 +357,36 @@ export function generateMarkdown(data: FullData, reportName: string): string {
     lines.push("_No top-level parameters or M expressions._");
     lines.push("");
   } else {
-    lines.push("Model-level M expressions defined in `expressions.tmdl`. Parameters are referenced by other queries via their name.");
+    lines.push("Model-level M expressions defined in `expressions.tmdl`. Parameters are referenced by other queries via their name; `DirectQuery to AS - …` expressions back composite-model entity partitions pointing at a remote Analysis Services cube.");
     lines.push("");
+    // Recognised AS.Database(...) expressions get a structured row
+    // (cluster + database extracted from the first two args); everything
+    // else uses the generic truncated-value form.
+    const asRx = /AnalysisServices\.Database\s*\(\s*"([^"]+)"\s*,\s*"([^"]+)"/i;
     lines.push("| Name | Kind | Value | Description |");
     lines.push("|------|------|-------|-------------|");
     for (const e of data.expressions) {
       const kind = e.kind === "parameter" ? "Parameter" : "M expression";
-      // Truncate long M expressions for the table; full value is preserved in the data.
-      let val = e.value || "";
-      if (val.length > 80) val = val.substring(0, 77) + "…";
-      lines.push(`| ${esc(e.name)} | ${kind} | \`${esc(val)}\` | ${esc(e.description) || "—"} |`);
+      const as = e.value?.match(asRx);
+      let valCell: string;
+      if (as) {
+        // Split so the cluster URL and database name survive the 80-char
+        // truncation that was eating the second argument.
+        valCell = `**AnalysisServices.Database** · cluster \`${esc(as[1])}\` · database \`${esc(as[2])}\``;
+      } else {
+        let val = e.value || "";
+        if (val.length > 80) val = val.substring(0, 77) + "…";
+        valCell = `\`${esc(val)}\``;
+      }
+      lines.push(`| ${esc(e.name)} | ${kind} | ${valCell} | ${esc(e.description) || "—"} |`);
     }
     lines.push("");
   }
 
   lines.push("### 3.3 Per-table sources");
   lines.push("");
-  const tablesWithPartitions = tables.filter(t => t.partitions.length > 0);
+  // User tables only — auto-date infrastructure sources are noise.
+  const tablesWithPartitions = userTablesSorted.filter(t => t.partitions.length > 0);
   if (tablesWithPartitions.length === 0) {
     lines.push("_No per-table partition information found._");
     lines.push("");
@@ -433,11 +515,25 @@ export function generateMarkdown(data: FullData, reportName: string): string {
     lines.push("_No pages analysed._");
     lines.push("");
   } else {
+    // Detect duplicate display names so the table can flag them — PBIR
+    // allows duplicate visible names since page identity is by pageId,
+    // but duplicates usually indicate a copy-paste accident.
+    const nameCounts = new Map<string, number>();
+    for (const p of pages) {
+      const key = p.name.trim();
+      nameCounts.set(key, (nameCounts.get(key) || 0) + 1);
+    }
+    const dupNames = new Set([...nameCounts.entries()].filter(([, n]) => n > 1).map(([k]) => k));
     lines.push("| # | Page | Visibility | Visuals | Measures | Columns | Slicers | Coverage |");
     lines.push("|--:|------|------------|--------:|---------:|--------:|--------:|---------:|");
     pages.forEach((p, i) => {
       const vis = hiddenSet.has(p.name) ? "Hidden" : "Visible";
-      lines.push(`| ${i + 1} | ${esc(p.name)} | ${vis} | ${p.visualCount} | ${p.measureCount} | ${p.columnCount} | ${p.slicerCount} | ${p.coverage}% |`);
+      // Trim leading/trailing whitespace and collapse internal doubles —
+      // PBIR sometimes persists those from accidental drag-reorders in
+      // Desktop. Display only; the data layer still carries the raw name.
+      const display = p.name.replace(/\s+/g, " ").trim();
+      const dupTag = dupNames.has(display) ? " _(duplicate name)_" : "";
+      lines.push(`| ${i + 1} | ${esc(display)}${dupTag} | ${vis} | ${p.visualCount} | ${p.measureCount} | ${p.columnCount} | ${p.slicerCount} | ${p.coverage}% |`);
     });
     lines.push("");
     lines.push("_\"Coverage\" = percentage of all model measures used on this page._");
@@ -482,11 +578,21 @@ export function generateMeasuresMd(data: FullData, reportName: string): string {
   lines.push("");
   lines.push(`## ${reportName}`);
   lines.push("");
+  // Proxy measures (EXTERNALMEASURE re-exports from a remote AS cube)
+  // are structurally different from local measures — removing them
+  // breaks the composite-model contract. Called out in the front-matter
+  // so the reader knows what to expect before they start scrolling.
+  const proxies = data.measures.filter(m => m.externalProxy !== null);
+
   lines.push("| | |");
   lines.push("|---|---|");
   lines.push(`| **Document version** | 1.0 (auto-generated) |`);
   lines.push(`| **Generated** | ${ts} |`);
   lines.push(`| **Measures** | ${t.measuresInModel} total · ${t.measuresDirect} direct · ${t.measuresIndirect} indirect · ${t.measuresUnused} unused |`);
+  if (proxies.length > 0) {
+    const proxiedModels = [...new Set(proxies.map(m => m.externalProxy!.externalModel))];
+    lines.push(`| **External proxies** | ${proxies.length} measure${proxies.length === 1 ? "" : "s"} re-exposing ${proxiedModels.length} remote model${proxiedModels.length === 1 ? "" : "s"} via EXTERNALMEASURE |`);
+  }
   lines.push(`| **Scope** | Per-measure descriptions, dependencies, usage. DAX expressions omitted. |`);
   lines.push(`| **Companion document** | Semantic-model specification |`);
   lines.push("");
@@ -503,9 +609,42 @@ export function generateMeasuresMd(data: FullData, reportName: string): string {
   lines.push("    - **Description** — captured from the model's `///` doc comments or `description:` property.");
   lines.push("    - **Depends on** — other measures referenced by this measure's DAX.");
   lines.push("    - **Used by** — measures that call this one (reverse dependency).");
+  if (proxies.length > 0) {
+    lines.push('- `EXTERNAL` badge marks an `EXTERNALMEASURE(...)` proxy — a local placeholder that re-exposes a measure from a remote Analysis Services cube via a DirectQuery connection. Proxy measures have `usageCount = 0` by the "bound to a visual" rule, but removing one breaks the composite-model contract with the external cube. Treat them as structural, not as candidates for removal.');
+  }
   lines.push("");
   lines.push("---");
   lines.push("");
+
+  // ── Proxy summary (composite models only) ────────────────────────────────
+  if (proxies.length > 0) {
+    const byModel = new Map<string, ModelMeasure[]>();
+    for (const m of proxies) {
+      const model = m.externalProxy!.externalModel;
+      if (!byModel.has(model)) byModel.set(model, []);
+      byModel.get(model)!.push(m);
+    }
+    lines.push("## External proxy measures");
+    lines.push("");
+    lines.push(`${proxies.length} measure${proxies.length === 1 ? "" : "s"} are \`EXTERNALMEASURE\` proxies re-exposing measures from ${byModel.size} remote Analysis Services model${byModel.size === 1 ? "" : "s"}. Grouped by external model below; each link jumps to the measure's A–Z entry.`);
+    lines.push("");
+    for (const [model, ms] of [...byModel.entries()].sort()) {
+      ms.sort((a, b) => a.name.localeCompare(b.name));
+      const sample = ms[0].externalProxy!;
+      lines.push(`### \`${esc(model)}\`${sample.cluster ? " &nbsp; <small>" + esc(sample.cluster) + "</small>" : ""}`);
+      lines.push("");
+      lines.push("| Local name | Remote name | Type | Home table |");
+      lines.push("|------------|-------------|------|------------|");
+      for (const m of ms) {
+        const p = m.externalProxy!;
+        const remote = p.remoteName === m.name ? "_same_" : `\`${esc(p.remoteName)}\``;
+        lines.push(`| [${esc(m.name)}](#${slug(m.name)}) | ${remote} | ${esc(p.type)} | ${esc(m.table)} |`);
+      }
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
 
   if (data.measures.length === 0) {
     lines.push("_No measures defined in this model._");
@@ -550,22 +689,42 @@ export function generateMeasuresMd(data: FullData, reportName: string): string {
       return;
     }
     for (const m of items) {
+      // Status tag: unused/indirect suffix in the summary line. Proxy
+      // measures legitimately carry status=unused (by the "bound to a
+      // visual" rule) but displaying them as unused is misleading —
+      // suppress the status tag when the measure is a proxy so readers
+      // aren't nudged toward removing it.
+      const isProxy = m.externalProxy !== null;
       const statusTag =
-        m.status === "unused" ? " · _unused_"
+        isProxy ? " · _external proxy_"
+        : m.status === "unused" ? " · _unused_"
         : m.status === "indirect" ? " · _indirect_"
         : "";
       lines.push(`<details>`);
-      lines.push(`<summary><strong>${esc(m.name)}</strong> <small>— ${esc(m.table)}${statusTag}</small></summary>`);
+      lines.push(`<a id="${slug(m.name)}"></a>`);
+      lines.push(`<summary><strong>${esc(m.name)}</strong>${proxyTag(m)} <small>— ${esc(m.table)}${statusTag}</small></summary>`);
       lines.push("");
       const meta = [
         `**Table:** ${esc(m.table)}`,
         `**Format:** ${esc(m.formatString) || "—"}`,
-        `**Status:** ${statusLabel(m.status)}`,
+        `**Status:** ${isProxy ? '<span class="badge badge--calc">External proxy</span>' : statusLabel(m.status)}`,
         `**Visuals:** ${m.usageCount}`,
         `**Pages:** ${m.pageCount}`,
       ];
       lines.push(meta.join(" · "));
       lines.push("");
+      if (m.externalProxy) {
+        const p = m.externalProxy;
+        lines.push(`**External source**`);
+        lines.push("");
+        lines.push("| Field | Value |");
+        lines.push("|-------|-------|");
+        lines.push(`| Remote model | \`${esc(p.externalModel)}\` |`);
+        if (p.cluster) lines.push(`| AS cluster | \`${esc(p.cluster)}\` |`);
+        lines.push(`| Remote measure name | \`${esc(p.remoteName)}\`${p.remoteName === m.name ? " _(same as local)_" : ""} |`);
+        lines.push(`| DAX type | \`${esc(p.type)}\` |`);
+        lines.push("");
+      }
       if (m.description) {
         lines.push(`> ${m.description.replace(/\n/g, " ")}`);
         lines.push("");
@@ -868,10 +1027,28 @@ export function generateQualityMd(data: FullData, reportName: string): string {
   const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
   const lines: string[] = [];
 
-  const unusedM   = data.measures.filter(m => m.status === "unused");
-  const unusedC   = data.columns.filter(c => c.status === "unused");
-  const indirectM = data.measures.filter(m => m.status === "indirect");
-  const indirectC = data.columns.filter(c => c.status === "indirect");
+  // Proxy measures carry status=unused by the "bound to a visual"
+  // rule, but they're EXTERNALMEASURE re-exports and removing them
+  // breaks the composite-model contract. Split them out of the
+  // "Removal candidates" list into their own structural-only bucket.
+  //
+  // Auto-date tables (LocalDateTable_<guid> / DateTableTemplate_<guid>)
+  // are Power BI infrastructure, not user content. Their columns are
+  // auto-generated and can't be documented or format-string'd, so
+  // hiding them from Quality sections removes the dominant noise
+  // source on composite models (H&S: 70 of 218 undocumented columns,
+  // 40 of 41 unformatted numeric columns).
+  const autoDateTableNames = new Set(data.tables.filter(isAutoDate).map(t => t.name));
+  const isAutoDateCol = (c: { table: string }) => autoDateTableNames.has(c.table);
+
+  const unusedM_all = data.measures.filter(m => m.status === "unused");
+  const unusedM     = unusedM_all.filter(m => m.externalProxy === null);  // real removal candidates
+  const proxyM      = data.measures.filter(m => m.externalProxy !== null);
+  const unusedC_all = data.columns.filter(c => c.status === "unused");
+  const unusedC     = unusedC_all.filter(c => !isAutoDateCol(c));
+  const unusedC_autoDate = unusedC_all.filter(isAutoDateCol);
+  const indirectM   = data.measures.filter(m => m.status === "indirect");
+  const indirectC   = data.columns.filter(c => c.status === "indirect");
   const inactiveRels = data.relationships.filter(r => !r.isActive);
 
   const measureCoveragePct = data.totals.measuresInModel > 0
@@ -883,12 +1060,18 @@ export function generateQualityMd(data: FullData, reportName: string): string {
 
   // ── Documentation coverage ──────────────────────────────────────────────
   // "Undocumented" = no /// doc-comment captured and no description: property.
-  // We simply check for an empty description string.
-  const undocumentedTables   = data.tables.filter(t => !t.description);
-  const undocumentedColumns  = data.columns.filter(c => !c.description);
+  // Auto-date infrastructure tables / columns can't be documented (they're
+  // auto-generated) so excluding them from the coverage denominator is the
+  // honest percentage. Shown separately in the "Infrastructure note".
+  const userTablesList   = userTables(data);
+  const userColumnsList  = data.columns.filter(c => !isAutoDateCol(c));
+  const undocumentedTables   = userTablesList.filter(t => !t.description);
+  const undocumentedColumns  = userColumnsList.filter(c => !c.description);
   const undocumentedMeasures = data.measures.filter(m => !m.description);
-  const tableDocPct   = data.totals.tables          > 0 ? Math.round(((data.totals.tables          - undocumentedTables.length)   / data.totals.tables)          * 100) : 0;
-  const columnDocPct  = data.totals.columnsInModel  > 0 ? Math.round(((data.totals.columnsInModel  - undocumentedColumns.length)  / data.totals.columnsInModel)  * 100) : 0;
+  const autoDateTableCount   = data.tables.length - userTablesList.length;
+  const autoDateColumnCount  = data.columns.length - userColumnsList.length;
+  const tableDocPct   = userTablesList.length   > 0 ? Math.round(((userTablesList.length   - undocumentedTables.length)   / userTablesList.length)   * 100) : 0;
+  const columnDocPct  = userColumnsList.length  > 0 ? Math.round(((userColumnsList.length  - undocumentedColumns.length)  / userColumnsList.length)  * 100) : 0;
   const measureDocPct = data.totals.measuresInModel > 0 ? Math.round(((data.totals.measuresInModel - undocumentedMeasures.length) / data.totals.measuresInModel) * 100) : 0;
 
   // ── Front matter ──────────────────────────────────────────────────────────
@@ -903,8 +1086,14 @@ export function generateQualityMd(data: FullData, reportName: string): string {
   lines.push(`| **Measure coverage** | ${data.totals.measuresDirect} of ${data.totals.measuresInModel} (${measureCoveragePct}%) bound to a visual |`);
   lines.push(`| **Column coverage** | ${data.totals.columnsDirect} of ${data.totals.columnsInModel} (${columnCoveragePct}%) bound to a visual |`);
   lines.push(`| **Removal candidates** | ${unusedM.length} measure${unusedM.length === 1 ? "" : "s"} · ${unusedC.length} column${unusedC.length === 1 ? "" : "s"} |`);
+  if (proxyM.length > 0) {
+    lines.push(`| **External proxies (keep)** | ${proxyM.length} EXTERNALMEASURE measure${proxyM.length === 1 ? "" : "s"} — structural, not removal candidates |`);
+  }
+  if (autoDateTableCount > 0) {
+    lines.push(`| **Auto-date infrastructure (excluded)** | ${autoDateTableCount} table${autoDateTableCount === 1 ? "" : "s"} · ${autoDateColumnCount} column${autoDateColumnCount === 1 ? "" : "s"} — Power BI infrastructure, not user content |`);
+  }
   lines.push(`| **Indirect entities** | ${indirectM.length} measure${indirectM.length === 1 ? "" : "s"} · ${indirectC.length} column${indirectC.length === 1 ? "" : "s"} |`);
-  lines.push(`| **Inactive relationships** | ${inactiveRels.length} |`);
+  lines.push(`| **Inactive relationships** | ${inactiveRels.length === 0 ? "none" : inactiveRels.length} |`);
   lines.push(`| **Missing descriptions** | ${undocumentedTables.length} table${undocumentedTables.length === 1 ? "" : "s"} · ${undocumentedColumns.length} column${undocumentedColumns.length === 1 ? "" : "s"} · ${undocumentedMeasures.length} measure${undocumentedMeasures.length === 1 ? "" : "s"} |`);
   lines.push(`| **Scope** | Coverage, removal candidates, indirect-use entities, inactive relationships, documentation coverage, modelling hygiene. Action-oriented review of the model. |`);
   lines.push(`| **Companion document** | Semantic-model specification |`);
@@ -941,14 +1130,15 @@ export function generateQualityMd(data: FullData, reportName: string): string {
   // ── 2. Removal candidates ─────────────────────────────────────────────────
   lines.push("## 2. Removal candidates");
   lines.push("");
-  if (unusedM.length === 0 && unusedC.length === 0) {
+  if (unusedM.length === 0 && unusedC.length === 0 && proxyM.length === 0 && unusedC_autoDate.length === 0) {
     lines.push("_No unused entities — nothing to remove._");
     lines.push("");
   } else {
     lines.push("Entities not referenced by any visual, measure, or relationship. Review then delete.");
     lines.push("");
+    let n = 1;
     if (unusedM.length > 0) {
-      lines.push(`### 2.1 Unused measures (${unusedM.length})`);
+      lines.push(`### 2.${n++} Unused measures (${unusedM.length})`);
       lines.push("");
       lines.push("| Measure | Home table | Format |");
       lines.push("|---------|-----------|--------|");
@@ -958,7 +1148,7 @@ export function generateQualityMd(data: FullData, reportName: string): string {
       lines.push("");
     }
     if (unusedC.length > 0) {
-      lines.push(`### 2.${unusedM.length > 0 ? "2" : "1"} Unused columns (${unusedC.length})`);
+      lines.push(`### 2.${n++} Unused columns (${unusedC.length})`);
       lines.push("");
       lines.push("| Column | Home table | Data type | Notes |");
       lines.push("|--------|-----------|-----------|-------|");
@@ -969,6 +1159,38 @@ export function generateQualityMd(data: FullData, reportName: string): string {
         if (c.isKey) notes.push(BADGE_PK);
         lines.push(`| ${esc(c.name)} | ${esc(c.table)} | ${esc(c.dataType)} | ${notes.join(" ") || "—"} |`);
       });
+      lines.push("");
+    }
+    // Proxy measures — NOT removal candidates. Spelled out loudly so
+    // nobody skims the "Unused measures" section and starts deleting.
+    if (proxyM.length > 0) {
+      lines.push(`### 2.${n++} External proxy measures — DO NOT REMOVE (${proxyM.length})`);
+      lines.push("");
+      lines.push("These measures have `usageCount = 0` by the \"bound to a visual\" rule, but they are `EXTERNALMEASURE(...)` proxies re-exposing measures from a remote Analysis Services cube. Removing one breaks the composite-model contract — the dependent report pages will stop working. Listed here for transparency; they do NOT belong in the removal candidates above.");
+      lines.push("");
+      lines.push("| Proxy measure | Home table | Remote model | Remote name |");
+      lines.push("|---------------|-----------|--------------|-------------|");
+      [...proxyM].sort((a, b) => a.table.localeCompare(b.table) || a.name.localeCompare(b.name)).forEach(m => {
+        const p = m.externalProxy!;
+        const remote = p.remoteName === m.name ? "_same_" : `\`${esc(p.remoteName)}\``;
+        lines.push(`| ${esc(m.name)} | ${esc(m.table)} | \`${esc(p.externalModel)}\` | ${remote} |`);
+      });
+      lines.push("");
+    }
+    // Auto-date column noise — collapsed into a details block so the real
+    // actionable list stays readable.
+    if (unusedC_autoDate.length > 0) {
+      lines.push(`### 2.${n++} Auto-date infrastructure columns (${unusedC_autoDate.length}) — not actionable`);
+      lines.push("");
+      lines.push(`<details><summary>${unusedC_autoDate.length} auto-generated columns across ${autoDateTableCount} \`LocalDateTable_<guid>\` / \`DateTableTemplate_<guid>\` tables. Collapsed because these are Power BI infrastructure — disabling Auto Date/Time in the report's settings is the one place to act on them, not this list.</summary>`);
+      lines.push("");
+      lines.push("| Column | Home table | Data type |");
+      lines.push("|--------|-----------|-----------|");
+      [...unusedC_autoDate].sort((a, b) => a.table.localeCompare(b.table) || a.name.localeCompare(b.name)).forEach(c => {
+        lines.push(`| ${esc(c.name)} | ${esc(c.table)} | ${esc(c.dataType)} |`);
+      });
+      lines.push("");
+      lines.push("</details>");
       lines.push("");
     }
   }
@@ -1038,15 +1260,22 @@ export function generateQualityMd(data: FullData, reportName: string): string {
   lines.push("## 5. Documentation coverage");
   lines.push("");
   lines.push("Tables, columns, and measures that do not expose a description. A description is either a `///` doc comment preceding the entity or a `description:` property on it. Undocumented entities make the model harder to hand over and weaken auto-generated documentation like this one.");
+  if (autoDateTableCount > 0) {
+    lines.push("");
+    lines.push(`_Auto-date infrastructure is excluded — ${autoDateTableCount} \`LocalDateTable_<guid>\` / \`DateTableTemplate_<guid>\` tables and their ${autoDateColumnCount} columns can't be documented (they're auto-generated by Power BI). Disable Auto Date/Time in the report settings if you want them gone._`);
+  }
   lines.push("");
 
-  // Overview table
+  // Overview table — denominators exclude auto-date infrastructure, same
+  // as the counts above. See the note right beneath the section heading.
+  const userTableCount  = userTablesList.length;
+  const userColumnCount = userColumnsList.length;
   lines.push("### 5.1 Summary");
   lines.push("");
   lines.push("| Entity | Documented | Missing | Total | Coverage |");
   lines.push("|--------|-----------:|--------:|------:|---------:|");
-  lines.push(`| Tables | ${data.totals.tables - undocumentedTables.length} | ${undocumentedTables.length} | ${data.totals.tables} | ${tableDocPct}% |`);
-  lines.push(`| Columns | ${data.totals.columnsInModel - undocumentedColumns.length} | ${undocumentedColumns.length} | ${data.totals.columnsInModel} | ${columnDocPct}% |`);
+  lines.push(`| Tables (user) | ${userTableCount - undocumentedTables.length} | ${undocumentedTables.length} | ${userTableCount} | ${tableDocPct}% |`);
+  lines.push(`| Columns (user) | ${userColumnCount - undocumentedColumns.length} | ${undocumentedColumns.length} | ${userColumnCount} | ${columnDocPct}% |`);
   lines.push(`| Measures | ${data.totals.measuresInModel - undocumentedMeasures.length} | ${undocumentedMeasures.length} | ${data.totals.measuresInModel} | ${measureDocPct}% |`);
   lines.push("");
 
@@ -1116,9 +1345,14 @@ export function generateQualityMd(data: FullData, reportName: string): string {
   lines.push("Low-priority signals — not bugs, but potential sources of inconsistency in the field list and visual rendering.");
   lines.push("");
 
-  // 6.1 Numeric columns without a format string (cosmetic)
+  // 6.1 Numeric columns without a format string (cosmetic).
+  // Auto-date tables excluded — their Day/MonthNo/QuarterNo/Year
+  // columns are auto-generated by Power BI and can't be format-
+  // stringed by the modeller. On H&S those were 40 of 41 rows of
+  // un-actionable noise; filtering here makes the real actionable
+  // finding visible.
   const numericTypes = new Set(["int64", "decimal", "double", "currency"]);
-  const numericNoFormat = data.tables.flatMap(t => t.columns
+  const numericNoFormat = userTablesList.flatMap(t => t.columns
     .filter(c => numericTypes.has((c.dataType || "").toLowerCase()))
     .filter(c => !c.formatString)
     .filter(c => !c.isKey && !c.isInferredPK && !c.isFK)    // keys aren't formatted
@@ -1176,8 +1410,12 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
   const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
   const lines: string[] = [];
 
-  const tables = [...data.tables].sort((a, b) => a.name.localeCompare(b.name));
-  const totalHierarchies = tables.reduce((acc, t) => acc + t.hierarchies.length, 0);
+  const tablesAll = [...data.tables].sort((a, b) => a.name.localeCompare(b.name));
+  const userTablesSorted = tablesAll.filter(t => !isAutoDate(t));
+  const autoDateTables = tablesAll.filter(isAutoDate);
+  const totalHierarchies = userTablesSorted.reduce((acc, t) => acc + t.hierarchies.length, 0);
+  const userColumnCount = userTablesSorted.reduce((a, t) => a + t.columnCount, 0);
+  const autoDateColumnCount = autoDateTables.reduce((a, t) => a + t.columnCount, 0);
 
   // ── Front matter ──────────────────────────────────────────────────────────
   lines.push(`# Data Dictionary Reference`);
@@ -1188,8 +1426,11 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
   lines.push("|---|---|");
   lines.push(`| **Document version** | 1.0 (auto-generated) |`);
   lines.push(`| **Generated** | ${ts} |`);
-  lines.push(`| **Tables** | ${tables.length} |`);
-  lines.push(`| **Columns** | ${data.totals.columnsInModel} |`);
+  const autoDateNote = autoDateTables.length > 0
+    ? ` (+${autoDateTables.length} auto-date infrastructure, collapsed below)`
+    : "";
+  lines.push(`| **Tables** | ${userTablesSorted.length}${autoDateNote} |`);
+  lines.push(`| **Columns** | ${userColumnCount}${autoDateColumnCount > 0 ? ` (+${autoDateColumnCount} auto-date)` : ""} |`);
   lines.push(`| **Hierarchies** | ${totalHierarchies} |`);
   lines.push(`| **Scope** | Per-table column inventories with constraints, aggregation defaults, sort columns, data categories, format strings, and hierarchies. |`);
   lines.push(`| **Companion document** | Semantic-model specification |`);
@@ -1215,21 +1456,25 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
   lines.push("---");
   lines.push("");
 
-  if (tables.length === 0) {
+  if (userTablesSorted.length === 0 && autoDateTables.length === 0) {
     lines.push("_No tables found._");
     return lines.join("\n");
   }
 
-  // ── Jump nav ──────────────────────────────────────────────────────────────
+  // ── Jump nav — user tables only on the hot path ───────────────────────────
   lines.push("## Jump to");
   lines.push("");
-  lines.push(tables.map(t => `[${t.name}](#${slug(t.name)})`).join(" · "));
+  lines.push(userTablesSorted.map(t => `[${t.name}](#${slug(t.name)})`).join(" · "));
+  if (autoDateTables.length > 0) {
+    lines.push("");
+    lines.push(`_${autoDateTables.length} auto-date infrastructure tables collapsed at the bottom of this document._`);
+  }
   lines.push("");
   lines.push("---");
   lines.push("");
 
-  // ── One collapsible section per table ─────────────────────────────────────
-  for (const tbl of tables) {
+  // ── One collapsible section per user table ────────────────────────────────
+  for (const tbl of userTablesSorted) {
     const cgTag = tbl.isCalcGroup ? " · _calculation group_" : "";
     lines.push(`## ${tbl.name}`);
     lines.push(`<a id="${slug(tbl.name)}"></a>`);
@@ -1277,7 +1522,15 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
         if (c.isCalculated) constraints.push(BADGE_CALC);
         if (c.isHidden) constraints.push(BADGE_HIDDEN);
         const cstr = constraints.length > 0 ? constraints.join("<br>") : "—";
-        lines.push(`| ${i + 1} | ${esc(c.name)} | ${esc(c.dataType)} | ${cstr} | ${esc(c.summarizeBy) || "—"} | ${esc(c.sortByColumn) || "—"} | ${esc(c.dataCategory) || "—"} | ${esc(c.formatString) || "—"} | ${esc(c.description) || "—"} |`);
+        // Default values suppressed to an em-dash so the table is
+        // scannable. `none` is Power BI's default aggregation for
+        // string columns; `Uncategorized` is the default data-category
+        // for anything without a semantic tag. On H&S ~95% of column
+        // rows carried both defaults — they drowned the meaningful
+        // cases (e.g. `sum` on numeric facts, `ImageUrl` on dim_site).
+        const summ = c.summarizeBy && c.summarizeBy !== "none" ? esc(c.summarizeBy) : "—";
+        const cat = c.dataCategory && c.dataCategory !== "Uncategorized" ? esc(c.dataCategory) : "—";
+        lines.push(`| ${i + 1} | ${esc(c.name)} | ${esc(c.dataType)} | ${cstr} | ${summ} | ${esc(c.sortByColumn) || "—"} | ${cat} | ${esc(c.formatString) || "—"} | ${esc(c.description) || "—"} |`);
       });
       lines.push("");
     }
@@ -1303,6 +1556,30 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
     lines.push("</details>");
     lines.push("");
     lines.push("[↑ Jump to](#jump-to)");
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  }
+
+  // ── Auto-date infrastructure appendix ─────────────────────────────────────
+  // A single collapsed block listing every LocalDateTable_<guid> /
+  // DateTableTemplate_<guid> table. Users who need the detail can open
+  // it; everyone else isn't distracted by 10 near-identical entries.
+  if (autoDateTables.length > 0) {
+    lines.push("## Auto-date infrastructure");
+    lines.push("");
+    lines.push(`Power BI generates a \`LocalDateTable_<guid>\` or \`DateTableTemplate_<guid>\` per date column when the report's Auto Date/Time setting is on. ${autoDateTables.length} such tables (${autoDateColumnCount} columns) are present in this model. They are auto-generated, not user content — documented here for completeness only.`);
+    lines.push("");
+    lines.push("<details><summary>Show auto-date infrastructure tables</summary>");
+    lines.push("");
+    lines.push("| Table | Columns |");
+    lines.push("|-------|--------:|");
+    for (const t of autoDateTables) {
+      const cols = t.columns.map(c => `\`${esc(c.name)}\``).join(", ");
+      lines.push(`| ${esc(t.name)} | ${t.columnCount} — ${cols} |`);
+    }
+    lines.push("");
+    lines.push("</details>");
     lines.push("");
     lines.push("---");
     lines.push("");

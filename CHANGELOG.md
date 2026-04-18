@@ -11,6 +11,42 @@ Sections in each release follow the Keep-a-Changelog vocabulary: **Added**, **Ch
 
 ---
 
+## [0.6.0] — 2026-04-18 · Generated-MD pass (branch `feat/md-improvements`)
+
+User-visible MD output quality release. The six companion documents (`model.md`, `measures.md`, `functions.md`, `calc-groups.md`, `quality.md`, `data-dictionary.md`) now correctly surface composite-model metadata and stop drowning Quality signals in Power-BI-generated auto-date infrastructure noise. Minor-version bump because the content of what users export has changed meaningfully.
+
+### Added
+- **Composite-model surfacing in `measures.md`** — new "External proxy measures" summary section grouped by remote Analysis Services model (cluster URL, type, local↔remote name mapping). Front-matter card gains an "External proxies" row. Each proxy measure's collapsible details block carries an "External source" table. Status tag reads "external proxy" not "_unused_"; Status meta shows the `External proxy` badge. 23 new proxy mentions on H&S (was 0).
+- **`quality.md` proxy-protection section** — §2 "Removal candidates" split into four subsections:
+  - 2.1 Unused measures (real removal candidates — proxies excluded)
+  - 2.2 Unused columns (auto-date columns excluded)
+  - 2.3 **External proxy measures — DO NOT REMOVE** — listed with a warning so nobody deletes the composite-model contract
+  - 2.4 Auto-date infrastructure columns (collapsed `<details>`)
+- **`data-dictionary.md` auto-date appendix** — a collapsed section at the bottom listing every `LocalDateTable_<guid>` / `DateTableTemplate_<guid>` table for completeness. Main doc body covers user tables only.
+- **`model.md` auto-date appendix** — collapsed `<details>` right below Tables-by-role; infrastructure visible-on-demand.
+- **Structured AS-Database parsing in `model.md` §3.2** — `AnalysisServices.Database(cluster, db)` expressions now render as `**AnalysisServices.Database** · cluster \`…\` · database \`…\`` instead of a generic 80-char truncated M body. Cluster URL + database name are preserved (previously eaten by the truncation).
+
+### Changed
+- **`model.md` headline counts** are now user-only. "53 tables" on H&S becomes "43 tables (+10 auto-date infrastructure, excluded)". §2.1 Schema summary role counts exclude auto-date (PB wires every `LocalDateTable` as a Dimension via relationship — they used to inflate that bucket).
+- **`quality.md` §5 Documentation coverage denominators** now exclude auto-date infrastructure. Auto-date tables/columns can't be documented (they're auto-generated), so counting them against doc coverage was unfair arithmetic.
+- **`quality.md` §6.1 Numeric columns without format string** drops auto-date. H&S: 41 rows → 1 actionable row (`Date Period NEW Comparison[Rolling Date]`) — previously hidden inside 40 rows of PB-generated noise.
+- **`data-dictionary.md` Jump-to nav** trimmed from ~2600 chars to ~1850 (53 → 43 entries). Default `Summarize by: none` and `Category: Uncategorized` values in column tables replaced with em-dashes (~95% of rows on typical models carried defaults).
+- **`model.md` §8 Report Pages** — display names whitespace-normalised, duplicate page names (same `displayName`) tagged with `_(duplicate name)_` so copy-paste accidents stand out.
+- **`quality.md` "Inactive relationships: 0" → "none"** — unambiguous that we checked and found zero.
+
+### Implementation
+- New `TableRole` value `"Auto-date"` so the role classifier explicitly short-circuits infrastructure before the topology heuristics run.
+- New shared helpers at the top of `src/md-generator.ts`: `isAutoDate`, `userTables`, `proxyTag`, `BADGE_PROXY`.
+- Zero new data dependencies — `externalProxy` and `origin` were already plumbed through `data-builder.ts` by Stops 6.3 / 6.4. This release is the MD generator finally reading them.
+
+### Test results
+56 / 56 green (unchanged — this is a content-quality release, not a feature change to the data layer). Typecheck + build clean.
+
+### Zero impact on non-composite models
+All four changes are data-driven feature flags. If `data.expressions` has no EXTERNALMEASURE matches, there's no "External proxy" summary section. If no table carries `origin: "auto-date"`, the appendix / collapsed blocks don't emit. Models without these features produce byte-identical output to v0.5.2 modulo the whitespace-trim on page names and the "Inactive relationships" wording.
+
+---
+
 ## [0.5.2] — 2026-04-18 · Post-/sc:analyze follow-ups (branch `polish/analyze-followups`)
 
 Five commits closing every item from the previous analysis's "not addressed" list. No UX impact — all internal hardening + infrastructure.
