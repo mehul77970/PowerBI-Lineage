@@ -269,56 +269,73 @@ function parseTmdlFunctions(modelPath: string): ModelFunction[] {
  * Infer a friendly source-type label and a best-effort location from M code.
  * Matches the most common Power Query connectors. Falls back to "Unknown / M".
  */
+/**
+ * Each pattern carries a lowercase "keyword" — a distinctive prefix
+ * that MUST appear in the M code for the regex to possibly match.
+ * We do a single case-insensitive substring check before running
+ * the regex. With ~45 patterns and 48+ partitions per composite
+ * model, that's ~2,000 regex tests avoided per generate() on H&S.
+ *
+ * The keyword is a plain lowercase substring (no regex metacharacters)
+ * and the M source is lowercased once per call. Order of patterns
+ * still matters for the Binary.FromText / Table.FromRows first-match
+ * semantics (they can wrap other calls).
+ */
+const SOURCE_PATTERNS: Array<{ kw: string; re: RegExp; name: string }> = [
+  // Inline wrappers FIRST — they often wrap other sources and would otherwise mis-classify.
+  { kw: "binary.fromtext",         re: /Binary\.FromText\(/,             name: "Inline (encoded)" },
+  { kw: "table.fromrows",          re: /Table\.FromRows\(/,              name: "Inline data" },
+  { kw: "#table",                  re: /#table\(/,                       name: "Inline data" },
+  { kw: "parquet.document",        re: /Parquet\.Document\(/i,           name: "Parquet" },
+  { kw: "sql.database",            re: /Sql\.Database\(/i,               name: "SQL Server" },
+  { kw: "sql.databases",           re: /Sql\.Databases\(/i,              name: "SQL Server" },
+  { kw: "odata.feed",              re: /OData\.Feed\(/i,                 name: "OData" },
+  { kw: "excel.workbook",          re: /Excel\.Workbook\(/i,             name: "Excel" },
+  { kw: "csv.document",            re: /Csv\.Document\(/i,               name: "CSV" },
+  { kw: "json.document",           re: /Json\.Document\(/i,              name: "JSON" },
+  { kw: "xml.tables",              re: /Xml\.Tables\(/i,                 name: "XML" },
+  { kw: "web.contents",            re: /Web\.Contents\(/i,               name: "Web" },
+  { kw: "web.page",                re: /Web\.Page\(/i,                   name: "Web (HTML)" },
+  { kw: "folder.files",            re: /Folder\.Files\(/i,               name: "Folder" },
+  { kw: "folder.contents",         re: /Folder\.Contents\(/i,            name: "Folder" },
+  { kw: "sharepoint.tables",       re: /SharePoint\.Tables\(/i,          name: "SharePoint" },
+  { kw: "sharepoint.files",        re: /SharePoint\.Files\(/i,           name: "SharePoint Files" },
+  { kw: "sharepoint.contents",     re: /SharePoint\.Contents\(/i,        name: "SharePoint" },
+  { kw: "azurestorage.blobs",      re: /AzureStorage\.Blobs\(/i,         name: "Azure Blob Storage" },
+  { kw: "azurestorage.datalake",   re: /AzureStorage\.DataLake\(/i,      name: "Azure Data Lake" },
+  { kw: "azurestorage.tables",     re: /AzureStorage\.Tables\(/i,        name: "Azure Table Storage" },
+  { kw: "snowflake.databases",     re: /Snowflake\.Databases\(/i,        name: "Snowflake" },
+  { kw: "salesforce.data",         re: /Salesforce\.Data\(/i,            name: "Salesforce" },
+  { kw: "salesforce.reports",      re: /Salesforce\.Reports\(/i,         name: "Salesforce Reports" },
+  { kw: "postgresql.database",     re: /PostgreSQL\.Database\(/i,        name: "PostgreSQL" },
+  { kw: "mysql.database",          re: /MySQL\.Database\(/i,             name: "MySQL" },
+  { kw: "oracle.database",         re: /Oracle\.Database\(/i,            name: "Oracle" },
+  { kw: "teradata.database",       re: /Teradata\.Database\(/i,          name: "Teradata" },
+  { kw: "analysisservices.database", re: /AnalysisServices\.Database\(/i, name: "Analysis Services" },
+  { kw: "powerbi.dataflows",       re: /PowerBI\.Dataflows\(/i,          name: "Power BI Dataflow" },
+  { kw: "powerplatform.dataflows", re: /PowerPlatform\.Dataflows\(/i,    name: "Power Platform Dataflow" },
+  { kw: "commondataservice.",      re: /CommonDataService\./i,           name: "Dataverse" },
+  { kw: "cds.contents",            re: /Cds\.Contents\(/i,               name: "Dataverse" },
+  { kw: "adobeanalytics.",         re: /AdobeAnalytics\./i,              name: "Adobe Analytics" },
+  { kw: "googleanalytics.",        re: /GoogleAnalytics\./i,             name: "Google Analytics" },
+  { kw: "exchange.contents",       re: /Exchange\.Contents\(/i,          name: "Exchange" },
+  { kw: "access.database",         re: /Access\.Database\(/i,            name: "Access" },
+  { kw: "hdfs.files",              re: /Hdfs\.Files\(/i,                 name: "HDFS" },
+  { kw: "azurecosmosdb.",          re: /AzureCosmosDB\./i,               name: "Cosmos DB" },
+  { kw: "amazonredshift.",         re: /AmazonRedshift\./i,              name: "Amazon Redshift" },
+  { kw: "amazonathena.",           re: /AmazonAthena\./i,                name: "Amazon Athena" },
+  { kw: "googlebigquery.",         re: /GoogleBigQuery\./i,              name: "BigQuery" },
+  { kw: "bigquery.database",       re: /BigQuery\.Database\(/i,          name: "BigQuery" },
+  { kw: "databricks.",             re: /Databricks\./i,                  name: "Databricks" },
+];
+
 function inferSource(m: string): { sourceType: string; sourceLocation: string } {
-  const patterns: Array<[RegExp, string]> = [
-    // Inline first — these are wrapped around other functions and would otherwise be misclassified.
-    [/Binary\.FromText\(/, "Inline (encoded)"],
-    [/Table\.FromRows\(|#table\(/, "Inline data"],
-    [/Parquet\.Document\(/i, "Parquet"],
-    [/Sql\.Database\(/i, "SQL Server"],
-    [/Sql\.Databases\(/i, "SQL Server"],
-    [/OData\.Feed\(/i, "OData"],
-    [/Excel\.Workbook\(/i, "Excel"],
-    [/Csv\.Document\(/i, "CSV"],
-    [/Json\.Document\(/i, "JSON"],
-    [/Xml\.Tables\(/i, "XML"],
-    [/Web\.Contents\(/i, "Web"],
-    [/Web\.Page\(/i, "Web (HTML)"],
-    [/Folder\.Files\(/i, "Folder"],
-    [/Folder\.Contents\(/i, "Folder"],
-    [/SharePoint\.Tables\(/i, "SharePoint"],
-    [/SharePoint\.Files\(/i, "SharePoint Files"],
-    [/SharePoint\.Contents\(/i, "SharePoint"],
-    [/AzureStorage\.Blobs\(/i, "Azure Blob Storage"],
-    [/AzureStorage\.DataLake\(/i, "Azure Data Lake"],
-    [/AzureStorage\.Tables\(/i, "Azure Table Storage"],
-    [/Snowflake\.Databases\(/i, "Snowflake"],
-    [/Salesforce\.Data\(/i, "Salesforce"],
-    [/Salesforce\.Reports\(/i, "Salesforce Reports"],
-    [/PostgreSQL\.Database\(/i, "PostgreSQL"],
-    [/MySQL\.Database\(/i, "MySQL"],
-    [/Oracle\.Database\(/i, "Oracle"],
-    [/Teradata\.Database\(/i, "Teradata"],
-    [/AnalysisServices\.Database\(/i, "Analysis Services"],
-    [/PowerBI\.Dataflows\(/i, "Power BI Dataflow"],
-    [/PowerPlatform\.Dataflows\(/i, "Power Platform Dataflow"],
-    [/CommonDataService\./i, "Dataverse"],
-    [/Cds\.Contents\(/i, "Dataverse"],
-    [/AdobeAnalytics\./i, "Adobe Analytics"],
-    [/GoogleAnalytics\./i, "Google Analytics"],
-    [/Exchange\.Contents\(/i, "Exchange"],
-    [/Access\.Database\(/i, "Access"],
-    [/Hdfs\.Files\(/i, "HDFS"],
-    [/AzureCosmosDB\./i, "Cosmos DB"],
-    [/AmazonRedshift\./i, "Amazon Redshift"],
-    [/AmazonAthena\./i, "Amazon Athena"],
-    [/GoogleBigQuery\./i, "BigQuery"],
-    [/BigQuery\.Database\(/i, "BigQuery"],
-    [/Databricks\./i, "Databricks"],
-  ];
   let sourceType = "Unknown / M";
-  for (const [re, name] of patterns) {
-    if (re.test(m)) { sourceType = name; break; }
+  // Lowercase once so every keyword check is a cheap indexOf.
+  const lower = m.toLowerCase();
+  for (const p of SOURCE_PATTERNS) {
+    if (lower.indexOf(p.kw) < 0) continue;   // fast path
+    if (p.re.test(m)) { sourceType = p.name; break; }
   }
   // Best-effort location: first quoted string literal in the M.
   const stringMatch = m.match(/"([^"]+)"/);
