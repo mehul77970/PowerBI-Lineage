@@ -30,5 +30,17 @@ Our dark/light theme toggle overrides the `--dax-*` custom properties to blend w
 ## Upgrading
 
 1. Drop the new `dax-highlight.js` / `dax-highlight.css` into this folder.
-2. Run `npm test` — the `tests/render-dax-highlight.test.ts` smoke test verifies the highlighter still exposes the expected API surface.
-3. If the upstream renames any `.dax-*` token classes, update the theme-bridge block in `src/html-generator.ts`.
+2. Compute the new SHA-256 hashes:
+
+   ```bash
+   node -e "const fs=require('fs'),crypto=require('crypto');for(const f of ['vendor/dax-highlight/dax-highlight.js','vendor/dax-highlight/dax-highlight.css']){console.log(f,crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex'));}"
+   ```
+
+3. Update the `VENDOR_SHA256` map in `src/html-generator.ts` with the new hashes.
+4. Update the test assertion in `tests/render-dax-highlight.test.ts` (the "vendor integrity hash matches" test) with the new JS hash so the two manifests stay in sync.
+5. Run `npm test` — one test verifies the runtime integrity check, another re-computes the hash independently so desync between the two manifests fails loud.
+6. If the upstream renames any `.dax-*` token classes, update the theme-bridge block in `src/styles/dashboard.css`.
+
+## Integrity check
+
+`src/html-generator.ts` computes the SHA-256 of every vendor file it reads at module load and compares against `VENDOR_SHA256`. Mismatch is fatal — a tampered `vendor/` can't silently inline malicious JS into the generated dashboard. Tests cover both the live check and the pinned hash value.

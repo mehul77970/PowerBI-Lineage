@@ -2,6 +2,7 @@ import type { FullData } from "./data-builder.js";
 import { safeJSON, escHtml as serverEscHtml } from "./render/safe.js";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 // ─────────────────────────────────────────────────────────────────────
@@ -16,6 +17,25 @@ import { fileURLToPath } from "node:url";
 // run via ts-node / any other out-dir layout.
 // ─────────────────────────────────────────────────────────────────────
 const __dirname_html = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Expected SHA-256 hashes of every file under vendor/. Computed once
+ * when a vendor file is added or upgraded (see vendor/dax-highlight/README.md).
+ * Verified on startup by readVendor(); mismatch is fatal so a tampered
+ * vendor directory can't silently inline malicious JS into the
+ * generated dashboard.
+ *
+ * When upgrading a vendor file:
+ *   1. Drop in the new file.
+ *   2. `node -e "console.log(require('crypto').createHash('sha256').update(require('fs').readFileSync('vendor/...')).digest('hex'))"`
+ *   3. Update the hash below.
+ *   4. Run `npm test` — the integrity test re-verifies live.
+ */
+const VENDOR_SHA256: Record<string, string> = {
+  "dax-highlight/dax-highlight.js":  "07bb1b1e6fa859def53e69d6410841cc758fcb7aa0c168cc2abdf5341a5fa58c",
+  "dax-highlight/dax-highlight.css": "fcbf17025b1da90d91055acf6407062da6687a8440b60da6aacfd2ea1ec09f1d",
+};
+
 function readVendor(relative: string): string {
   const candidates = [
     path.resolve(__dirname_html, "..", "vendor", relative),
@@ -23,7 +43,26 @@ function readVendor(relative: string): string {
     path.resolve(process.cwd(), "vendor", relative),
   ];
   for (const p of candidates) {
-    try { return fs.readFileSync(p, "utf8"); } catch { /* try next */ }
+    try {
+      const bytes = fs.readFileSync(p);
+      const expected = VENDOR_SHA256[relative];
+      if (expected) {
+        const actual = crypto.createHash("sha256").update(bytes).digest("hex");
+        if (actual !== expected) {
+          throw new Error(
+            `vendor integrity check failed for ${relative}\n` +
+            `  expected: ${expected}\n` +
+            `  actual:   ${actual}\n` +
+            `If you intentionally upgraded the vendor file, update VENDOR_SHA256 in src/html-generator.ts.`,
+          );
+        }
+      }
+      return bytes.toString("utf8");
+    } catch (e) {
+      // Integrity failures bubble up — they're fatal. ENOENT just
+      // means "try the next candidate".
+      if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+    }
   }
   throw new Error("vendor file not found: " + relative);
 }

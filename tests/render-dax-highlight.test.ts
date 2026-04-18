@@ -12,6 +12,9 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as crypto from "node:crypto";
 import { generateHTML } from "../src/html-generator.js";
 import type { FullData } from "../src/data-builder.js";
 
@@ -65,6 +68,23 @@ test("DAX highlighter — theme bridge maps --dax-* onto our --clr-* palette", (
   assert.ok(
     /--dax-function:\s*var\(--clr-function\)/.test(html),
     "theme bridge missing — DAX function colour not wired to --clr-function"
+  );
+});
+
+test("DAX highlighter — vendor integrity hash matches the shipped file", () => {
+  // Re-compute the hash of the vendor file and assert it matches what
+  // VENDOR_SHA256 in html-generator.ts claims. generateHTML's module
+  // load ALREADY verified this at import time (if it were wrong,
+  // every test in this file would fail); we re-check here so the
+  // known-good hash is pinned in a second place and desync between
+  // the two manifests is caught during review.
+  const p = path.resolve(process.cwd(), "vendor/dax-highlight/dax-highlight.js");
+  assert.ok(fs.existsSync(p), "vendor dax-highlight.js not at expected path: " + p);
+  const actual = crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
+  assert.equal(
+    actual,
+    "07bb1b1e6fa859def53e69d6410841cc758fcb7aa0c168cc2abdf5341a5fa58c",
+    "vendor dax-highlight.js hash drift — update VENDOR_SHA256 in src/html-generator.ts",
   );
 });
 
