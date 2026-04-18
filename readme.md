@@ -70,6 +70,10 @@ npm run build        # compile to dist/
 
 Tests use the stdlib `node:test` module (Node 18+). No framework deps — the test tsconfig emits to `dist-test/` and `node --test dist-test/tests/` runs everything.
 
+### CI
+
+`.github/workflows/ci.yml` runs typecheck + tests + build on every push and pull request, across Node 18 / 20 / 22. Zero-dep ethos preserved — the workflow installs only what `package.json` already declares (TypeScript + `@types/node`).
+
 ## Screenshot
 
 _(placeholder — add once you run it against a real report)_
