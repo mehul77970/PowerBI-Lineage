@@ -12,6 +12,8 @@ import { buildFullData } from "./data-builder.js";
 import { generateHTML } from "./html-generator.js";
 import { generateMarkdown, generateMeasuresMd, generateFunctionsMd, generateCalcGroupsMd, generateQualityMd, generateDataDictionaryMd } from "./md-generator.js";
 import { findSemanticModelPath } from "./model-parser.js";
+import { escHtml } from "./render/safe.js";
+import { validateReportPath } from "./path-guard.js";
 
 // Resolve the package version once at module load (falls back if unavailable).
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -436,7 +438,7 @@ function landingHTML(recents: string[], error?: string): string {
     <h1>Power BI Lineage</h1>
     <p class="subtitle">Point it at a <code style="font-family:'JetBrains Mono',ui-monospace,monospace;color:#E5E7EB;background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:4px;font-size:12px">.Report</code> folder and get a live map of every measure, column, table, relationship, and page &mdash; plus exportable documentation.</p>
 
-    ${error ? `<div class="error">${error}</div>` : ""}
+    ${error ? `<div class="error">${escHtml(error)}</div>` : ""}
 
     <label for="rpath">Report path</label>
     <form id="form" action="/generate" method="GET">
@@ -540,21 +542,15 @@ const server = http.createServer((req, res) => {
 
   if (pathname === "/generate") {
     const query = parseQuery(url);
-    const reportPath = query.path?.trim();
+    const validation = validateReportPath(query.path);
 
-    if (!reportPath) {
+    if (!validation.ok) {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(landingHTML(loadRecents(), "Please enter a report path."));
+      res.end(landingHTML(loadRecents(), validation.reason));
       return;
     }
 
-    const resolved = path.resolve(reportPath);
-
-    if (!fs.existsSync(resolved)) {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(landingHTML(loadRecents(), `Path not found: ${resolved}`));
-      return;
-    }
+    const resolved = validation.resolved;
 
     try {
       findSemanticModelPath(resolved);
@@ -592,13 +588,61 @@ const server = http.createServer((req, res) => {
 // Start
 // ---------------------------------------------------------------------------
 
-let port = 5679;
+// Bind strictly to loopback. The landing page promises "no data leaves
+// your machine" — binding to 0.0.0.0 / :: (Node's default) exposes the
+// model + report to every device on the LAN. If someone later needs
+// LAN access (NAS / VM / multi-machine workflow), it's five lines of
+// opt-in code; for now the safe default wins.
+const BIND_HOST = "127.0.0.1";
+
+// Cap port retries at 20. Without a cap a misconfigured environment
+// (or a fork bomb upstairs) would walk the entire port space silently.
+// 5679..5698 is plenty for "another instance is already running".
+const BIND_PORT_START = 5679;
+const BIND_PORT_MAX = BIND_PORT_START + 20;
+
+let port = BIND_PORT_START;
 server.on("error", (e: NodeJS.ErrnoException) => {
-  if (e.code === "EADDRINUSE") { port++; server.listen(port); }
+  if (e.code === "EADDRINUSE") {
+    port++;
+    if (port >= BIND_PORT_MAX) {
+      console.error(`\n  Power BI Lineage`);
+      console.error(`  All ports ${BIND_PORT_START}..${BIND_PORT_MAX - 1} are in use on 127.0.0.1.`);
+      console.error(`  Close the other instance, or free a port, then try again.\n`);
+      process.exit(1);
+    }
+    server.listen(port, BIND_HOST);
+    return;
+  }
+  // Any other error is fatal — don't silently keep going.
+  console.error(`\n  Power BI Lineage — startup error`);
+  console.error(`  ${e.message}\n`);
+  process.exit(1);
 });
 
-server.listen(port, () => {
-  const url = `http://localhost:${port}`;
+server.listen(port, BIND_HOST, () => {
+  // Startup self-check: confirm we're actually bound to loopback.
+  // If something goes wrong (weird OS, LD_PRELOAD, etc.) and we end up
+  // on a public interface, we'd rather refuse to serve than quietly
+  // violate the "no data leaves your machine" promise.
+  const addr = server.address();
+  const boundAddress =
+    addr && typeof addr === "object" ? addr.address : null;
+
+  const isLoopback =
+    boundAddress === "127.0.0.1" ||
+    boundAddress === "::1" ||
+    boundAddress === "::ffff:127.0.0.1";
+
+  if (!isLoopback) {
+    console.error(`\n  Power BI Lineage — refusing to serve`);
+    console.error(`  Server bound to non-loopback address: ${boundAddress ?? "unknown"}`);
+    console.error(`  Expected 127.0.0.1. Aborting.\n`);
+    server.close();
+    process.exit(1);
+  }
+
+  const url = `http://127.0.0.1:${port}`;
   console.log(`\n  Power BI Lineage`);
   console.log(`  ${url}\n`);
 
