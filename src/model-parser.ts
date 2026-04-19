@@ -133,27 +133,109 @@ export interface RawModel {
 // Step 1: Locate Semantic Model
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * Pull every relative-path-looking string out of a parsed `definition.pbir`.
+ *
+ * PBIP / PBIR schemas have evolved — the dataset-pointer path has
+ * historically lived under several keys:
+ *
+ *   { datasetReference: { byPath: { path: "..." } } }   (classic)
+ *   { byPath: { path: "..." } }                         (flattened)
+ *   { path: "..." }                                     (trivial)
+ *
+ * Plus occasional outliers where tools serialise custom wrappers. Rather
+ * than cherry-pick one key, we walk the entire JSON tree and collect
+ * every string-valued `path` field. Caller tries each in order.
+ */
+function extractPbirPathCandidates(pbir: unknown): string[] {
+  const out: string[] = [];
+  const visit = (node: unknown) => {
+    if (!node || typeof node !== "object") return;
+    const n = node as Record<string, unknown>;
+    if (typeof n.path === "string" && n.path.length > 0) out.push(n.path);
+    for (const v of Object.values(n)) visit(v);
+  };
+  visit(pbir);
+  return out;
+}
+
+/** Strip the `.Report` suffix so we can pair prefixes against
+ *  `<prefix>.SemanticModel` during the sibling-scan fallback. */
+function reportPrefix(reportPath: string): string {
+  return path.basename(reportPath).replace(/\.Report$/i, "");
+}
+
 export function findSemanticModelPath(reportPath: string): string {
   const projectDir = path.dirname(reportPath);
 
-  // Try definition.pbir first (explicit pointer)
+  // ── Step 1: honour definition.pbir if present ────────────────────────
   const pbirFile = path.join(reportPath, "definition.pbir");
   if (fs.existsSync(pbirFile)) {
     try {
       const pbir = JSON.parse(fs.readFileSync(pbirFile, "utf8"));
-      const rel = pbir?.datasetReference?.byPath?.path;
-      if (rel) {
-        const candidate = path.resolve(projectDir, rel);
-        if (fs.existsSync(candidate)) return candidate;
+      const candidates = extractPbirPathCandidates(pbir);
+      // Resolve each candidate against:
+      //   - reportPath           — paths in the pbir are relative to the
+      //                              .Report folder itself (e.g. "../Foo.SemanticModel")
+      //   - projectDir (fallback) — older tooling occasionally wrote
+      //                              paths relative to the parent dir
+      // Prefer whichever resolves to an existing directory.
+      for (const rel of candidates) {
+        const fromReport = path.resolve(reportPath, rel);
+        if (fs.existsSync(fromReport)) return fromReport;
+        const fromProject = path.resolve(projectDir, rel);
+        if (fs.existsSync(fromProject)) return fromProject;
       }
-    } catch { /* fall through */ }
+      if (candidates.length > 0) {
+        // The pbir declared a path, we just couldn't resolve it —
+        // emit a diagnostic so the server log makes this visible,
+        // then fall through to the sibling scan as a best effort.
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[pbir] found ${candidates.length} path candidate(s) in ${pbirFile} but none resolved to an existing folder:\n` +
+          candidates.map(c => `  "${c}"  →  ${path.resolve(reportPath, c)}`).join("\n"),
+        );
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(`[pbir] could not parse ${pbirFile}: ${(e as Error).message}`);
+    }
   }
 
-  // Scan sibling folders
+  // ── Step 2: sibling-folder scan ──────────────────────────────────────
+  // When the pbir didn't resolve (or doesn't exist), look at siblings.
+  // If multiple `.SemanticModel` folders sit next to the report, prefer
+  // the one whose prefix matches the report's — e.g., `training.Report`
+  // pairs with `training.SemanticModel` even when `training_Gold.Report`
+  // + `training_Gold.SemanticModel` also live in the same parent.
   const entries = fs.readdirSync(projectDir, { withFileTypes: true });
-  const modelDir = entries.find(e => e.isDirectory() && e.name.endsWith(".SemanticModel"));
-  if (!modelDir) throw new Error("No .SemanticModel folder found alongside the report");
-  return path.join(projectDir, modelDir.name);
+  const semModelDirs = entries
+    .filter(e => e.isDirectory() && e.name.endsWith(".SemanticModel"))
+    .map(e => e.name);
+  if (semModelDirs.length === 0) {
+    throw new Error(
+      `No .SemanticModel folder found alongside ${path.basename(reportPath)} (looked in ${projectDir}) ` +
+      `— if your SemanticModel lives elsewhere, ensure definition.pbir points at it via "datasetReference.byPath.path".`,
+    );
+  }
+  const prefix = reportPrefix(reportPath);
+  // Exact prefix match first (prefix + ".SemanticModel"), then the
+  // shortest name that starts with the prefix, then fall back to first.
+  const exact = semModelDirs.find(n => n === prefix + ".SemanticModel");
+  if (exact) return path.join(projectDir, exact);
+  const prefixMatch = semModelDirs
+    .filter(n => n.startsWith(prefix))
+    .sort((a, b) => a.length - b.length)[0];
+  if (prefixMatch) return path.join(projectDir, prefixMatch);
+  // Last resort: the first `.SemanticModel` we saw. Warn loudly because
+  // this is guesswork — if it's wrong, the dashboard will read the
+  // wrong model and the user will blame the tool.
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[semantic-model] no sibling named "${prefix}.SemanticModel" for report "${path.basename(reportPath)}"; ` +
+    `falling back to "${semModelDirs[0]}" which may be wrong. Point definition.pbir at the correct model to fix.`,
+  );
+  return path.join(projectDir, semModelDirs[0]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
