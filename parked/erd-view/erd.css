@@ -1,0 +1,123 @@
+  /* ── ERD tab (interactive SVG entity-relationship diagram) ──────── */
+  .erd-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .erd-toggles, .erd-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+  .erd-wrap {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 280px);
+    min-height: 500px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--surface-alt);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+  }
+  .erd-wrap:active { cursor: grabbing; }
+  #erd-svg { width: 100%; height: 100%; display: block; }
+
+  /* Edges — lines with arrow markers set by <marker> defs in the SVG. */
+  .erd-edge line {
+    stroke: var(--clr-upstream);
+    stroke-width: 1.3;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .erd-edge circle {
+    fill: var(--clr-upstream);
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .erd-edge--inactive line {
+    stroke: var(--text-faint);
+    stroke-dasharray: 6 4;
+    opacity: 0.5;
+  }
+  .erd-edge--inactive circle { fill: var(--text-faint); opacity: 0.5; }
+  .erd-arrow-head--active   { fill: var(--clr-upstream); opacity: 0.9; }
+  .erd-arrow-head--inactive { fill: var(--text-faint);   opacity: 0.6; }
+
+  /* Node container — grabbed for dragging. */
+  .erd-node { cursor: grab; }
+  .erd-node:active { cursor: grabbing; }
+  .erd-node-rect {
+    stroke-width: 1.5;
+    transition: filter .12s;
+  }
+  .erd-node:hover .erd-node-rect {
+    filter: brightness(1.18) drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  }
+  .erd-node-name {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--text);
+    pointer-events: none;
+  }
+  .erd-node-sub {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 9px;
+    fill: var(--text-faint);
+    pointer-events: none;
+  }
+
+  /* Role-coloured node fills — mirror the tokens used elsewhere. */
+  .erd-role-fact        .erd-node-rect { fill: var(--clr-measure-soft);  stroke: var(--clr-measure); }
+  .erd-role-dimension   .erd-node-rect { fill: var(--clr-column-soft);   stroke: var(--clr-column); }
+  .erd-role-bridge      .erd-node-rect { fill: var(--clr-upstream-soft); stroke: var(--clr-upstream); }
+  .erd-role-disconnected .erd-node-rect{ fill: var(--clr-indirect-soft); stroke: var(--clr-indirect); }
+  .erd-role-calc-group  .erd-node-rect { fill: var(--clr-calc-soft);     stroke: var(--clr-calc); }
+  .erd-role-parameter   .erd-node-rect { fill: var(--clr-slicer-soft);   stroke: var(--clr-slicer); }
+  .erd-role-proxy       .erd-node-rect { fill: var(--clr-upstream-soft); stroke: var(--clr-upstream); stroke-dasharray: 4 2; }
+  .erd-role-auto-date   .erd-node-rect { fill: var(--clr-indirect-soft); stroke: var(--clr-indirect); opacity: 0.5; }
+
+  /* Legend — wraps under the SVG with the same swatches as node fills. */
+  .erd-legend {
+    display: flex;
+    gap: 14px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+    align-items: center;
+    border-top: 1px solid var(--border-soft);
+  }
+  .erd-legend-chip { display: inline-flex; gap: 5px; align-items: center; }
+  .erd-legend-sep { color: var(--text-faint); margin: 0 4px; }
+  .erd-legend-swatch {
+    display: inline-block;
+    width: 12px; height: 10px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+  }
+  .erd-role-fact        .erd-legend-swatch,
+  .erd-legend-chip.erd-role-fact        .erd-legend-swatch { background: var(--clr-measure-soft);  border-color: var(--clr-measure); }
+  .erd-legend-chip.erd-role-dimension   .erd-legend-swatch { background: var(--clr-column-soft);   border-color: var(--clr-column); }
+  .erd-legend-chip.erd-role-bridge      .erd-legend-swatch { background: var(--clr-upstream-soft); border-color: var(--clr-upstream); }
+  .erd-legend-chip.erd-role-disconnected .erd-legend-swatch{ background: var(--clr-indirect-soft); border-color: var(--clr-indirect); }
+  .erd-legend-chip.erd-role-calc-group  .erd-legend-swatch { background: var(--clr-calc-soft);     border-color: var(--clr-calc); }
+  .erd-legend-chip.erd-role-parameter   .erd-legend-swatch { background: var(--clr-slicer-soft);   border-color: var(--clr-slicer); }
+  .erd-legend-chip.erd-role-proxy       .erd-legend-swatch { background: var(--clr-upstream-soft); border-color: var(--clr-upstream); border-style: dashed; }
+  .erd-legend-chip.erd-role-auto-date   .erd-legend-swatch { background: var(--clr-indirect-soft); border-color: var(--clr-indirect); opacity: 0.5; }
+
+  .erd-legend-line {
+    display: inline-block;
+    width: 18px; height: 2px;
+    background: var(--clr-upstream);
+  }
+  .erd-legend-line--dashed {
+    background: transparent;
+    border-top: 2px dashed var(--text-faint);
+    height: 0;
+    margin-top: 1px;
+  }
