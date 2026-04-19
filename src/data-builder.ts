@@ -121,6 +121,32 @@ export interface TableData {
    * `"user"` for everything else.
    */
   origin: "user" | "auto-date";
+  /**
+   * True when any partition has `partitionKind === "calculated"` —
+   * a DAX calculated table (as opposed to an M-import / DQ / calc
+   * group / field-parameter table). `mode:` alone can't tell you
+   * this because calc tables report `mode: import` in TMDL.
+   */
+  isCalculatedTable: boolean;
+  /**
+   * Sub-classification for tables that aren't regular data tables.
+   *
+   *  "field"               fieldparameter / what-if parameter —
+   *                        any column carries the Power BI
+   *                        `extendedProperty ParameterMetadata`.
+   *  "compositeModelProxy" proxy table backing a DirectQuery-to-AS
+   *                        composite model — single column with the
+   *                        same name as the table, and a partition
+   *                        with mode:directQuery + expressionSource.
+   *  null                  regular table (or calc group / calc
+   *                        table — those have their own flags).
+   *
+   * The Model Tree excludes parameterKind !== null tables from
+   * data-source groupings and renders them under their own
+   * pseudo-roots so they stop appearing as phantom "DISCONNECTED"
+   * data sources.
+   */
+  parameterKind: "field" | "compositeModelProxy" | null;
   columnCount: number;
   measureCount: number;
   keyCount: number;
@@ -417,6 +443,14 @@ export function buildFullData(reportPath: string): FullData {
     tablePartitionsByName.set(rt.name, rt.partitions || []);
     tableHierarchiesByName.set(rt.name, rt.hierarchies || []);
   }
+  // Which tables have a column carrying Power BI's
+  // `extendedProperty ParameterMetadata`? Those are field parameters —
+  // we surface them under a dedicated pseudo-root in the Model Tree
+  // instead of letting them masquerade as disconnected user tables.
+  const parameterMetadataTables = new Set<string>();
+  for (const c of rawModel.columns) {
+    if (c.hasParameterMetadata) parameterMetadataTables.add(c.table);
+  }
   // Calc groups also expose descriptions on their own entity.
   for (const cg of rawModel.calcGroups) {
     if (cg.description && !tableDescByName.get(cg.name)) tableDescByName.set(cg.name, cg.description);
@@ -491,11 +525,38 @@ export function buildFullData(reportPath: string): FullData {
     const isAutoDate =
       /^LocalDateTable_/.test(tableName) || /^DateTableTemplate_/.test(tableName);
 
+    // `mode:import` is used by BOTH regular M tables and DAX
+    // calculated tables — the only reliable discriminator is the
+    // TMDL partition kind token captured by the parser.
+    const tablePartitions = tablePartitionsByName.get(tableName) || [];
+    const isCalculatedTable =
+      !calcGroupNames.has(tableName) &&
+      tablePartitions.some(p => p.partitionKind === "calculated");
+
+    // Composite-model proxy: exactly one column whose name matches
+    // the table's name, plus a directQuery partition that resolves
+    // through a shared expression (expressionSource set). This is the
+    // shape Power BI produces for remote AS / composite-model stubs
+    // like Domain_*, Globa_*, table_HS, etc.
+    const hasDirectQueryEntity = tablePartitions.some(
+      p => p.mode === "directQuery" && !!p.expressionSource,
+    );
+    const singleSelfColumn =
+      tableColumns.length === 1 && tableColumns[0].name === tableName;
+    const isCompositeModelProxy = hasDirectQueryEntity && singleSelfColumn;
+
+    const parameterKind: TableData["parameterKind"] =
+      parameterMetadataTables.has(tableName) ? "field"
+      : isCompositeModelProxy ? "compositeModelProxy"
+      : null;
+
     return {
       name: tableName,
       description: tableDescByName.get(tableName) || "",
       isCalcGroup: calcGroupNames.has(tableName),
       origin: isAutoDate ? "auto-date" as const : "user" as const,
+      isCalculatedTable,
+      parameterKind,
       columnCount: tableColumns.length,
       measureCount: tableMeasures.length,
       keyCount: tableColumns.filter(c => c.isKey || c.isInferredPK).length,
@@ -504,7 +565,7 @@ export function buildFullData(reportPath: string): FullData {
       columns: tableColumns,
       measures: tableMeasures,
       relationships: tableRels,
-      partitions: tablePartitionsByName.get(tableName) || [],
+      partitions: tablePartitions,
       hierarchies: tableHierarchiesByName.get(tableName) || [],
     };
   });

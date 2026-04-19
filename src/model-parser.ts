@@ -40,10 +40,25 @@ export interface RawPartition {
   name: string;
   /** Storage mode: import, directQuery, dual, calculated, calculationGroup, m, etc. */
   mode: string;
+  /**
+   * TMDL partition kind — the keyword that follows `=` in
+   * `partition Foo = <kind>`: "m" | "calculated" | "entity" |
+   * "calculationGroup". Needed to distinguish a DAX calculated
+   * table from a regular M-import table (both have mode="import").
+   * Empty string when not parseable.
+   */
+  partitionKind: string;
   /** Inferred friendly source type (Parquet, SQL Server, Excel, …) — best-effort. */
   sourceType: string;
   /** Best-effort location string extracted from the M (first string literal). */
   sourceLocation: string;
+  /**
+   * For entity / DirectQuery partitions: the name of the shared
+   * expression referenced via `expressionSource: '…'`. `null` for
+   * inline (import / query / calculated) partitions. Needed to
+   * identify composite-model proxy tables.
+   */
+  expressionSource: string | null;
 }
 
 export interface RawHierarchyLevel {
@@ -104,7 +119,7 @@ export interface ModelProperties {
 export interface RawModel {
   tables: RawTable[];
   measures: Array<{ name: string; table: string; daxExpression: string; formatString: string; description: string; displayFolder: string }>;
-  columns: Array<{ name: string; table: string; dataType: string; isKey: boolean; isHidden: boolean; isCalculated: boolean; description: string; displayFolder: string; summarizeBy: string; sortByColumn: string; dataCategory: string; formatString: string }>;
+  columns: Array<{ name: string; table: string; dataType: string; isKey: boolean; isHidden: boolean; isCalculated: boolean; hasParameterMetadata: boolean; description: string; displayFolder: string; summarizeBy: string; sortByColumn: string; dataCategory: string; formatString: string }>;
   relationships: ModelRelationship[];
   functions: ModelFunction[];
   calcGroups: ModelCalcGroup[];
@@ -365,6 +380,8 @@ function extractTmdlPartitions(
   let current: {
     name: string;
     mode: string;
+    /** Kind keyword after `=` in `partition Foo = <kind>`. */
+    partitionKind: string;
     sourceLines: string[];
     /** Set when we hit `expressionSource: '…'` in an entity partition. */
     expressionSource: string | null;
@@ -385,8 +402,10 @@ function extractTmdlPartitions(
     out.push({
       name: current.name,
       mode: current.mode || "import",
+      partitionKind: current.partitionKind,
       sourceType,
       sourceLocation,
+      expressionSource: current.expressionSource,
     });
     current = null;
     inSource = false;
@@ -407,6 +426,7 @@ function extractTmdlPartitions(
       current = {
         name: rawName.replace(/^['"]|['"]$/g, ""),
         mode: "",
+        partitionKind: (m && m[2]) || "",
         sourceLines: [],
         expressionSource: null,
       };
@@ -729,7 +749,7 @@ function parseTmdlModel(modelPath: string): RawModel {
     let tableName = "";
     let pendingDocComment = "";  // Accumulates /// lines to claim as description of the next table/column/measure
     let currentMeasure: { name: string; table: string; daxExpression: string; formatString: string; description: string; displayFolder: string } | null = null;
-    let currentColumn: { name: string; table: string; dataType: string; isKey: boolean; isHidden: boolean; isCalculated: boolean; description: string; displayFolder: string; summarizeBy: string; sortByColumn: string; dataCategory: string; formatString: string } | null = null;
+    let currentColumn: { name: string; table: string; dataType: string; isKey: boolean; isHidden: boolean; isCalculated: boolean; hasParameterMetadata: boolean; description: string; displayFolder: string; summarizeBy: string; sortByColumn: string; dataCategory: string; formatString: string } | null = null;
     let collectingExpression = false;
     let expressionLines: string[] = [];
 
@@ -806,7 +826,7 @@ function parseTmdlModel(modelPath: string): RawModel {
         const colEq = colRest.indexOf("=");
         const colName = (colEq > 0 ? colRest.substring(0, colEq) : colRest).trim().replace(/^'(.*)'$/, "$1");
         const isCalculated = colEq > 0;
-        currentColumn = { name: colName, table: tableName, dataType: "string", isKey: false, isHidden: false, isCalculated, description: pendingDocComment, displayFolder: "", summarizeBy: "", sortByColumn: "", dataCategory: "", formatString: "" };
+        currentColumn = { name: colName, table: tableName, dataType: "string", isKey: false, isHidden: false, isCalculated, hasParameterMetadata: false, description: pendingDocComment, displayFolder: "", summarizeBy: "", sortByColumn: "", dataCategory: "", formatString: "" };
         columns.push(currentColumn);
         pendingDocComment = "";
         continue;
@@ -981,6 +1001,14 @@ function parseTmdlModel(modelPath: string): RawModel {
             collectingExpression = false;
             expressionLines = [];
           }
+          // `extendedProperty ParameterMetadata = { "version": 3, "kind": 2 }`
+          // is Power BI's own marker for a fieldparameter (what-if /
+          // field parameter). When this appears on any column of a
+          // table, the table itself is a field-parameter table and
+          // shouldn't be rendered as a data source in the Model Tree.
+          if (currentColumn && propLine.startsWith("extendedProperty ParameterMetadata")) {
+            currentColumn.hasParameterMetadata = true;
+          }
           continue;
         }
 
@@ -1026,11 +1054,25 @@ function parseBimFile(bimPath: string): RawModel {
       const src = p?.source || {};
       const mCode = Array.isArray(src.expression) ? src.expression.join("\n") : (src.expression || "");
       const { sourceType, sourceLocation } = inferSource(mCode);
+      // BIM `source.type` carries the TMDL partition kind ("m",
+      // "calculated", "entity", "calculationGroup"). Promote to the
+      // standalone partitionKind field so downstream code can tell a
+      // calc table apart from an M-import table without re-parsing.
+      const partitionKind: string = typeof src.type === "string" ? src.type : "";
+      // Entity partitions reference a shared expression by name —
+      // different BIM dialects use either `expressionSource` or
+      // `source.expression` (as a bare identifier) for this.
+      const expressionSource: string | null =
+        typeof src.expressionSource === "string"
+          ? src.expressionSource
+          : (partitionKind === "entity" && typeof src.expression === "string" ? src.expression : null);
       return {
         name: p.name || "",
         mode: p.mode || src.type || "import",
+        partitionKind,
         sourceType,
         sourceLocation,
+        expressionSource,
       };
     });
     // Hierarchies defined on the table.
@@ -1056,6 +1098,11 @@ function parseBimFile(bimPath: string): RawModel {
     }
     for (const c of table.columns || []) {
       if (c.type === "rowNumber") continue;
+      // In BIM, field-parameter metadata is carried on the column via
+      // `extendedProperties: [{ name: "ParameterMetadata", ... }]`.
+      // We don't care about the value, just its presence.
+      const extProps: any[] = Array.isArray(c.extendedProperties) ? c.extendedProperties : [];
+      const hasParameterMetadata = extProps.some((p: any) => p && p.name === "ParameterMetadata");
       columns.push({
         name: c.name,
         table: tableName,
@@ -1063,6 +1110,7 @@ function parseBimFile(bimPath: string): RawModel {
         isKey: c.isKey === true,
         isHidden: c.isHidden === true,
         isCalculated: c.type === "calculated",
+        hasParameterMetadata,
         description: joinDesc(c.description),
         displayFolder: typeof c.displayFolder === "string" ? c.displayFolder : "",
         summarizeBy: typeof c.summarizeBy === "string" ? c.summarizeBy : "",
