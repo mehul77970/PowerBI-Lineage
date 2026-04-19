@@ -979,6 +979,9 @@ function currentMd(){
     case "functions":  return MARKDOWN_FUNCTIONS;
     case "calcgroups": return MARKDOWN_CALCGROUPS;
     case "quality":    return MARKDOWN_QUALITY;
+    case "sources":    return MARKDOWN_SOURCES;
+    case "pages":      return MARKDOWN_PAGES;
+    case "index":      return MARKDOWN_INDEX;
     default:           return MARKDOWN;
   }
 }
@@ -989,12 +992,15 @@ function currentMdFilename(){
   else if(activeMd==="functions")  suffix="-functions.md";
   else if(activeMd==="calcgroups") suffix="-calculation-groups.md";
   else if(activeMd==="quality")    suffix="-data-quality.md";
+  else if(activeMd==="sources")    suffix="-sources.md";
+  else if(activeMd==="pages")      suffix="-pages.md";
+  else if(activeMd==="index")      suffix="-index.md";
   return REPORT_NAME+suffix;
 }
 
 function switchMd(which){
   activeMd=which;
-  var ids=["model","datadict","measures","functions","calcgroups","quality"];
+  var ids=["model","datadict","measures","functions","calcgroups","quality","sources","pages","index"];
   ids.forEach(function(id){
     var el=document.getElementById("md-tab-"+id);
     if(el)el.classList.toggle("active",which===id);
@@ -1006,6 +1012,9 @@ function switchMd(which){
     else if(which==="functions")  sub.textContent="Functions reference \u00b7 per-UDF parameters, descriptions and bodies";
     else if(which==="calcgroups") sub.textContent="Calculation groups reference \u00b7 per-item descriptions and bodies";
     else if(which==="quality")    sub.textContent="Data quality review \u00b7 coverage, removal candidates, indirect entities, inactive relationships";
+    else if(which==="sources")    sub.textContent="Data sources catalog \u00b7 connections, partition modes, field parameters, composite-model proxies";
+    else if(which==="pages")      sub.textContent="Report pages \u00b7 per-page visual catalog with type, title, and field bindings";
+    else if(which==="index")      sub.textContent="Model glossary \u00b7 alphabetical index of every named entity";
     else                          sub.textContent="Semantic-model documentation (no DAX expressions)";
   }
   renderDocs();

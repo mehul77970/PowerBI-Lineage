@@ -16,6 +16,20 @@ Point it at a `.Report` folder that sits next to its `.SemanticModel` sibling an
 
 Dark/light themes, DAX copy buttons, client-side search and sort.
 
+Plus nine generated Markdown documents for sharing in an ADO Wiki / GitHub Wiki / PR review:
+
+| Doc | Content |
+|---|---|
+| **Model** | Technical spec: front matter, schema summary, per-table breakdown, relationships, pages roll-up |
+| **Data Dictionary** | Per-table column catalog with type, key/FK/calc/hidden badges, hierarchies |
+| **Sources** | Data-sources catalog — connections, partition modes, field parameters, composite-model proxies |
+| **Measures** | A–Z measure reference with dependencies, bindings, per-measure Mermaid lineage |
+| **Functions** | UDF reference — parameters, description, body |
+| **Calc Groups** | Calculation-group reference with per-item descriptions |
+| **Pages** | Per-page visual catalog — type, title, field bindings for every visual |
+| **Quality** | Data-quality review: coverage, removal candidates, indirect use, inactive relationships |
+| **Index** | Alphabetical glossary of every named entity across the model |
+
 ## Requirements
 
 - Node.js 18+
@@ -76,7 +90,7 @@ Tests use the stdlib `node:test` module (Node 18+). No framework deps — the te
 
 ## Publishing to Azure DevOps Wiki
 
-The six markdown documents (Model, Data Dictionary, Measures, Functions, Calc Groups, Quality) are designed to paste cleanly into an ADO Wiki without modification. Every generated doc starts with an HTML comment suggesting its wiki page name:
+The nine markdown documents (Model, Data Dictionary, **Sources**, Measures, Functions, Calc Groups, **Pages**, Quality, **Index**) are designed to paste cleanly into an ADO Wiki without modification. Every generated doc starts with an HTML comment suggesting its wiki page name:
 
 ```markdown
 <!-- Suggested ADO Wiki page name: Health_and_Safety/Measures -->
@@ -86,7 +100,7 @@ The six markdown documents (Model, Data Dictionary, Measures, Functions, Calc Gr
 **To publish:**
 
 1. Open the dashboard for your report and switch to the **Docs** tab.
-2. For each of the six document tabs (Model / Data Dictionary / Measures / Functions / Calc Groups / Quality):
+2. For each of the nine document tabs (Model / Data Dictionary / Sources / Measures / Functions / Calc Groups / Pages / Quality / Index):
    - Click **⎘ Copy** to copy the markdown to the clipboard.
    - In ADO Wiki, create a new page with the name from the `<!-- Suggested ADO Wiki page name: ... -->` hint at the top of the markdown.
    - Paste.

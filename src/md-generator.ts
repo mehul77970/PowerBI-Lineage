@@ -1819,3 +1819,552 @@ export function generateDataDictionaryMd(data: FullData, reportName: string): st
   lines.push("");
   return lines.join("\n");
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Data Sources document — Tier-1 doc-generation addition
+//
+// A focused catalog of where every table gets its data. The main
+// model.md lists tables but doesn't surface the source topology
+// (connection types, file paths, DirectQuery entity references, etc.).
+// Auditors and data-governance reviewers read this to understand
+// what external systems the model depends on.
+//
+// Sections:
+//   1. Summary — source-type counts, partition modes breakdown
+//   2. Data Sources — tables grouped by sourceType / folder
+//   3. Field Parameters — parameterKind === "field" tables
+//   4. Composite Model Proxies — parameterKind === "compositeModelProxy"
+//   5. Calculation Groups — short cross-ref to calcgroups.md
+//   6. Appendix — auto-date infrastructure
+//
+// Uses the same folder-vs-file grouping logic the Tables tab uses —
+// Parquet / Excel / CSV etc. get collapsed by containing folder so a
+// multi-file model doesn't shard into N single-table sources.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// File-based source types: sourceLocation is path+filename. Group by
+// containing folder rather than full path so sibling tables collapse
+// into one branch. Mirrors client/main.ts's T_FILE_SOURCE_TYPES.
+const FILE_SOURCE_TYPES = new Set([
+  "Parquet", "Excel", "CSV", "JSON", "XML", "Access",
+  "Inline (encoded)", "Inline data",
+]);
+
+function splitPath(loc: string): { folder: string; file: string } {
+  if (!loc) return { folder: "", file: "" };
+  const i = Math.max(loc.lastIndexOf("/"), loc.lastIndexOf("\\"));
+  if (i < 0) return { folder: "", file: loc };
+  return { folder: loc.substring(0, i), file: loc.substring(i + 1) };
+}
+
+function folderTail(folder: string): string {
+  if (!folder) return "";
+  const i = Math.max(folder.lastIndexOf("/"), folder.lastIndexOf("\\"));
+  return i >= 0 ? folder.substring(i + 1) : folder;
+}
+
+interface SourceBucket {
+  key: string;
+  label: string;
+  sub: string;
+  tables: TableData[];
+}
+
+function sourceBucketFor(t: TableData): { key: string; label: string; sub: string } {
+  const p = t.partitions && t.partitions[0];
+  if (!p) return { key: "__nosrc__", label: "No source", sub: "" };
+  if (p.sourceType === "Analysis Services") {
+    const loc = p.sourceLocation || "";
+    const tail = loc.includes("/") ? loc.substring(loc.lastIndexOf("/") + 1) : loc;
+    return { key: "AS:" + loc, label: "AS · " + (tail || "(unknown)"), sub: loc };
+  }
+  if (FILE_SOURCE_TYPES.has(p.sourceType)) {
+    const { folder } = splitPath(p.sourceLocation || "");
+    if (folder) {
+      const tail = folderTail(folder);
+      return { key: p.sourceType + "|" + folder, label: p.sourceType + (tail ? " · " + tail : ""), sub: folder };
+    }
+    return { key: p.sourceType + "|__all__", label: p.sourceType, sub: "" };
+  }
+  return { key: p.sourceType + "|" + (p.sourceLocation || ""), label: p.sourceType, sub: p.sourceLocation || "" };
+}
+
+function fileSubFor(t: TableData): string {
+  const p = t.partitions && t.partitions[0];
+  if (!p || !FILE_SOURCE_TYPES.has(p.sourceType)) return "";
+  const { file } = splitPath(p.sourceLocation || "");
+  return file || "";
+}
+
+export function generateSourcesMd(data: FullData, reportName: string): string {
+  const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const lines: string[] = [];
+
+  const userTables = data.tables.filter(t => t.origin !== "auto-date");
+  const autoDateTables = data.tables.filter(t => t.origin === "auto-date");
+  const fieldParams = userTables.filter(t => t.parameterKind === "field");
+  const proxyTables = userTables.filter(t => t.parameterKind === "compositeModelProxy");
+  const calcGroupTablesLocal = userTables.filter(t => t.isCalcGroup);
+  const regularTables = userTables.filter(
+    t => !t.parameterKind && !t.isCalcGroup,
+  );
+
+  const buckets = new Map<string, SourceBucket>();
+  for (const t of regularTables) {
+    const b = sourceBucketFor(t);
+    if (!buckets.has(b.key)) {
+      buckets.set(b.key, { key: b.key, label: b.label, sub: b.sub, tables: [] });
+    }
+    buckets.get(b.key)!.tables.push(t);
+  }
+  const sortedBuckets = [...buckets.values()].sort((a, b) => {
+    if (a.key === "__nosrc__" && b.key !== "__nosrc__") return 1;
+    if (b.key === "__nosrc__" && a.key !== "__nosrc__") return -1;
+    return a.label.localeCompare(b.label);
+  });
+
+  const modeCounts: Record<string, number> = {};
+  for (const t of userTables) {
+    for (const p of t.partitions || []) {
+      const m = p.mode || "unknown";
+      modeCounts[m] = (modeCounts[m] || 0) + 1;
+    }
+  }
+
+  lines.push(`<!-- Suggested ADO Wiki page name: ${reportName}/Sources -->`);
+  lines.push(`# Data Sources`);
+  lines.push("");
+  lines.push(`## ${reportName}`);
+  lines.push("");
+  lines.push(`Inventory of every data source the model reads from — connection type, location, partition mode, and the tables each source feeds.`);
+  lines.push("");
+
+  lines.push(`## 1. Summary`);
+  lines.push("");
+  lines.push("| Metric | Value |");
+  lines.push("|---|---|");
+  lines.push(`| Source buckets | ${sortedBuckets.length} |`);
+  lines.push(`| User tables with a source | ${regularTables.length} |`);
+  lines.push(`| Field parameters | ${fieldParams.length} |`);
+  lines.push(`| Composite-model proxies | ${proxyTables.length} |`);
+  lines.push(`| Calculation groups | ${calcGroupTablesLocal.length} |`);
+  if (autoDateTables.length > 0) {
+    lines.push(`| Auto-date infrastructure | ${autoDateTables.length} _(appendix)_ |`);
+  }
+  lines.push("");
+
+  if (Object.keys(modeCounts).length > 0) {
+    lines.push(`**Partitions by storage mode:** ` +
+      Object.entries(modeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([mode, n]) => `\`${mode}\` × ${n}`)
+        .join(" · "));
+    lines.push("");
+  }
+  lines.push("---");
+  lines.push("");
+
+  lines.push(`## 2. Data Sources`);
+  lines.push("");
+  if (sortedBuckets.length === 0) {
+    lines.push("_No user tables have partitions (calc groups / field parameters / proxies only)._");
+    lines.push("");
+  } else {
+    for (const b of sortedBuckets) {
+      lines.push(`### ${esc(b.label)}`);
+      lines.push("");
+      if (b.sub) {
+        lines.push(`\`${esc(b.sub)}\``);
+        lines.push("");
+      }
+      lines.push(`**${b.tables.length} table${b.tables.length === 1 ? "" : "s"}** backing this source.`);
+      lines.push("");
+      lines.push("| Table | Mode | Kind | Columns | Measures | File / detail |");
+      lines.push("|---|---|---|--:|--:|---|");
+      for (const t of b.tables.sort((a, b) => a.name.localeCompare(b.name))) {
+        const p = t.partitions[0];
+        const mode = p ? p.mode : "—";
+        const kind = p ? (p.partitionKind || "—") : "—";
+        const sub = fileSubFor(t) || (p?.expressionSource ? `expr: ${p.expressionSource}` : "");
+        lines.push(`| ${esc(t.name)} | \`${esc(mode)}\` | \`${esc(kind)}\` | ${t.columnCount} | ${t.measureCount} | ${esc(sub) || "—"} |`);
+      }
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
+
+  lines.push(`## 3. Field Parameters`);
+  lines.push("");
+  if (fieldParams.length === 0) {
+    lines.push("_None — the model doesn't use Power BI's field-parameter feature._");
+    lines.push("");
+  } else {
+    lines.push(`Tables created via Power BI's field-parameter UI — each column carries the \`extendedProperty ParameterMetadata\` annotation. These drive slicer-controlled measure / field switching at runtime.`);
+    lines.push("");
+    for (const t of fieldParams.sort((a, b) => a.name.localeCompare(b.name))) {
+      lines.push(`### \`${esc(t.name)}\``);
+      lines.push("");
+      if (t.description) {
+        lines.push(`> ${esc(t.description).replace(/\n/g, " ")}`);
+        lines.push("");
+      }
+      lines.push(`${t.columnCount} column${t.columnCount === 1 ? "" : "s"}:`);
+      lines.push("");
+      for (const c of t.columns) {
+        const hidden = c.isHidden ? " " + BADGE_HIDDEN : "";
+        const sort = c.sortByColumn ? ` _(sorted by \`${esc(c.sortByColumn)}\`)_` : "";
+        lines.push(`- **${esc(c.name)}** · \`${esc(c.dataType)}\`${hidden}${sort}`);
+      }
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
+
+  lines.push(`## 4. Composite Model Proxies`);
+  lines.push("");
+  if (proxyTables.length === 0) {
+    lines.push("_None — the model doesn't use DirectQuery-to-AS composite references._");
+    lines.push("");
+  } else {
+    lines.push(`Single-column DirectQuery-to-Analysis-Services proxy tables. These are remote-handle stubs Power BI auto-generates when a composite model references a remote AS cube. They're not real user tables — the data lives in the remote model.`);
+    lines.push("");
+    const byModel = new Map<string, TableData[]>();
+    for (const t of proxyTables) {
+      const p = (t.partitions || []).find(p => p.mode === "directQuery" && p.expressionSource);
+      const exprSrc = p?.expressionSource || "";
+      const m = exprSrc.match(/^DirectQuery to AS - (.+)$/);
+      const key = m ? m[1] : exprSrc || "Unknown";
+      if (!byModel.has(key)) byModel.set(key, []);
+      byModel.get(key)!.push(t);
+    }
+    for (const [modelName, tables] of [...byModel.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      lines.push(`### Remote model: \`${esc(modelName)}\``);
+      lines.push("");
+      lines.push(`**${tables.length} proxy table${tables.length === 1 ? "" : "s"}**:`);
+      lines.push("");
+      for (const t of tables.sort((a, b) => a.name.localeCompare(b.name))) {
+        const desc = t.description ? ` — ${esc(t.description).replace(/\n/g, " ")}` : "";
+        lines.push(`- **${esc(t.name)}**${desc}`);
+      }
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
+
+  lines.push(`## 5. Calculation Groups`);
+  lines.push("");
+  if (calcGroupTablesLocal.length === 0) {
+    lines.push("_None._");
+    lines.push("");
+  } else {
+    lines.push(`${calcGroupTablesLocal.length} calc group${calcGroupTablesLocal.length === 1 ? "" : "s"} — full details in the Calc Groups reference document.`);
+    lines.push("");
+    for (const t of calcGroupTablesLocal.sort((a, b) => a.name.localeCompare(b.name))) {
+      lines.push(`- **${esc(t.name)}**`);
+    }
+    lines.push("");
+  }
+  lines.push("---");
+  lines.push("");
+
+  if (autoDateTables.length > 0) {
+    lines.push(`## Appendix — Auto-date infrastructure`);
+    lines.push("");
+    lines.push(`<details><summary>${autoDateTables.length} auto-date table${autoDateTables.length === 1 ? "" : "s"} (\`LocalDateTable_*\`, \`DateTableTemplate_*\`)</summary>`);
+    lines.push("");
+    lines.push(`These are Power BI-generated infrastructure tables — one per date column when **Auto Date/Time** is enabled. Not user-authored content; listed for completeness only.`);
+    lines.push("");
+    lines.push("| Name | Columns |");
+    lines.push("|---|--:|");
+    for (const t of autoDateTables.sort((a, b) => a.name.localeCompare(b.name))) {
+      lines.push(`| \`${esc(t.name)}\` | ${t.columnCount} |`);
+    }
+    lines.push("");
+    lines.push("</details>");
+    lines.push("");
+  }
+
+  lines.push(`_Generated by powerbi-lineage · ${ts}_`);
+  lines.push("");
+  return lines.join("\n");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Report Pages document — Tier-1 doc-generation addition
+//
+// model.md §8 lists one row per page. This doc goes deep — every
+// visual, its type, title, and field bindings. For stakeholders who
+// want "what's actually on page X" without opening Power BI.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function generatePagesMd(data: FullData, reportName: string): string {
+  const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const lines: string[] = [];
+  const pages = [...data.pages].sort((a, b) => a.name.localeCompare(b.name));
+  const hiddenSet = new Set(data.hiddenPages || []);
+
+  const totalVisuals = pages.reduce((a, p) => a + (p.visualCount || 0), 0);
+  const totalMeasures = pages.reduce((a, p) => a + (p.measureCount || 0), 0);
+  const totalColumns = pages.reduce((a, p) => a + (p.columnCount || 0), 0);
+  const totalSlicers = pages.reduce((a, p) => a + (p.slicerCount || 0), 0);
+  const hiddenCount = pages.filter(p => hiddenSet.has(p.name)).length;
+
+  lines.push(`<!-- Suggested ADO Wiki page name: ${reportName}/Pages -->`);
+  lines.push(`# Report Pages`);
+  lines.push("");
+  lines.push(`## ${reportName}`);
+  lines.push("");
+  lines.push(`Per-page visual catalog. Each section lists every visual on a page, its type, its title, and the measures + columns it binds to.`);
+  lines.push("");
+
+  lines.push(`## Summary`);
+  lines.push("");
+  lines.push("| Metric | Value |");
+  lines.push("|---|---|");
+  lines.push(`| Pages | ${pages.length} |`);
+  lines.push(`| Hidden pages | ${hiddenCount} |`);
+  lines.push(`| Visuals (total) | ${totalVisuals} |`);
+  lines.push(`| Measure bindings (total) | ${totalMeasures} |`);
+  lines.push(`| Column bindings (total) | ${totalColumns} |`);
+  lines.push(`| Slicer visuals (total) | ${totalSlicers} |`);
+  lines.push("");
+
+  if (pages.length === 0) {
+    lines.push("_No pages analysed._");
+    lines.push("");
+    lines.push(`_Generated by powerbi-lineage · ${ts}_`);
+    return lines.join("\n");
+  }
+
+  lines.push(`### Page index`);
+  lines.push("");
+  for (const p of pages) {
+    const vis = hiddenSet.has(p.name) ? " 👁 _hidden_" : "";
+    const anchor = adoSlug(`${p.name}`);
+    lines.push(`- [${esc(p.name)}](#${anchor})${vis} — ${p.visualCount} visual${p.visualCount === 1 ? "" : "s"}, ${p.measureCount} measure${p.measureCount === 1 ? "" : "s"}`);
+  }
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+
+  for (const p of pages) {
+    const hidden = hiddenSet.has(p.name);
+    const hiddenBadge = hidden ? ` ${BADGE_HIDDEN}` : "";
+    lines.push(`## ${esc(p.name)}${hiddenBadge}`);
+    lines.push("");
+
+    lines.push("| Stat | Value |");
+    lines.push("|---|--:|");
+    lines.push(`| Visibility | ${hidden ? "Hidden" : "Visible"} |`);
+    lines.push(`| Visuals | ${p.visualCount} |`);
+    lines.push(`| Slicers | ${p.slicerCount} |`);
+    lines.push(`| Measures bound | ${p.measureCount} |`);
+    lines.push(`| Columns bound | ${p.columnCount} |`);
+    lines.push("");
+
+    if (p.typeCounts && Object.keys(p.typeCounts).length > 0) {
+      const types = Object.entries(p.typeCounts).sort((a, b) => b[1] - a[1]);
+      lines.push(`**Visual types:** ` + types.map(([t, n]) => `\`${esc(t)}\` × ${n}`).join(" · "));
+      lines.push("");
+    }
+
+    if (p.visuals && p.visuals.length > 0) {
+      lines.push(`<details><summary><b>Visuals (${p.visuals.length})</b></summary>`);
+      lines.push("");
+      lines.push("| # | Type | Title | Bindings |");
+      lines.push("|--:|---|---|---|");
+      p.visuals.forEach((v, i) => {
+        const title = v.title && v.title !== v.type ? v.title : "_(no title)_";
+        const bindings = v.bindings && v.bindings.length > 0
+          ? v.bindings.map(b => {
+              const kindIcon = b.fieldType === "measure" ? "ƒ" : "▦";
+              return `${kindIcon} \`${esc(b.fieldTable)}[${esc(b.fieldName)}]\``;
+            }).join("<br>")
+          : "_(none)_";
+        lines.push(`| ${i + 1} | \`${esc(v.type)}\` | ${esc(title)} | ${bindings} |`);
+      });
+      lines.push("");
+      lines.push("</details>");
+      lines.push("");
+    }
+
+    if (p.measures && p.measures.length > 0) {
+      lines.push(`**Measures on this page (${p.measures.length}):** ` +
+        [...p.measures].sort().map(m => `\`${esc(m)}\``).join(", "));
+      lines.push("");
+    }
+    if (p.columns && p.columns.length > 0) {
+      lines.push(`**Columns on this page (${p.columns.length}):** ` +
+        [...p.columns].sort().map(c => `\`${esc(c)}\``).join(", "));
+      lines.push("");
+    }
+
+    lines.push("---");
+    lines.push("");
+  }
+
+  lines.push(`_Generated by powerbi-lineage · ${ts}_`);
+  lines.push("");
+  return lines.join("\n");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Model Glossary / Index — Tier-1 doc-generation addition
+//
+// Alphabetical reference of every named entity (table, column,
+// measure, UDF, calc group, calc item) with its description and
+// kind. Makes the MD docs genuinely searchable — readers jump to
+// this doc to find any term and then follow the reference to its
+// primary doc.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+interface IndexEntry {
+  name: string;
+  kind: "Table" | "Column" | "Measure" | "UDF" | "Calc group" | "Calc item";
+  parent?: string;
+  description: string;
+  note: string;
+}
+
+export function generateIndexMd(data: FullData, reportName: string): string {
+  const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
+  const entries: IndexEntry[] = [];
+
+  const isAutoName = (name: string) => /^LocalDateTable_|^DateTableTemplate_/.test(name);
+
+  for (const t of data.tables) {
+    if (isAutoName(t.name)) continue;
+    const notes: string[] = [];
+    if (t.isCalcGroup) notes.push("calc group");
+    if (t.parameterKind === "field") notes.push("field parameter");
+    if (t.parameterKind === "compositeModelProxy") notes.push("composite proxy");
+    if (t.isCalculatedTable) notes.push("calculated table");
+    entries.push({
+      name: t.name,
+      kind: t.isCalcGroup ? "Calc group" : "Table",
+      description: t.description || "",
+      note: notes.join(", "),
+    });
+  }
+
+  const calcGroupTableNames = new Set(data.calcGroups.map(cg => cg.name));
+  for (const c of data.columns) {
+    if (isAutoName(c.table)) continue;
+    if (calcGroupTableNames.has(c.table) && c.name === "Name") continue;
+    const notes: string[] = [];
+    if (c.isKey) notes.push("key");
+    if (c.isCalculated) notes.push("calculated");
+    if (c.isHidden) notes.push("hidden");
+    entries.push({
+      name: c.name,
+      kind: "Column",
+      parent: c.table,
+      description: c.description || "",
+      note: notes.join(", "),
+    });
+  }
+
+  for (const m of data.measures) {
+    if (isAutoName(m.table)) continue;
+    const notes: string[] = [];
+    if (m.externalProxy) notes.push(`external proxy → ${m.externalProxy.externalModel}[${m.externalProxy.remoteName}]`);
+    if (m.status === "unused") notes.push("unused");
+    else if (m.status === "indirect") notes.push("indirect");
+    entries.push({
+      name: m.name,
+      kind: "Measure",
+      parent: m.table,
+      description: m.description || "",
+      note: notes.join(", "),
+    });
+  }
+
+  for (const f of data.functions) {
+    if (f.name.endsWith(".About")) continue;
+    entries.push({
+      name: f.name,
+      kind: "UDF",
+      description: f.description || "",
+      note: f.parameters || "",
+    });
+  }
+
+  for (const cg of data.calcGroups) {
+    for (const item of cg.items) {
+      entries.push({
+        name: item.name,
+        kind: "Calc item",
+        parent: cg.name,
+        description: item.description || "",
+        note: "",
+      });
+    }
+  }
+
+  const byLetter = new Map<string, IndexEntry[]>();
+  for (const e of entries) {
+    const first = e.name.charAt(0).toUpperCase();
+    const bucket = /[A-Z]/.test(first) ? first : "#";
+    if (!byLetter.has(bucket)) byLetter.set(bucket, []);
+    byLetter.get(bucket)!.push(e);
+  }
+  const letters = [...byLetter.keys()].sort((a, b) => {
+    if (a === "#") return 1;
+    if (b === "#") return -1;
+    return a.localeCompare(b);
+  });
+  for (const l of letters) {
+    byLetter.get(l)!.sort((a, b) => a.name.localeCompare(b.name) || a.kind.localeCompare(b.kind));
+  }
+
+  const byKind: Record<string, number> = {};
+  for (const e of entries) byKind[e.kind] = (byKind[e.kind] || 0) + 1;
+
+  const lines: string[] = [];
+  lines.push(`<!-- Suggested ADO Wiki page name: ${reportName}/Index -->`);
+  lines.push(`# Model Glossary`);
+  lines.push("");
+  lines.push(`## ${reportName}`);
+  lines.push("");
+  lines.push(`Alphabetical index of every named entity in the model — tables, columns, measures, UDFs, calc groups, and calc items. Use this to look up an unfamiliar term, then follow the link to its primary reference doc.`);
+  lines.push("");
+
+  lines.push("## Summary");
+  lines.push("");
+  lines.push(`${entries.length} entries across ${letters.length} letter group${letters.length === 1 ? "" : "s"}.`);
+  lines.push("");
+  lines.push("| Kind | Count |");
+  lines.push("|---|--:|");
+  for (const kind of ["Table", "Column", "Measure", "UDF", "Calc group", "Calc item"]) {
+    if (byKind[kind]) lines.push(`| ${kind} | ${byKind[kind]} |`);
+  }
+  lines.push("");
+
+  lines.push(`**Jump to:** ` +
+    letters.map(l => `[${l}](#${adoSlug(l === "#" ? "other" : l)})`).join(" · "));
+  lines.push("");
+  lines.push("---");
+  lines.push("");
+
+  for (const l of letters) {
+    const header = l === "#" ? "Other" : l;
+    lines.push(`## ${header}`);
+    lines.push("");
+    lines.push("| Name | Kind | Parent | Notes | Description |");
+    lines.push("|---|---|---|---|---|");
+    for (const e of byLetter.get(l)!) {
+      const desc = e.description ? esc(e.description).substring(0, 120) + (e.description.length > 120 ? "…" : "") : "—";
+      lines.push(`| \`${esc(e.name)}\` | ${e.kind} | ${e.parent ? "`" + esc(e.parent) + "`" : "—"} | ${esc(e.note) || "—"} | ${desc} |`);
+    }
+    lines.push("");
+  }
+
+  lines.push("---");
+  lines.push("");
+  lines.push(`_Generated by powerbi-lineage · ${ts}_`);
+  lines.push("");
+  return lines.join("\n");
+}

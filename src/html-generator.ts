@@ -177,7 +177,10 @@ export function generateHTML(
   calcGroupsMarkdown: string = "",
   qualityMarkdown: string = "",
   dataDictionaryMarkdown: string = "",
-  version: string = "0.1.0"
+  version: string = "0.1.0",
+  sourcesMarkdown: string = "",
+  pagesMarkdown: string = "",
+  indexMarkdown: string = ""
 ): string {
   const ts = new Date().toISOString().replace("T", " ").substring(0, 16);
   // safeJSON escapes <, >, &, U+2028, U+2029 on top of JSON.stringify
@@ -190,6 +193,9 @@ export function generateHTML(
   const calcGroupsMarkdownLiteral = safeJSON(calcGroupsMarkdown);
   const qualityMarkdownLiteral = safeJSON(qualityMarkdown);
   const dataDictionaryMarkdownLiteral = safeJSON(dataDictionaryMarkdown);
+  const sourcesMarkdownLiteral = safeJSON(sourcesMarkdown);
+  const pagesMarkdownLiteral = safeJSON(pagesMarkdown);
+  const indexMarkdownLiteral = safeJSON(indexMarkdown);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -254,10 +260,13 @@ export function generateHTML(
       <div style="display:flex;gap:4px;flex-wrap:wrap">
         <button class="filter-btn active" id="md-tab-model" data-action="md-tab" data-md="model">Model</button>
         <button class="filter-btn" id="md-tab-datadict" data-action="md-tab" data-md="datadict">Data Dictionary</button>
+        <button class="filter-btn" id="md-tab-sources" data-action="md-tab" data-md="sources">Sources</button>
         <button class="filter-btn" id="md-tab-measures" data-action="md-tab" data-md="measures">Measures</button>
         <button class="filter-btn" id="md-tab-functions" data-action="md-tab" data-md="functions">Functions</button>
         <button class="filter-btn" id="md-tab-calcgroups" data-action="md-tab" data-md="calcgroups">Calc Groups</button>
+        <button class="filter-btn" id="md-tab-pages" data-action="md-tab" data-md="pages">Pages</button>
         <button class="filter-btn" id="md-tab-quality" data-action="md-tab" data-md="quality">Quality</button>
+        <button class="filter-btn" id="md-tab-index" data-action="md-tab" data-md="index">Index</button>
       </div>
       <div style="flex:1;color:var(--text-dim);font-size:12px;margin-left:8px" id="md-subtitle">Semantic-model documentation (no DAX)</div>
       <div style="display:flex;gap:4px">
@@ -300,6 +309,9 @@ const MARKDOWN_FUNCTIONS=${functionsMarkdownLiteral};
 const MARKDOWN_CALCGROUPS=${calcGroupsMarkdownLiteral};
 const MARKDOWN_QUALITY=${qualityMarkdownLiteral};
 const MARKDOWN_DATADICT=${dataDictionaryMarkdownLiteral};
+const MARKDOWN_SOURCES=${sourcesMarkdownLiteral};
+const MARKDOWN_PAGES=${pagesMarkdownLiteral};
+const MARKDOWN_INDEX=${indexMarkdownLiteral};
 const REPORT_NAME=${safeJSON(reportName)};
 const APP_VERSION=${safeJSON(version)};
 const GENERATED_AT=${safeJSON(ts)};
