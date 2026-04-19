@@ -141,10 +141,11 @@ export interface TableData {
    *  null                  regular table (or calc group / calc
    *                        table — those have their own flags).
    *
-   * The Model Tree excludes parameterKind !== null tables from
-   * data-source groupings and renders them under their own
-   * pseudo-roots so they stop appearing as phantom "DISCONNECTED"
-   * data sources.
+   * Downstream consumers (Tables tab, Sources tab, MD exports) can
+   * branch on this to label / filter / group these tables distinctly
+   * from real data tables — a single-column DirectQuery entity stub
+   * is structurally indistinguishable from a user-authored
+   * disconnected table without this flag.
    */
   parameterKind: "field" | "compositeModelProxy" | null;
   columnCount: number;
@@ -445,8 +446,9 @@ export function buildFullData(reportPath: string): FullData {
   }
   // Which tables have a column carrying Power BI's
   // `extendedProperty ParameterMetadata`? Those are field parameters —
-  // we surface them under a dedicated pseudo-root in the Model Tree
-  // instead of letting them masquerade as disconnected user tables.
+  // single-column-ish tables that Power BI's fieldparameter UI
+  // generates to back a slicer. Flagging them lets consumers avoid
+  // mistaking them for user-authored disconnected tables.
   const parameterMetadataTables = new Set<string>();
   for (const c of rawModel.columns) {
     if (c.hasParameterMetadata) parameterMetadataTables.add(c.table);

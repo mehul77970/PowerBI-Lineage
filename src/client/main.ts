@@ -143,6 +143,7 @@ document.addEventListener('click', function(e){
     case 'md-download':     downloadMarkdown(); break;
     case 'page-toggle':     togglePage(d.name); break;
     case 'table-toggle':    toggleTableCard(d.name); break;
+    case 'table-group-toggle': toggleTableGroup(d.group); break;
     case 'orphan-toggle':   toggleOrphanSection(d.section); break;
     case 'toggle-auto-date': toggleAutoDate(); break;
     case 'card-toggle':     el.parentElement.classList.toggle('open'); break;
@@ -194,7 +195,7 @@ function renderSummary(){
 let showAutoDate = false;
 function visibleTables(){ return (DATA.tables||[]).filter(t=>showAutoDate||t.origin!=="auto-date"); }
 function autoDateCount(){ return (DATA.tables||[]).filter(t=>t.origin==="auto-date").length; }
-function toggleAutoDate(){ showAutoDate = !showAutoDate; renderTabs(); renderTables(); renderSources(); renderTree(); }
+function toggleAutoDate(){ showAutoDate = !showAutoDate; renderTabs(); renderTables(); renderSources(); }
 
 function renderTabs(){
   const um=DATA.totals.measuresUnused+DATA.totals.columnsUnused;
@@ -203,10 +204,6 @@ function renderTabs(){
   // Bottom-up build order: data foundations first, then calculation logic,
   // then consumption (pages), then analysis (unused/lineage), then docs.
   document.getElementById("tabs").innerHTML=[
-    // Orientation — Model Tree sits first because it's the holistic
-    // Source→Table→Columns/Measures map; every other data-layer tab
-    // is a flat drill-down of what the tree already shows grouped.
-    {id:"tree",l:"Model Tree",b:null},
     // Data layer
     {id:"sources",l:"Sources",b:vt.filter(function(t){return (t.partitions||[]).length>0;}).length},
     {id:"tables",l:"Tables",b:vt.length},
@@ -511,14 +508,56 @@ function toggleTableCard(name){
   renderTables();
 }
 
+// Classify a table into one of five mutually exclusive groups for the
+// Tables-tab sectioning. Order of checks matters because a calc-group
+// table could also technically have a "measure" name etc. — we take
+// the most-specific category first.
+function tableGroupKey(t){
+  if(t.parameterKind==='field')return 'field-param';
+  if(t.parameterKind==='compositeModelProxy')return 'proxy';
+  if(t.isCalcGroup)return 'calcgroup';
+  // "Measure home" tables — host measures with (usually) one placeholder
+  // column. Heuristic matches `_measures`, `_Rollup_measures`, etc.
+  if((t.measureCount||0)>0 && (t.columnCount||0)<=1 && /measure/i.test(t.name))return 'measure';
+  return 'data';
+}
+// Display metadata for each group. `defaultOpen:true` means the group
+// body is visible on first load (the user can still collapse it).
+const TABLE_GROUPS=[
+  {key:'data',        label:'Data Tables',             defaultOpen:false, icon:'▦'},
+  {key:'measure',     label:'Measure Tables',          defaultOpen:false, icon:'ƒ'},
+  {key:'field-param', label:'Field Parameters',        defaultOpen:false, icon:'▣'},
+  {key:'proxy',       label:'Composite Model Proxies', defaultOpen:false, icon:'◈'},
+  {key:'calcgroup',   label:'Calculation Groups',      defaultOpen:false, icon:'🧮'},
+];
+// Track which groups the user has toggled away from their default.
+// Default state is derived per-group; this set stores the flips.
+var flippedTableGroups = new Set();
+function isTableGroupOpen(key){
+  const def = (TABLE_GROUPS.find(g=>g.key===key)||{}).defaultOpen;
+  return flippedTableGroups.has(key) ? !def : def;
+}
+function toggleTableGroup(key){
+  if(flippedTableGroups.has(key))flippedTableGroups.delete(key);
+  else flippedTableGroups.add(key);
+  renderTables();
+}
+
 function renderTables(){
   const tables=visibleTables();
   // Precompute slicer lookup once per render so the per-row badge stays cheap.
   // TableColumnData doesn't carry isSlicerField — it lives on the flat ModelColumn.
   const slicerSet=new Set((DATA.columns||[]).filter(c=>c.isSlicerField).map(c=>c.table+'|'+c.name));
-  document.getElementById("tables-content").innerHTML=tables.map(t=>{
+
+  // Partition visible tables into the five groups.
+  const byGroup = new Map(TABLE_GROUPS.map(g=>[g.key,[]]));
+  for(const t of tables){
+    const k = tableGroupKey(t);
+    byGroup.get(k).push(t);
+  }
+
+  function cardHtml(t){
     const isOpen=openTables.has(t.name);
-    const calcGroupPill=t.isCalcGroup?'<span class="badge badge--calc-grp" title="This table is a calculation group">🧮 CALC GROUP</span>':'';
 
     const colRows=t.columns.map(c=>{
       const badges=[];
@@ -572,7 +611,7 @@ function renderTables(){
     return `<div class="page-card ${isOpen?'open':''}">
       <div class="page-header" data-action="table-toggle" data-name="${escAttr(t.name)}">
         <div style="flex:1;min-width:0">
-          <div class="page-name">${escHtml(t.name)}${calcGroupPill}</div>
+          <div class="page-name">${escHtml(t.name)}</div>
           ${tableDesc}
         </div>
         <div class="page-stats">
@@ -601,7 +640,35 @@ function renderTables(){
         </div>
       </div></div>
     </div>`;
-  }).join("")||'<div style="text-align:center;padding:60px 20px;color:var(--text-faint);font-size:13px">No tables found</div>';
+  } // end cardHtml
+
+  // Render the grouped sections. Sort tables alphabetically within
+  // each group; the group order comes from TABLE_GROUPS. Empty
+  // groups are omitted so the UI doesn't show empty "0 tables"
+  // section headers for models that have no parameters / proxies.
+  const sectionsHtml = TABLE_GROUPS.map(g=>{
+    const groupTables = (byGroup.get(g.key)||[]).slice().sort((a,b)=>a.name.localeCompare(b.name));
+    if(groupTables.length===0)return '';
+    const open = isTableGroupOpen(g.key);
+    const groupCols = groupTables.reduce((a,t)=>a+(t.columnCount||0),0);
+    const groupMs  = groupTables.reduce((a,t)=>a+(t.measureCount||0),0);
+    const metaParts = [groupTables.length+' table'+(groupTables.length===1?'':'s')];
+    if(groupCols>0) metaParts.push(groupCols+' col'+(groupCols===1?'':'s'));
+    if(groupMs>0)   metaParts.push(groupMs+' measure'+(groupMs===1?'':'s'));
+    const bodyHtml = open ? groupTables.map(cardHtml).join("") : '';
+    return `<div class="table-group ${open?'open':''}">
+      <div class="table-group-header" data-action="table-group-toggle" data-group="${escAttr(g.key)}">
+        <span class="table-group-chev" aria-hidden="true"></span>
+        <span class="table-group-icon">${g.icon}</span>
+        <span class="table-group-title">${escHtml(g.label)}</span>
+        <span class="table-group-meta">${metaParts.join(' · ')}</span>
+      </div>
+      <div class="table-group-body">${bodyHtml}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("tables-content").innerHTML =
+    sectionsHtml || '<div style="text-align:center;padding:60px 20px;color:var(--text-faint);font-size:13px">No tables found</div>';
+
   var totalCols=tables.reduce(function(a,t){return a+(t.columnCount||0);},0);
   var totalMs=tables.reduce(function(a,t){return a+(t.measureCount||0);},0);
   var adc=autoDateCount();
@@ -826,529 +893,6 @@ function renderRelationships(){
   document.getElementById("relationships-content").innerHTML=h;
 }
 
-// ─── Tree tab ──────────────────────────────────────────────────────────────
-// Source → Table → (Columns + Measures groups) → columns / measures.
-// Pure nested <details>/<summary>; no JS state for expand/collapse — the
-// browser handles it. Leaves are clickable (lineage nav); every summary
-// is a toggle. Auto-date tables respect the visibleTables() filter.
-//
-// Design lives in claudedocs/design_ado-md-compat.md's "Part 1 simplified"
-// and the subsequent brainstorm locking V1 scope to four levels max.
-
-function tClassifyTable(t){
-  if(t.origin==='auto-date')return 'Auto-date';
-  if(t.isCalcGroup)return 'Calc Group';
-  const out=(t.relationships||[]).filter(r=>r.direction==='outgoing').length;
-  const inc=(t.relationships||[]).filter(r=>r.direction==='incoming').length;
-  if(out>0&&inc===0)return 'Fact';
-  if(out===0&&inc>0)return 'Dimension';
-  if(out>0&&inc>0)return 'Bridge';
-  return 'Disconnected';
-}
-// Role sort weights: Facts first (where measures usually live), then Dims,
-// Bridges, Calc-Groups, Disconnected. Same ordering as the MD data-dictionary.
-const T_ROLE_WEIGHT={Fact:0,Dimension:1,Bridge:2,'Calc Group':3,Disconnected:4,'Auto-date':5};
-
-// File-based source types: their sourceLocation is a path+filename
-// where different tables land in different files but share a common
-// folder. Grouping by full location shards one logical source into
-// N one-table branches; grouping by folder collapses them back into
-// a single branch with the filename shown per-table.
-const T_FILE_SOURCE_TYPES=new Set([
-  'Parquet','Excel','CSV','JSON','XML','Access',
-  'Inline (encoded)','Inline data',
-]);
-
-/** Split a path into { folder, file } using whichever slash wins. */
-function tSplitPath(loc){
-  if(!loc)return {folder:'',file:''};
-  const i=Math.max(loc.lastIndexOf('/'),loc.lastIndexOf('\\'));
-  if(i<0)return {folder:'',file:loc};
-  return {folder:loc.substring(0,i),file:loc.substring(i+1)};
-}
-
-/** Last path segment of a folder — used as a concise label tail. */
-function tFolderTail(folder){
-  if(!folder)return '';
-  const i=Math.max(folder.lastIndexOf('/'),folder.lastIndexOf('\\'));
-  return i>=0?folder.substring(i+1):folder;
-}
-
-/**
- * Derive a friendly display label for a table's data source.
- *   - Analysis Services: group by cluster URL, label = workspace slug.
- *   - File-based (Parquet / Excel / CSV / …): group by containing
- *     folder so all tables backed by files in one folder share one
- *     branch. Per-table filename surfaces on the table's own sub line.
- *   - Everything else: group by full sourceLocation (SQL server+db,
- *     OData URL, SharePoint root, Snowflake account, …). Those
- *     locations are already the right level of aggregation.
- *
- * Tables with no partitions (disconnected, calc groups) bucket under
- * "No source".
- */
-function tSourceKey(t){
-  const p=t.partitions&&t.partitions[0];
-  if(!p)return {key:'__nosrc__',label:'No source',sub:''};
-  if(p.sourceType==='Analysis Services'){
-    const loc=p.sourceLocation||'';
-    // Last path segment of the cluster URL, or the full URL if it's short.
-    const lastSlash=loc.lastIndexOf('/');
-    const tail=lastSlash>=0?loc.substring(lastSlash+1):loc;
-    return {key:'AS:'+loc,label:'AS · '+(tail||'(unknown)'),sub:loc};
-  }
-  if(T_FILE_SOURCE_TYPES.has(p.sourceType)){
-    const {folder}=tSplitPath(p.sourceLocation||'');
-    if(folder){
-      const tail=tFolderTail(folder);
-      return {key:p.sourceType+'|'+folder,label:p.sourceType+(tail?' · '+tail:''),sub:folder};
-    }
-    // No folder — inline or unresolved path. Collapse every such
-    // table into one bucket per source type so they don't fragment
-    // into N single-table branches.
-    return {key:p.sourceType+'|__all__',label:p.sourceType,sub:''};
-  }
-  return {key:p.sourceType+'|'+(p.sourceLocation||''),label:p.sourceType,sub:p.sourceLocation||''};
-}
-
-/**
- * Per-table source sub-line. For file-based sources where the group
- * is the folder, show the filename so each table in the branch is
- * individually identifiable. Empty string for everything else.
- */
-function tTableSourceSub(t){
-  const p=t.partitions&&t.partitions[0];
-  if(!p||!T_FILE_SOURCE_TYPES.has(p.sourceType))return '';
-  const {file}=tSplitPath(p.sourceLocation||'');
-  return file||'';
-}
-
-function tBadgesForColumn(c,slicerSet,tableName){
-  const out=[];
-  if(c.isKey)out.push('<span class="badge badge--pk">🔑 PK</span>');
-  else if(c.isInferredPK)out.push('<span class="badge badge--pk-inf">🗝 PK</span>');
-  if(c.isFK&&c.fkTarget)out.push('<span class="badge badge--fk" title="→ '+escAttr(c.fkTarget.table+'['+c.fkTarget.column+']')+'">🔗 FK</span>');
-  if(c.isCalculated)out.push('<span class="badge badge--calc">🧮 CALC</span>');
-  if(c.isHidden)out.push('<span class="badge badge--hid-col">👁 HIDDEN</span>');
-  if(slicerSet.has(tableName+'|'+c.name))out.push('<span class="badge badge--slicer">🎚 SLICER</span>');
-  return out.join(' ');
-}
-
-function tBadgeForMeasure(m){
-  if(m.externalProxy){
-    // Tooltip surfaces the remote target so the user can see which
-    // cube this proxies to without clicking through to measures.md.
-    const tip=escAttr('External proxy → '+m.externalProxy.externalModel+'['+m.externalProxy.remoteName+']');
-    return `<span class="badge badge--calc" title="${tip}">🌐 PROXY</span>`;
-  }
-  if(m.status==='unused')return '<span class="badge badge--unused">⚠ UNUSED</span>';
-  if(m.status==='indirect')return '<span class="badge badge--indirect">↻ INDIRECT</span>';
-  return ''; // Direct needs no pill — absence = healthy
-}
-
-// Role-aware icon for the tree-table summary. The default 📊 emoji
-// renders as a pixelated bar chart on Windows and looks identical for
-// every table, making long lists of facts/dims visually indistinct.
-// Monochrome geometric glyphs render consistently and let role be
-// read at a glance without needing to parse the role pill.
-function tIconForTable(t){
-  if(t.isCalcGroup)return '🧮';
-  if(t.origin==='auto-date')return '◷';
-  const role=tClassifyTable(t);
-  switch(role){
-    case 'Fact':         return '▦';  // crosshatched — the "busy" table
-    case 'Dimension':    return '▤';  // horizontal rules — the "list" table
-    case 'Bridge':       return '⇄';  // two-way — relates two tables
-    case 'Disconnected': return '◌';  // hollow circle — unconnected
-    default:             return '▫';
-  }
-}
-
-// "Measure home" tables — those that exist purely to host measures
-// with little or no data of their own (e.g. `_measures`,
-// `_Rollup_measures`, `MeasureTable`). User convention on composite
-// models: a single placeholder column + many measures. Surfacing
-// them as a dedicated pseudo-root keeps them from cluttering the
-// data-source groupings they'd otherwise appear under as
-// DISCONNECTED. Match: table name contains "measure" (case-
-// insensitive) AND has at least one measure. Excludes calc groups,
-// field params, and composite-model proxies so those classifiers
-// stay authoritative.
-function tIsMeasureHomeTable(t){
-  return (t.measureCount||0) > 0
-      && !t.isCalcGroup
-      && t.parameterKind==null
-      && /measure/i.test(t.name);
-}
-
-function renderTree(){
-  const el=document.getElementById("tree-content");
-  if(!el)return;
-  const tables=visibleTables();   // respects Show-auto-date toggle
-  const slicerSet=new Set((DATA.columns||[]).filter(c=>c.isSlicerField).map(c=>c.table+'|'+c.name));
-  // Full-detail measure lookup — table.measures carries a reduced shape.
-  const measuresByTable=new Map();
-  for(const m of DATA.measures||[]){
-    if(!measuresByTable.has(m.table))measuresByTable.set(m.table,[]);
-    measuresByTable.get(m.table).push(m);
-  }
-
-  // Split off field parameters, composite-model proxies, and
-  // measure-home tables up front — each gets its own pseudo-root
-  // below and shouldn't appear as a DISCONNECTED data-source branch.
-  // Order matters: parameter/proxy classifiers from data-builder
-  // are authoritative; measure-home is a pure name-based override
-  // applied last so a table classified as a field param doesn't
-  // accidentally get pulled into measure-tables just because its
-  // name matches.
-  const fieldParamTables=[];
-  const proxyTables=[];
-  const measureHomeTables=[];
-  const regularTables=[];
-  for(const t of tables){
-    if(t.parameterKind==='field')fieldParamTables.push(t);
-    else if(t.parameterKind==='compositeModelProxy')proxyTables.push(t);
-    else if(tIsMeasureHomeTable(t))measureHomeTables.push(t);
-    else regularTables.push(t);
-  }
-
-  // Group tables by source (regular tables only)
-  const sourceMap=new Map();
-  for(const t of regularTables){
-    const s=tSourceKey(t);
-    if(!sourceMap.has(s.key))sourceMap.set(s.key,{label:s.label,sub:s.sub,tables:[]});
-    sourceMap.get(s.key).tables.push(t);
-  }
-  // Sort: AS first (by label), then other sources, "No source" last
-  const sortedSources=[...sourceMap.entries()].sort((a,b)=>{
-    const aNo=a[0]==='__nosrc__',bNo=b[0]==='__nosrc__';
-    if(aNo!==bNo)return aNo?1:-1;
-    return a[1].label.localeCompare(b[1].label);
-  });
-
-  const parts=[];
-  parts.push('<div class="tree-hint">Click any measure or column to open its full lineage. Click a table or group header to expand / collapse.</div>');
-
-  // Data-source branches
-  for(const [,src] of sortedSources){
-    const tblList=src.tables.slice().sort((a,b)=>{
-      const wa=T_ROLE_WEIGHT[tClassifyTable(a)]??9;
-      const wb=T_ROLE_WEIGHT[tClassifyTable(b)]??9;
-      if(wa!==wb)return wa-wb;
-      return a.name.localeCompare(b.name);
-    });
-    const totalMeasures=tblList.reduce((a,t)=>a+(t.measureCount||0),0);
-    const totalCols=tblList.reduce((a,t)=>a+(t.columnCount||0),0);
-    parts.push('<details class="tree-src" open>');
-    parts.push('<summary><span class="tree-icon">📦</span><strong>'+escHtml(src.label)+'</strong>'+
-      '<span class="tree-meta">'+tblList.length+' table'+(tblList.length===1?'':'s')+' · '+totalCols+' cols · '+totalMeasures+' measure'+(totalMeasures===1?'':'s')+'</span>'+
-      (src.sub?'<span class="tree-sub">'+escHtml(src.sub)+'</span>':'')+
-      '</summary>');
-
-    for(const t of tblList){
-      const role=tClassifyTable(t);
-      const roleCls='tree-role-'+role.toLowerCase().replace(/\s+/g,'-');
-      const tableIcon=tIconForTable(t);
-      const cols=t.columns||[];
-      const fullMeasures=(measuresByTable.get(t.name)||[]);
-      fullMeasures.sort((a,b)=>a.name.localeCompare(b.name));
-
-      const tblSub=tTableSourceSub(t);
-      parts.push('<details class="tree-table">');
-      parts.push('<summary>'+
-        '<span class="tree-icon">'+tableIcon+'</span>'+
-        '<strong>'+escHtml(t.name)+'</strong>'+
-        '<span class="badge tree-role '+roleCls+'">'+role.toUpperCase()+'</span>'+
-        (t.isCalculatedTable?'<span class="badge badge--calc" title="DAX calculated table">🧮 CALC TABLE</span>':'')+
-        '<span class="tree-meta">'+t.columnCount+' col'+(t.columnCount===1?'':'s')+
-          (t.measureCount>0?' · '+t.measureCount+' measure'+(t.measureCount===1?'':'s'):'')+
-          (t.keyCount>0?' · '+t.keyCount+' key'+(t.keyCount===1?'':'s'):'')+
-          (t.fkCount>0?' · '+t.fkCount+' FK'+(t.fkCount===1?'':'s'):'')+
-        '</span>'+
-        (tblSub?'<span class="tree-sub">'+escHtml(tblSub)+'</span>':'')+
-      '</summary>');
-
-      // Columns group
-      if(cols.length>0){
-        const keyCount=cols.filter(c=>c.isKey||c.isInferredPK).length;
-        const fkCount=cols.filter(c=>c.isFK).length;
-        const hiddenCount=cols.filter(c=>c.isHidden).length;
-        const colExtras=[];
-        if(keyCount>0)colExtras.push(keyCount+' key'+(keyCount===1?'':'s'));
-        if(fkCount>0)colExtras.push(fkCount+' FK'+(fkCount===1?'':'s'));
-        if(hiddenCount>0)colExtras.push(hiddenCount+' hidden');
-        parts.push('<details class="tree-group">');
-        parts.push('<summary><span class="tree-icon">📋</span>Columns ('+cols.length+')'+(colExtras.length?'<span class="tree-meta">'+colExtras.join(' · ')+'</span>':'')+'</summary>');
-        for(const c of cols){
-          const badges=tBadgesForColumn(c,slicerSet,t.name);
-          parts.push(`<div class="tree-leaf tree-col clickable" data-action="lineage" data-type="column" data-name="${escAttr(c.name)}">`+
-            `<span class="tree-icon">·</span>`+
-            `<span class="tree-name">${escHtml(c.name)}</span>`+
-            `<span class="tree-type">${escHtml(c.dataType||'')}</span>`+
-            (badges?`<span class="tree-badges">${badges}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-
-      // Measures group
-      if(fullMeasures.length>0){
-        const brk={direct:0,indirect:0,unused:0,proxy:0};
-        for(const m of fullMeasures){
-          if(m.externalProxy)brk.proxy++;
-          else brk[m.status]=(brk[m.status]||0)+1;
-        }
-        const brkParts=[];
-        if(brk.direct>0)brkParts.push(brk.direct+' ✓');
-        if(brk.indirect>0)brkParts.push(brk.indirect+' ↻');
-        if(brk.unused>0)brkParts.push(brk.unused+' ⚠');
-        if(brk.proxy>0)brkParts.push(brk.proxy+' 🌐');
-        parts.push('<details class="tree-group">');
-        parts.push('<summary><span class="tree-icon">ƒ</span>Measures ('+fullMeasures.length+')'+(brkParts.length?'<span class="tree-meta">'+brkParts.join(' · ')+'</span>':'')+'</summary>');
-        for(const m of fullMeasures){
-          const mb=tBadgeForMeasure(m);
-          parts.push(`<div class="tree-leaf tree-measure clickable" data-action="lineage" data-type="measure" data-name="${escAttr(m.name)}">`+
-            `<span class="tree-icon">●</span>`+
-            `<span class="tree-name">${escHtml(m.name)}</span>`+
-            (m.formatString?`<span class="tree-type">${escHtml(m.formatString)}</span>`:'')+
-            (mb?`<span class="tree-badges">${mb}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-
-      parts.push('</details>'); // close tree-table
-    }
-    parts.push('</details>'); // close tree-src
-  }
-
-  // Calc Groups — pseudo-root. Calc groups are semantically tables
-  // (isCalcGroup=true entries in data.tables), but different models
-  // surface them differently depending on TMDL version / parser path.
-  // Render any calc group that ISN'T already represented as a table
-  // in the tree, so they never silently go missing from the catalog.
-  const calcGroupsInTables=new Set(tables.filter(t=>t.isCalcGroup).map(t=>t.name));
-  const uncoveredCalcGroups=(DATA.calcGroups||[]).filter(cg=>!calcGroupsInTables.has(cg.name));
-  if(uncoveredCalcGroups.length>0){
-    parts.push('<details class="tree-src">');
-    parts.push(`<summary><span class="tree-icon">🧮</span><strong>Calculation Groups</strong><span class="tree-meta">${uncoveredCalcGroups.length} group${uncoveredCalcGroups.length===1?'':'s'}</span></summary>`);
-    for(const cg of uncoveredCalcGroups){
-      const itemCount=(cg.items||[]).length;
-      parts.push('<details class="tree-table">');
-      parts.push(`<summary><span class="tree-icon">🧮</span><strong>${escHtml(cg.name)}</strong><span class="badge tree-role tree-role-calc-group">CALC GROUP</span><span class="tree-meta">${itemCount} item${itemCount===1?'':'s'} · precedence ${cg.precedence??0}</span></summary>`);
-      if(itemCount>0){
-        parts.push('<details class="tree-group">');
-        parts.push(`<summary><span class="tree-icon">📋</span>Items (${itemCount})</summary>`);
-        for(const it of cg.items){
-          parts.push(`<div class="tree-leaf tree-calc-item clickable" data-action="tab" data-tab="calcgroups">`+
-            `<span class="tree-icon">·</span>`+
-            `<span class="tree-name">${escHtml(it.name)}</span>`+
-            (it.ordinal!==undefined?`<span class="tree-type">#${it.ordinal}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-      parts.push('</details>'); // close tree-table (calc group)
-    }
-    parts.push('</details>'); // close tree-src
-  }
-
-  // Field Parameters — dedicated pseudo-root, collapsed by default.
-  // Detected via Power BI's `extendedProperty ParameterMetadata` on
-  // any column (data-builder exposes this as parameterKind === 'field').
-  // Renders columns but no data-source grouping — a field-param
-  // table isn't a data source in any meaningful sense.
-  if(fieldParamTables.length>0){
-    const tblList=fieldParamTables.slice().sort((a,b)=>a.name.localeCompare(b.name));
-    parts.push('<details class="tree-src">');
-    parts.push('<summary><span class="tree-icon">▣</span><strong>Field Parameters</strong>'+
-      '<span class="tree-meta">'+tblList.length+' parameter'+(tblList.length===1?'':'s')+'</span>'+
-      '</summary>');
-    for(const t of tblList){
-      const cols=t.columns||[];
-      parts.push('<details class="tree-table">');
-      parts.push('<summary>'+
-        '<span class="tree-icon">▣</span>'+
-        '<strong>'+escHtml(t.name)+'</strong>'+
-        '<span class="badge tree-role tree-role-parameter" title="Field parameter (what-if / selector)">PARAMETER</span>'+
-        '<span class="tree-meta">'+t.columnCount+' col'+(t.columnCount===1?'':'s')+'</span>'+
-        (t.description?'<span class="tree-sub">'+escHtml(t.description)+'</span>':'')+
-      '</summary>');
-      if(cols.length>0){
-        parts.push('<details class="tree-group">');
-        parts.push('<summary><span class="tree-icon">📋</span>Columns ('+cols.length+')</summary>');
-        for(const c of cols){
-          const badges=tBadgesForColumn(c,slicerSet,t.name);
-          parts.push(`<div class="tree-leaf tree-col clickable" data-action="lineage" data-type="column" data-name="${escAttr(c.name)}">`+
-            `<span class="tree-icon">·</span>`+
-            `<span class="tree-name">${escHtml(c.name)}</span>`+
-            `<span class="tree-type">${escHtml(c.dataType||'')}</span>`+
-            (badges?`<span class="tree-badges">${badges}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-      parts.push('</details>'); // close tree-table
-    }
-    parts.push('</details>');
-  }
-
-  // Measure Tables — dedicated pseudo-root for tables that exist
-  // purely to host measures. Open by default (usually only 1–2 of
-  // these, and their contents are the whole reason they exist).
-  // Tables classified as field params / proxies / calc groups are
-  // already filtered out above, so this branch only gets the
-  // `_measures` / `_Rollup_measures` / `MeasureTable` style tables.
-  if(measureHomeTables.length>0){
-    const tblList=measureHomeTables.slice().sort((a,b)=>a.name.localeCompare(b.name));
-    const totalMeasures=tblList.reduce((a,t)=>a+(t.measureCount||0),0);
-    parts.push('<details class="tree-src" open>');
-    parts.push('<summary><span class="tree-icon">ƒ</span><strong>Measure Tables</strong>'+
-      '<span class="tree-meta">'+tblList.length+' table'+(tblList.length===1?'':'s')+' · '+totalMeasures+' measure'+(totalMeasures===1?'':'s')+'</span>'+
-      '</summary>');
-    for(const t of tblList){
-      const cols=t.columns||[];
-      const fullMeasures=(measuresByTable.get(t.name)||[]);
-      fullMeasures.sort((a,b)=>a.name.localeCompare(b.name));
-      parts.push('<details class="tree-table">');
-      parts.push('<summary>'+
-        '<span class="tree-icon">ƒ</span>'+
-        '<strong>'+escHtml(t.name)+'</strong>'+
-        '<span class="badge tree-role tree-role-measure-home" title="Table hosts measures only">MEASURE TABLE</span>'+
-        '<span class="tree-meta">'+t.measureCount+' measure'+(t.measureCount===1?'':'s')+
-          (t.columnCount>0?' · '+t.columnCount+' col'+(t.columnCount===1?'':'s'):'')+
-        '</span>'+
-      '</summary>');
-      // Columns group (usually empty or a single placeholder column)
-      if(cols.length>0){
-        parts.push('<details class="tree-group">');
-        parts.push('<summary><span class="tree-icon">📋</span>Columns ('+cols.length+')</summary>');
-        for(const c of cols){
-          const badges=tBadgesForColumn(c,slicerSet,t.name);
-          parts.push(`<div class="tree-leaf tree-col clickable" data-action="lineage" data-type="column" data-name="${escAttr(c.name)}">`+
-            `<span class="tree-icon">·</span>`+
-            `<span class="tree-name">${escHtml(c.name)}</span>`+
-            `<span class="tree-type">${escHtml(c.dataType||'')}</span>`+
-            (badges?`<span class="tree-badges">${badges}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-      // Measures group
-      if(fullMeasures.length>0){
-        const brk={direct:0,indirect:0,unused:0,proxy:0};
-        for(const m of fullMeasures){
-          if(m.externalProxy)brk.proxy++;
-          else brk[m.status]=(brk[m.status]||0)+1;
-        }
-        const brkParts=[];
-        if(brk.direct>0)brkParts.push(brk.direct+' ✓');
-        if(brk.indirect>0)brkParts.push(brk.indirect+' ↻');
-        if(brk.unused>0)brkParts.push(brk.unused+' ⚠');
-        if(brk.proxy>0)brkParts.push(brk.proxy+' 🌐');
-        parts.push('<details class="tree-group" open>');
-        parts.push('<summary><span class="tree-icon">ƒ</span>Measures ('+fullMeasures.length+')'+(brkParts.length?'<span class="tree-meta">'+brkParts.join(' · ')+'</span>':'')+'</summary>');
-        for(const m of fullMeasures){
-          const mb=tBadgeForMeasure(m);
-          parts.push(`<div class="tree-leaf tree-measure clickable" data-action="lineage" data-type="measure" data-name="${escAttr(m.name)}">`+
-            `<span class="tree-icon">●</span>`+
-            `<span class="tree-name">${escHtml(m.name)}</span>`+
-            (m.formatString?`<span class="tree-type">${escHtml(m.formatString)}</span>`:'')+
-            (mb?`<span class="tree-badges">${mb}</span>`:'')+
-          `</div>`);
-        }
-        parts.push('</details>');
-      }
-      parts.push('</details>'); // close tree-table
-    }
-    parts.push('</details>'); // close tree-src
-  }
-
-  // Composite Model Proxies — dedicated pseudo-root, collapsed by
-  // default. These are the single-column DirectQuery-to-AS entity
-  // stubs that Power BI auto-creates for composite models (Domain_*,
-  // Globa_*, table_HS, …). They're not real user tables — they're
-  // "remote handles" — so showing them as DISCONNECTED data sources
-  // in the main tree is misleading. Group them under one branch
-  // with the remote model they point at.
-  if(proxyTables.length>0){
-    // Sub-group by the AS model name parsed from expressionSource
-    // ("DirectQuery to AS - <ModelName>").
-    const byModel=new Map();
-    for(const t of proxyTables){
-      const p=(t.partitions||[]).find(p=>p.mode==='directQuery'&&p.expressionSource);
-      const exprSrc=p?p.expressionSource||'':'';
-      const m=exprSrc.match(/^DirectQuery to AS - (.+)$/);
-      const key=m?m[1]:(exprSrc||'Unknown');
-      if(!byModel.has(key))byModel.set(key,[]);
-      byModel.get(key).push(t);
-    }
-    const sortedModels=[...byModel.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
-    const totalTables=proxyTables.length;
-    parts.push('<details class="tree-src">');
-    parts.push('<summary><span class="tree-icon">◈</span><strong>Composite Model Proxies</strong>'+
-      '<span class="tree-meta">'+totalTables+' proxy table'+(totalTables===1?'':'s')+' · '+sortedModels.length+' remote model'+(sortedModels.length===1?'':'s')+'</span>'+
-      '</summary>');
-    for(const [modelName,tblList] of sortedModels){
-      tblList.sort((a,b)=>a.name.localeCompare(b.name));
-      parts.push('<details class="tree-table">');
-      parts.push('<summary>'+
-        '<span class="tree-icon">◈</span>'+
-        '<strong>'+escHtml(modelName)+'</strong>'+
-        '<span class="badge tree-role tree-role-proxy" title="Remote Analysis Services model referenced via DirectQuery">REMOTE</span>'+
-        '<span class="tree-meta">'+tblList.length+' table'+(tblList.length===1?'':'s')+'</span>'+
-      '</summary>');
-      parts.push('<details class="tree-group">');
-      parts.push('<summary><span class="tree-icon">📋</span>Proxy Tables ('+tblList.length+')</summary>');
-      for(const t of tblList){
-        parts.push(`<div class="tree-leaf tree-proxy clickable" data-action="lineage" data-type="table" data-name="${escAttr(t.name)}">`+
-          `<span class="tree-icon">·</span>`+
-          `<span class="tree-name">${escHtml(t.name)}</span>`+
-          (t.description?`<span class="tree-type">${escHtml(t.description)}</span>`:'')+
-        `</div>`);
-      }
-      parts.push('</details>');
-      parts.push('</details>');
-    }
-    parts.push('</details>');
-  }
-
-  // UDFs — separate root branch, siblings to data sources
-  const udfs=(DATA.functions||[]).filter(f=>!f.name.endsWith('.About'));
-  if(udfs.length>0){
-    parts.push('<details class="tree-src">');
-    parts.push('<summary><span class="tree-icon">🔧</span><strong>User-Defined Functions</strong><span class="tree-meta">'+udfs.length+' function'+(udfs.length===1?'':'s')+'</span></summary>');
-    for(const f of udfs){
-      const paramCount=f.parameters?f.parameters.split(',').length:0;
-      parts.push('<div class="tree-leaf tree-udf clickable" data-action="tab" data-tab="functions">'+
-        '<span class="tree-icon">ƒ</span>'+
-        '<span class="tree-name">'+escHtml(f.name)+'</span>'+
-        '<span class="tree-type">'+paramCount+' param'+(paramCount===1?'':'s')+'</span>'+
-      '</div>');
-    }
-    parts.push('</details>');
-  }
-
-  el.innerHTML=parts.join('');
-
-  // Footer — append via insertAdjacentHTML ("beforeend") so the tree
-  // body above isn't wiped. setPanelFooter() sets innerHTML on its
-  // target, which works for tabs that have a separate <div id="footer-X">
-  // slot but destroys content when called with the main panel id.
-  const adc=autoDateCount();
-  const autoToggle=adc>0
-    ? `<button class="filter-btn${showAutoDate?' active':''}" data-action="toggle-auto-date" title="${showAutoDate?'Hide':'Show'} auto-date infrastructure">${showAutoDate?'Hide':'Show'} auto-date (${adc})</button>`
-    : '';
-  const footerLeft=`${tables.length} table${tables.length===1?'':'s'} · ${sortedSources.length} source${sortedSources.length===1?'':'s'}`+
-    (measureHomeTables.length>0?` · ${measureHomeTables.length} measure table${measureHomeTables.length===1?'':'s'}`:'')+
-    (fieldParamTables.length>0?` · ${fieldParamTables.length} param${fieldParamTables.length===1?'':'s'}`:'')+
-    (proxyTables.length>0?` · ${proxyTables.length} prox${proxyTables.length===1?'y':'ies'}`:'')+
-    (udfs.length>0?` · ${udfs.length} UDF${udfs.length===1?'':'s'}`:'')+
-    (adc>0&&!showAutoDate?` · <span style="color:var(--text-faint)">+${adc} auto-date hidden</span>`:'');
-  el.insertAdjacentHTML("beforeend",
-    `<div class="panel-footer"><div class="left">${footerLeft}</div><div class="right">${autoToggle}</div></div>`);
-}
-
 function renderFunctions(){
   const fns=DATA.functions.filter(f=>!f.name.endsWith('.About'));
   var fnsFooter='<div class="panel-footer"><div class="left">'+fns.length+' function'+(fns.length===1?'':'s')+'</div></div>';
@@ -1547,4 +1091,4 @@ function downloadMarkdown(){
   setTimeout(function(){URL.revokeObjectURL(url);},1000);
 }
 
-renderSummary();renderTabs();renderMeasures();renderColumns();renderTables();renderRelationships();renderSources();renderTree();renderFunctions();renderCalcGroups();renderPages();renderUnused();renderDocs();switchTab("measures");addCopyButtons();
+renderSummary();renderTabs();renderMeasures();renderColumns();renderTables();renderRelationships();renderSources();renderFunctions();renderCalcGroups();renderPages();renderUnused();renderDocs();switchTab("measures");addCopyButtons();

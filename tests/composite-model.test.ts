@@ -36,6 +36,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { buildFullData } from "../src/data-builder.js";
 import { parseModel, findSemanticModelPath } from "../src/model-parser.js";
+import { generateHTML } from "../src/html-generator.js";
 
 const FIXTURE = "test/Health_and_Safety.Report";
 const FIXTURE_EXISTS = fs.existsSync(path.resolve(FIXTURE));
@@ -171,4 +172,140 @@ test("Stop 6.4 — LocalDateTable_* and DateTableTemplate_* get origin: auto-dat
       "user table with auto-date name: " + t.name
     );
   }
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// Task 5: TableData.parameterKind — field params vs composite proxies
+// ──────────────────────────────────────────────────────────────────────
+//
+// Signals the parser + data-builder expose so downstream consumers
+// (Tables tab, Sources tab, MD exports) can distinguish
+//   - real data tables (dim/fact/bridge)
+//   - field parameters (Power BI's fieldparameter UI)
+//   - composite-model proxies (DirectQuery entity stubs)
+// without re-parsing TMDL. These are covered here, not in a Tree-tab
+// test, because nothing in the app currently reads them yet — but
+// removing them silently would regress the data model.
+
+test("Stop 6.5 — field parameters detected via ParameterMetadata", { skip: !FIXTURE_EXISTS }, () => {
+  const data = buildFullData(path.resolve(FIXTURE));
+  const fieldParams = data.tables
+    .filter(t => t.parameterKind === "field")
+    .map(t => t.name)
+    .sort();
+  // Only the switch_* tables created via Power BI's field-parameter
+  // UI carry `extendedProperty ParameterMetadata`. Hand-rolled
+  // calculated tables with parameter-like intent (switch_hours_worked)
+  // must NOT be promoted — that'd be a false positive.
+  for (const expected of ["switch_geodata", "switch_site_details", "switch_time_period"]) {
+    assert.ok(
+      fieldParams.includes(expected),
+      `expected ${expected} to be parameterKind="field" — got [${fieldParams.join(", ")}]`,
+    );
+  }
+  const swhw = data.tables.find(t => t.name === "switch_hours_worked");
+  assert.equal(swhw?.parameterKind, null,
+    "switch_hours_worked has no ParameterMetadata — must stay null");
+});
+
+test("Stop 6.6 — composite-model proxies detected via DQ entity shape", { skip: !FIXTURE_EXISTS }, () => {
+  const data = buildFullData(path.resolve(FIXTURE));
+  const proxies = data.tables
+    .filter(t => t.parameterKind === "compositeModelProxy")
+    .map(t => t.name)
+    .sort();
+  // Single-column, same-name tables with directQuery partition +
+  // expressionSource. These are the remote-handle stubs Power BI
+  // creates for composite models pointing at AS datasets.
+  for (const expected of [
+    "Domain_Health_and_Safety_SQL",
+    "Domain_Health_and_Safety_Schema",
+    "Domain_Health_and_Safety_WH",
+    "Globa_Data_House",
+    "Global_Data_House_SQL",
+    "Global_Dimensions_Schema",
+    "Global_Dimensions_Text_Summary",
+    "table_HS",
+    "table_PSIF",
+    "table_injury",
+    "table_trcf_targets",
+  ]) {
+    assert.ok(
+      proxies.includes(expected),
+      `expected ${expected} to be parameterKind="compositeModelProxy" — got [${proxies.join(", ")}]`,
+    );
+  }
+});
+
+test("Stop 6.7 — DAX calculated tables flagged via partitionKind", { skip: !FIXTURE_EXISTS }, () => {
+  const data = buildFullData(path.resolve(FIXTURE));
+  // Calc tables and M-import tables both report `mode: import`.
+  // The ONLY reliable discriminator is the TMDL partition kind
+  // token (`= calculated`) captured in RawPartition.partitionKind.
+  // If that plumbing breaks, every calc table collapses into the
+  // M-import bucket in downstream consumers.
+  const calcTables = data.tables
+    .filter(t => t.isCalculatedTable)
+    .map(t => t.name)
+    .sort();
+  assert.ok(
+    calcTables.some(n => n.startsWith("switch_")),
+    `expected at least one switch_* calculated table on H&S — got [${calcTables.join(", ")}]`,
+  );
+  // Regular import / DQ tables must NOT be tagged calculated.
+  const dimCalendar = data.tables.find(t => t.name === "dim_calendar");
+  assert.equal(dimCalendar?.isCalculatedTable, false,
+    "dim_calendar is a regular import table, not calculated");
+  const tableHS = data.tables.find(t => t.name === "table_HS");
+  assert.equal(tableHS?.isCalculatedTable, false,
+    "table_HS is a DQ entity proxy, not calculated");
+});
+
+test("Stop 6.8 — RawPartition.expressionSource populated on entity partitions", { skip: !FIXTURE_EXISTS }, () => {
+  // The composite-model-proxy classifier depends on expressionSource
+  // being set. If the parser regresses, every proxy degrades to a
+  // phantom DISCONNECTED table across the whole app.
+  const modelPath = findSemanticModelPath(FIXTURE);
+  const raw = parseModel(modelPath);
+  const tableHS = raw.tables.find(t => t.name === "table_HS");
+  assert.ok(tableHS, "table_HS missing from fixture");
+  const dqP = (tableHS!.partitions || []).find(p => p.mode === "directQuery");
+  assert.ok(dqP, "table_HS has no DQ partition");
+  assert.ok(
+    dqP!.expressionSource && dqP!.expressionSource.length > 0,
+    "DQ partition missing expressionSource — parser regression",
+  );
+  assert.equal(dqP!.partitionKind, "entity",
+    "DQ entity partition's partitionKind token should be 'entity'");
+});
+
+// ──────────────────────────────────────────────────────────────────────
+// Task 6: Tables-tab grouping — wires the classifiers into the client
+// ──────────────────────────────────────────────────────────────────────
+//
+// The classifiers are only useful if the client actually surfaces
+// them. These tests pin the five group labels + click action so a
+// silent regression in renderTables can't hide all proxies / params
+// under "Data Tables" again.
+
+test("Stop 6.9 — Tables tab renders all five kind-group labels", { skip: !FIXTURE_EXISTS }, () => {
+  const data = buildFullData(path.resolve(FIXTURE));
+  const html = generateHTML(data, "Health_and_Safety", "", "", "", "", "", "", "0");
+  for (const label of [
+    "Data Tables",
+    "Measure Tables",
+    "Field Parameters",
+    "Composite Model Proxies",
+  ]) {
+    assert.ok(
+      html.includes(label),
+      `Tables tab is missing the "${label}" group header on H&S — grouping regression`
+    );
+  }
+  // The group toggle action must be wired through the delegated
+  // click handler or the headers become inert.
+  assert.ok(
+    html.includes("table-group-toggle"),
+    "data-action='table-group-toggle' not present — group headers won't collapse/expand"
+  );
 });

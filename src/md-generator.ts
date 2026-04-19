@@ -710,8 +710,8 @@ export function generateMarkdown(data: FullData, reportName: string): string {
       nameCounts.set(key, (nameCounts.get(key) || 0) + 1);
     }
     const dupNames = new Set([...nameCounts.entries()].filter(([, n]) => n > 1).map(([k]) => k));
-    lines.push("| # | Page | Visibility | Visuals | Measures | Columns | Slicers | Coverage |");
-    lines.push("|--:|------|------------|--------:|---------:|--------:|--------:|---------:|");
+    lines.push("| # | Page | Visibility | Visuals | Measures | Columns | Slicers |");
+    lines.push("|--:|------|------------|--------:|---------:|--------:|--------:|");
     pages.forEach((p, i) => {
       const vis = hiddenSet.has(p.name) ? "Hidden" : "Visible";
       // Trim leading/trailing whitespace and collapse internal doubles —
@@ -719,10 +719,8 @@ export function generateMarkdown(data: FullData, reportName: string): string {
       // Desktop. Display only; the data layer still carries the raw name.
       const display = p.name.replace(/\s+/g, " ").trim();
       const dupTag = dupNames.has(display) ? " _(duplicate name)_" : "";
-      lines.push(`| ${i + 1} | ${esc(display)}${dupTag} | ${vis} | ${p.visualCount} | ${p.measureCount} | ${p.columnCount} | ${p.slicerCount} | ${p.coverage}% |`);
+      lines.push(`| ${i + 1} | ${esc(display)}${dupTag} | ${vis} | ${p.visualCount} | ${p.measureCount} | ${p.columnCount} | ${p.slicerCount} |`);
     });
-    lines.push("");
-    lines.push("_\"Coverage\" = percentage of all model measures used on this page._");
     lines.push("");
   }
   lines.push("---");

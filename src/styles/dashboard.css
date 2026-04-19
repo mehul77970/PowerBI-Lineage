@@ -162,7 +162,6 @@
   .badge--unused    {background:var(--clr-unused-soft);    color:var(--clr-unused);    border-color:transparent;}
   .badge--success   {background:var(--clr-success-soft);   color:var(--clr-success);   border-color:transparent;}
   .badge--indirect  {background:rgba(100,116,139,.15);     color:var(--clr-indirect);  border-color:transparent;}
-  .badge--calc-grp  {background:var(--clr-slicer-soft);    color:var(--clr-slicer);    border-color:var(--clr-slicer-mid);}
   .badge--direction-out{background:var(--clr-success-soft); color:var(--clr-success);  border-color:var(--clr-success-mid);}
   .badge--direction-in {background:var(--clr-column-soft);  color:var(--clr-column);   border-color:var(--clr-column-mid);}
   .header-sep{font-size:13px;color:var(--text-fainter)}
@@ -237,7 +236,6 @@
   .trel-row:hover{background:var(--surface-alt)}
   /* .trel-dir.out / .trel-dir.in replaced by .badge--direction-out / .badge--direction-in */
   .trel-inactive{opacity:.55;font-style:italic}
-  /* .calc-group-pill replaced by .badge.badge--calc-grp */
   .format-str{font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace}
 
   .lineage-back{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);cursor:pointer;margin-bottom:16px;transition:color .15s}
@@ -270,6 +268,23 @@
   .lc.feeds{border-left:3px solid var(--clr-measure);background:rgba(245,158,11,.04)}
 
   .feeds-label{font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-top:10px;margin-bottom:4px;font-weight:600}
+
+  /* Tables-tab grouping — wraps page-cards into collapsible kind
+     sections: Data Tables / Measure Tables / Field Parameters /
+     Composite Model Proxies / Calculation Groups. Group-level
+     collapse is independent of the individual card-level collapse. */
+  .table-group{margin-bottom:var(--space-5)}
+  .table-group-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;
+    background:var(--surface-alt);border:1px solid var(--border-soft);border-radius:var(--radius-md);
+    transition:background .12s,border-color .12s}
+  .table-group-header:hover{background:var(--row-hover);border-color:var(--hover-border)}
+  .table-group-chev::before{content:"▸";display:inline-block;color:var(--text-faint);font-size:11px;transition:transform .15s;width:10px}
+  .table-group.open .table-group-chev::before{transform:rotate(90deg)}
+  .table-group-icon{font-size:14px;color:var(--text-dim);width:18px;text-align:center;flex-shrink:0}
+  .table-group-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.01em}
+  .table-group-meta{margin-left:auto;font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace}
+  .table-group-body{padding-top:10px}
+  .table-group-body:empty{padding:0}
 
   .page-card{background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%);border-radius:var(--radius-lg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);margin-bottom:var(--space-5);overflow:hidden;transition:border-color .15s}
   .page-card:hover{border-color:var(--hover-border)}
@@ -468,166 +483,3 @@
        monospace styling; the colour rules from .code-dax .dax-*
        already apply. */
   }
-
-  /* ── Tree tab (Source → Table → Columns/Measures → leaves) ───────── */
-  #tree-content { padding: 4px 0 14px; }
-  .tree-hint {
-    font-size: var(--fs-sm);
-    color: var(--text-dim);
-    padding: 0 12px 12px;
-    border-bottom: 1px dashed var(--border-soft);
-    margin-bottom: 12px;
-  }
-  /* Nested <details> — shared collapsible visual language */
-  #tree-content details {
-    border: 0;
-    padding: 0;
-    margin: 0;
-  }
-  #tree-content details > summary {
-    list-style: none;            /* hide native triangle */
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-    transition: background 0.12s;
-  }
-  #tree-content details > summary::-webkit-details-marker { display: none; }
-  #tree-content details > summary:hover { background: var(--row-hover); }
-  /* Custom chevron using ::before on the summary */
-  #tree-content details > summary::before {
-    content: "▸";
-    display: inline-block;
-    width: 10px;
-    font-size: 10px;
-    color: var(--text-faint);
-    transition: transform 0.12s;
-    flex-shrink: 0;
-  }
-  #tree-content details[open] > summary::before { transform: rotate(90deg); }
-
-  /* Source-level — roots */
-  .tree-src {
-    padding: 0 4px 4px !important;
-    margin-bottom: 8px !important;
-  }
-  .tree-src > summary {
-    font-size: var(--fs-md);
-    padding: 8px 10px !important;
-    border-bottom: 1px solid var(--border-soft);
-    background: var(--surface-alt);
-  }
-  .tree-src > summary strong { color: var(--text); }
-  .tree-src > summary .tree-meta {
-    color: var(--text-dim);
-    font-size: var(--fs-xs);
-    font-weight: normal;
-    margin-left: auto;             /* push meta to the right */
-  }
-  .tree-src > summary .tree-sub {
-    color: var(--text-faint);
-    font-size: var(--fs-xs);
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    margin-left: 8px;
-  }
-
-  /* Table-level — nested one level under source */
-  .tree-table {
-    margin-left: 18px !important;
-    border-left: 1px solid var(--border-soft);
-  }
-  .tree-table > summary {
-    padding-left: 14px !important;
-    font-size: var(--fs-md);
-  }
-  .tree-table > summary strong { color: var(--text-body); }
-  .tree-table > summary .tree-meta {
-    color: var(--text-faint);
-    font-size: var(--fs-xs);
-    font-weight: normal;
-    margin-left: auto;
-  }
-  /* Inline role badge on table summary */
-  .tree-role {
-    font-size: 9px !important;
-    letter-spacing: 0.06em;
-    padding: 1px 6px !important;
-  }
-  .tree-role-fact         { background: var(--clr-measure-soft); color: var(--clr-measure); border-color: var(--clr-measure-mid); }
-  .tree-role-dimension    { background: var(--clr-column-soft);  color: var(--clr-column);  border-color: var(--clr-column-mid); }
-  .tree-role-bridge       { background: var(--clr-upstream-soft);color: var(--clr-upstream);border-color: var(--clr-upstream-mid); }
-  .tree-role-disconnected { background: var(--clr-indirect-soft);color: var(--clr-indirect);border-color: var(--clr-indirect-mid); }
-  .tree-role-calc-group   { background: var(--clr-calc-soft);    color: var(--clr-calc);    border-color: var(--clr-calc-mid); }
-  .tree-role-auto-date    { background: var(--clr-indirect-soft);color: var(--clr-indirect);border-color: var(--clr-indirect-mid); opacity: 0.7; }
-  .tree-role-parameter    { background: var(--clr-slicer-soft);  color: var(--clr-slicer);  border-color: var(--clr-slicer-mid); }
-  .tree-role-proxy        { background: var(--clr-upstream-soft);color: var(--clr-upstream);border-color: var(--clr-upstream-mid); }
-  .tree-role-measure-home { background: var(--clr-measure-soft); color: var(--clr-measure); border-color: var(--clr-measure-mid); }
-
-  /* Group-level (Columns / Measures) — nested under table */
-  .tree-group {
-    margin-left: 18px !important;
-  }
-  .tree-group > summary {
-    padding-left: 14px !important;
-    font-size: var(--fs-sm);
-    color: var(--text-muted);
-  }
-  .tree-group > summary .tree-meta {
-    color: var(--text-faint);
-    font-size: var(--fs-xs);
-    margin-left: 8px;
-  }
-
-  /* Leaves — columns, measures, UDFs */
-  .tree-leaf {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 3px 10px 3px 36px;
-    font-size: var(--fs-sm);
-    color: var(--text-body);
-    border-radius: var(--radius-sm);
-    line-height: 1.55;
-    border-left: 1px solid transparent;  /* reserve space for hover accent */
-    transition: background 0.1s, border-color 0.1s;
-  }
-  .tree-leaf.clickable { cursor: pointer; }
-  .tree-leaf.clickable:hover {
-    background: var(--row-hover);
-    border-left-color: var(--accent);
-  }
-  .tree-leaf .tree-icon {
-    font-size: 10px;
-    color: var(--text-faint);
-    flex-shrink: 0;
-    width: 12px;
-    text-align: center;
-  }
-  .tree-col .tree-icon    { color: var(--clr-column); }
-  .tree-measure .tree-icon{ color: var(--clr-measure); font-size: 11px; }
-  .tree-udf .tree-icon    { color: var(--clr-function); font-style: italic; font-weight: 600; }
-  .tree-leaf .tree-name {
-    font-weight: 500;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-  }
-  .tree-leaf .tree-type {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    font-size: 10px;
-    color: var(--text-faint);
-    flex-shrink: 0;
-  }
-  .tree-leaf .tree-badges {
-    display: inline-flex;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-
-  /* Footer inside #tree-content — reuse .panel-footer styling */
-  #tree-content .panel-footer { margin-top: 16px; }

@@ -1004,8 +1004,8 @@ function parseTmdlModel(modelPath: string): RawModel {
           // `extendedProperty ParameterMetadata = { "version": 3, "kind": 2 }`
           // is Power BI's own marker for a fieldparameter (what-if /
           // field parameter). When this appears on any column of a
-          // table, the table itself is a field-parameter table and
-          // shouldn't be rendered as a data source in the Model Tree.
+          // table, the table itself is a field-parameter table —
+          // data-builder aggregates this flag into TableData.parameterKind.
           if (currentColumn && propLine.startsWith("extendedProperty ParameterMetadata")) {
             currentColumn.hasParameterMetadata = true;
           }
