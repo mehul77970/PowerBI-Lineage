@@ -171,3 +171,69 @@ if (FIXTURE_EXISTS) {
     }
   });
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Client-side md.ts heading-id regression
+//
+// The in-app Docs tab renders the generated MD via src/client/render/md.ts.
+// That renderer must emit `<h2 id="…">` matching adoSlug of the heading
+// text, otherwise every [text](#anchor) link inside the rendered MD
+// resolves to nothing (browser appends #anchor to the URL bar instead
+// of scrolling — looks like a broken external link).
+//
+// md.ts is bundled as a classic script (no exports) so we grep the
+// generated HTML rather than importing the renderer directly.
+// ─────────────────────────────────────────────────────────────────────
+
+import { generateHTML } from "../src/html-generator.js";
+import type { FullData } from "../src/data-builder.js";
+
+function empty(): FullData {
+  return {
+    measures: [], columns: [], relationships: [], functions: [],
+    calcGroups: [], tables: [], pages: [], hiddenPages: [],
+    allPages: [], expressions: [], compatibilityLevel: null,
+    modelProperties: { name: "t" } as any,
+    totals: {
+      measuresInModel: 0, measuresDirect: 0, measuresIndirect: 0, measuresUnused: 0,
+      columnsInModel: 0, columnsDirect: 0, columnsIndirect: 0, columnsUnused: 0,
+      relationships: 0, functions: 0, calcGroups: 0, tables: 0, pages: 0, visuals: 0,
+    },
+  } as unknown as FullData;
+}
+
+test("client md renderer bundles mdSlug (adoSlug parity)", () => {
+  const html = generateHTML(empty(), "t");
+  assert.ok(html.includes("function mdSlug"),
+    "client md renderer must carry mdSlug() — without it, heading ids fall back to 'no attribute' and every in-page anchor breaks");
+  assert.ok(html.includes("function mdPlainText"),
+    "client md renderer must strip badges + inline tags before slugging — without mdPlainText a heading with a trailing badge would slug differently than the server-side link target");
+});
+
+test("client md renderer emits headings with id= for anchor targets", () => {
+  const html = generateHTML(empty(), "t");
+  // The compiled emission pattern we added — any fragment that
+  // appends ` id="' + id + '"` near an `<h` template confirms the
+  // change landed. A future refactor to template literals would
+  // still contain `id="` immediately after the level.
+  assert.ok(
+    html.includes('\' id="\' + id + \'"') || /\"<h\"\s*\+\s*level\s*\+\s*' id="'/.test(html) ||
+    /<h\$\{level\}\s*id="/.test(html),
+    "heading render must include id=<slug> — otherwise in-page anchors never resolve",
+  );
+});
+
+test("client intercepts #anchor clicks inside .md-rendered to avoid URL-bar pollution", () => {
+  const html = generateHTML(empty(), "t");
+  // The delegator installed for md-rendered in-page anchors must be
+  // present — otherwise clicks append #anchor to the URL which looks
+  // like external navigation to the user.
+  assert.ok(
+    html.includes('a[href^="#"]') && html.includes(".md-rendered"),
+    "in-page anchor interceptor missing from the client bundle",
+  );
+  assert.ok(
+    html.includes("scrollIntoView"),
+    "scrollIntoView call missing — anchor click wouldn't visibly navigate anywhere",
+  );
+});

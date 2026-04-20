@@ -43,6 +43,59 @@ function mdEscapeHtml(s: string): string {
 }
 
 /**
+ * ADO Wiki-compatible heading slug — mirrors the server-side adoSlug
+ * in src/md-generator.ts character-for-character.
+ *
+ * Every in-document link we emit server-side (`[text](#anchor)`) uses
+ * adoSlug to derive the anchor. Headings are rendered here client-side
+ * and need the SAME slug as their `id=` so clicking those links
+ * actually scrolls. Drift between the two would silently break every
+ * jump-to link inside the Docs tab.
+ *
+ * Rules (match learn.microsoft.com/azure/devops/project/wiki/markdown-guidance):
+ *   1. Lowercase
+ *   2. Strip punctuation ADO itself strips — `:.,/&()!?'"`` `
+ *   3. Replace any remaining non-word-non-hyphen char with a hyphen
+ *   4. Collapse consecutive hyphens, trim leading/trailing
+ */
+function mdSlug(heading: string): string {
+  return String(heading)
+    .toLowerCase()
+    .replace(/[:.,/&()!?'"`]/g, "")
+    .replace(/[^\w\-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Strip HTML tags + styled badge content from a heading so the slug
+ * matches what the server-side generator used for the link target.
+ *
+ * Headings in our MD catalog can contain trailing inline badges —
+ * e.g. `## Dashboard <span class="badge badge--hidden">👁 HIDDEN</span>`.
+ * Server-side, the link to this page is `[Dashboard](#dashboard)` —
+ * the badge is NOT part of the slug. Client-side, we must strip the
+ * badge content entirely before slugging, otherwise the heading id
+ * becomes "dashboard-hidden" and the link lands nowhere.
+ */
+function mdPlainText(s: string): string {
+  return s
+    // Drop whole badge/span blocks (tags + inner text + glyphs)
+    .replace(/<span[^>]*class="badge[^"]*"[^>]*>[\s\S]*?<\/span>/gi, "")
+    // Keep inline <code> TEXT but drop the <code>/</code> tags themselves
+    .replace(/<code>([^<]*)<\/code>/g, "$1")
+    // Strip any other inline tags (em, strong, a with id= anchors, …)
+    .replace(/<[^>]+>/g, "")
+    // Restore HTML entities we may have previously escaped
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+/**
  * Render inline markdown (bold / italic / links / inline code / etc.)
  * plus a handful of dashboard-specific tags that need to pass through.
  */
@@ -150,11 +203,19 @@ function mdRender(md: string): string {
       continue;
     }
 
-    // Headings
+    // Headings — emitted with id="<adoSlug>" so in-document links
+    // of the form [text](#slug) generated server-side actually scroll
+    // to the right place when clicked inside the Docs tab. Without an
+    // id, `#slug` resolves to nowhere and the browser appends it to
+    // the URL bar without scrolling — which looks like a broken
+    // external link.
     const h = /^(#{1,6})\s+(.+)$/.exec(ln);
     if (h) {
       flushPara();
-      out.push("<h" + h[1].length + ">" + mdInline(h[2]) + "</h" + h[1].length + ">");
+      const level = h[1].length;
+      const inlineRendered = mdInline(h[2]);
+      const id = mdSlug(mdPlainText(inlineRendered));
+      out.push("<h" + level + ' id="' + id + '">' + inlineRendered + "</h" + level + ">");
       i++;
       continue;
     }

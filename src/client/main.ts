@@ -123,6 +123,40 @@ const pageData=(DATA.pages||[]).slice();
 // chip's action without bubbling to the parent's toggle — no need
 // for event.stopPropagation() at each site.
 // ─────────────────────────────────────────────────────────────────────
+// In-document anchor clicks inside the Docs tab (.md-rendered)
+// — intercept so they scroll to the heading within the Docs
+// container instead of appending #anchor to the URL (which makes the
+// browser feel like it navigated externally). A delegated handler
+// upstream of the data-action dispatch below so it catches the click
+// regardless of what else is wired up.
+document.addEventListener('click', function(e){
+  var target = e.target as HTMLElement | null;
+  if (!target) return;
+  var link = target.closest && target.closest('a[href^="#"]') as HTMLAnchorElement | null;
+  if (!link) return;
+  // Only handle links inside the rendered Docs pane — elsewhere
+  // (e.g. the landing page's recent-report buttons) the default
+  // browser behaviour is correct.
+  if (!link.closest('.md-rendered')) return;
+  var href = link.getAttribute('href') || '';
+  if (href === '#' || href.length < 2) {
+    // Placeholder links — do nothing instead of scrolling to top.
+    e.preventDefault();
+    return;
+  }
+  var id = href.slice(1);
+  // Only match within the Docs pane so an anchor doesn't accidentally
+  // jump to a like-named element elsewhere on the page.
+  var pane = link.closest('.md-rendered') as HTMLElement | null;
+  if (!pane) return;
+  // Prefer an id= match; fall back to name= for legacy anchors.
+  var dst = pane.querySelector('#' + CSS.escape(id)) as HTMLElement | null
+         || pane.querySelector('[name="' + id + '"]') as HTMLElement | null;
+  if (!dst) return;   // unknown anchor — let browser default fire
+  e.preventDefault();
+  dst.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 document.addEventListener('click', function(e){
   var el = e.target.closest && e.target.closest('[data-action]');
   if (!el) return;

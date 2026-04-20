@@ -372,7 +372,9 @@
 
   .md-source{font-family:'JetBrains Mono',monospace;font-size:var(--fs-md);line-height:1.55;color:var(--text-body);background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:var(--radius-lg);padding:var(--space-6) var(--space-6);white-space:pre-wrap;word-break:break-word;max-height:72vh;overflow:auto;tab-size:2}
 
-  .md-rendered{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--fs-lg);line-height:1.6;color:var(--text-body);background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:var(--radius-lg);padding:var(--space-7) var(--space-8);max-height:72vh;overflow:auto}
+  .md-rendered{font-family:'DM Sans',system-ui,sans-serif;font-size:var(--fs-lg);line-height:1.6;color:var(--text-body);background:var(--glass-bg);-webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);border-radius:var(--radius-lg);padding:var(--space-7) var(--space-8);max-height:72vh;overflow:auto;scroll-behavior:smooth}
+  /* In-page anchors emitted by the MD renderer (h1-h6 with id=) */
+  .md-rendered h1[id],.md-rendered h2[id],.md-rendered h3[id],.md-rendered h4[id],.md-rendered h5[id],.md-rendered h6[id]{scroll-margin-top:12px}
   /* Heading scale aligned with the shared typography tokens so the MD view
      matches the dashboard's visual hierarchy. */
   .md-rendered h1{font-size:var(--fs-3xl);font-weight:700;margin:0 0 var(--space-5);color:var(--text);border-bottom:1px solid var(--border);padding-bottom:var(--space-3)}
