@@ -590,14 +590,26 @@ const server = http.createServer((req, res) => {
       const pagesMd = generatePagesMd(data, reportName);
       const indexMd = generateIndexMd(data, reportName);
       const improvementsMd = generateImprovementsMd(data, reportName);
-      // Changelog is project-level metadata, not report-level. Read
-      // from disk on each request so dev edits are picked up without
-      // a server restart. Silent fallback to empty string if the file
-      // is missing (e.g., a global npm install without the repo).
+      // Changelog: concatenate per-version files from changelog/
+      // newest-first. The root CHANGELOG.md is now a thin pointer
+      // (for GitHub display) and intentionally NOT used. See
+      // scripts/build-browser.mjs for the canonical implementation.
       let changelogMd = "";
       try {
-        const clPath = path.resolve(process.cwd(), "CHANGELOG.md");
-        if (fs.existsSync(clPath)) changelogMd = fs.readFileSync(clPath, "utf8");
+        const clDir = path.resolve(process.cwd(), "changelog");
+        if (fs.existsSync(clDir)) {
+          const files = fs.readdirSync(clDir)
+            .filter(f => /^\d+\.\d+\.\d+\.md$/.test(f))
+            .map(f => ({ file: f, parts: f.replace(/\.md$/, "").split(".").map(Number) }))
+            .sort((a, b) =>
+              b.parts[0] - a.parts[0] ||
+              b.parts[1] - a.parts[1] ||
+              b.parts[2] - a.parts[2]);
+          const intro = "# Changelog\n\nAll notable changes to **PowerBI-Lineage** are recorded here, newest first.\n\n---\n\n";
+          changelogMd = intro + files
+            .map(({ file }) => fs.readFileSync(path.resolve(clDir, file), "utf8").trim())
+            .join("\n\n---\n\n") + "\n";
+        }
       } catch { /* best-effort */ }
       const html = generateHTML(data, reportName, modelMd, measuresMd, functionsMd, calcGroupsMd, dataDictionaryMd, APP_VERSION, sourcesMd, pagesMd, indexMd, improvementsMd, changelogMd);
       saveRecent(resolved);

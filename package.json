@@ -1,7 +1,7 @@
 {
   "name": "powerbi-lineage",
-  "version": "0.7.0",
-  "description": "Standalone Power BI lineage/usage dashboard — reads a .Report folder + .SemanticModel sibling, serves an interactive HTML dashboard.",
+  "version": "0.8.0",
+  "description": "Generate documentation from Power BI PBIP projects — runs in your browser (nothing uploaded) or as a local CLI. Outputs a searchable dashboard plus 9+ Markdown docs ready for ADO Wiki or GitHub.",
   "type": "module",
   "bin": {
     "powerbi-lineage": "dist/app.js"

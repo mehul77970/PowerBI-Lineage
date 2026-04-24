@@ -18,7 +18,7 @@
  * this script runs AFTER that step and just wires the shell.
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFullData } from "../dist/data-builder.js";
@@ -55,13 +55,46 @@ const emptyData = {
   },
 };
 
-// Bake CHANGELOG.md into the shell so browser users can see what's
-// new via the Docs tab without leaving the app. The __loadBrowserData
-// hook on the client side does NOT overwrite MARKDOWN_CHANGELOG when
-// a new report loads — changelog is project metadata, not
-// report-specific.
-const changelogPath = resolve(repoRoot, "CHANGELOG.md");
-const changelogMd = existsSync(changelogPath) ? readFileSync(changelogPath, "utf8") : "";
+// Bake the full changelog into the shell so browser users can see
+// what's new via the Docs tab without leaving the app.
+//
+// 0.8.0+: the source of truth is `changelog/<x.y.z>.md` — one file
+// per release. We concatenate them newest-first into a single MD
+// body, prepended with the same Keep-a-Changelog intro the old
+// monolithic CHANGELOG.md carried. The root `CHANGELOG.md` file is
+// now a thin pointer (for GitHub display) and deliberately NOT used
+// here.
+const changelogMd = buildChangelog();
+
+function buildChangelog() {
+  const dir = resolve(repoRoot, "changelog");
+  if (!existsSync(dir)) return "";
+
+  // SemVer-aware descending sort (so 0.10.0 would sort above 0.9.0
+  // even though "0.10.0" < "0.9.0" lexically). Files named with a
+  // non-matching shape (README.md, sparks, drafts) are skipped.
+  const files = readdirSync(dir)
+    .filter(f => /^\d+\.\d+\.\d+\.md$/.test(f))
+    .map(f => ({
+      file: f,
+      parts: f.replace(/\.md$/, "").split(".").map(Number),
+    }))
+    .sort((a, b) =>
+      b.parts[0] - a.parts[0] ||
+      b.parts[1] - a.parts[1] ||
+      b.parts[2] - a.parts[2]);
+
+  const intro =
+    `# Changelog\n\n` +
+    `All notable changes to **PowerBI-Lineage** are recorded here, newest first. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/spec/v2.0.0.html).\n\n` +
+    `---\n\n`;
+
+  const body = files
+    .map(({ file }) => readFileSync(resolve(dir, file), "utf8").trim())
+    .join("\n\n---\n\n");
+
+  return intro + body + "\n";
+}
 
 const html = generateHTML(
   emptyData, "(browser)", "", "", "", "", "", "", "0",
