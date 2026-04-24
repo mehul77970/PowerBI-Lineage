@@ -1,43 +1,102 @@
-# Power BI Lineage
+# Power BI Documenter
 
-Standalone, zero-dependency Node.js app that analyses a Power BI report's usage and model lineage.
+> **Lineage · Audit · Wiki-ready Markdown**
 
-Point it at a `.Report` folder that sits next to its `.SemanticModel` sibling and get an interactive dashboard showing:
+Open a PBIP project folder — get a searchable dashboard plus nine Markdown docs ready for ADO Wiki or GitHub. Runs **entirely in your browser** (nothing uploads) or as a **local CLI**.
 
-- **Measures** — DAX, dependencies, which visuals and pages use each one, direct/indirect/unused status
-- **Columns** — data types, slicer usage, usage counts, status
-- **Tables** — columns with PK/FK/calc/hidden badges, relationships, measures
-- **Relationships** — active + inactive, from/to mapping
-- **Functions** — user-defined DAX functions, parameters, measures that call them
-- **Calc Groups** — items, precedence, format-string expressions
-- **Pages** — visuals per page, visual-type breakdown, coverage per page
-- **Unused** — pure orphan measures, dead-chain measures, orphan columns, indirect-use measures/columns
-- **Lineage** — click any measure/column to see upstream dependencies, source table, and downstream visuals
+[![Try it](https://img.shields.io/badge/Try%20it-no%20install%20needed-f59e0b?style=for-the-badge)](https://jonathan-pap.github.io/PowerBI-Lineage/)
+![Tests](https://img.shields.io/badge/tests-157%2F157-22c55e?style=flat-square)
+![Deps](https://img.shields.io/badge/runtime%20deps-0-64748b?style=flat-square)
+![Node](https://img.shields.io/badge/node-%E2%89%A518-5E6A7B?style=flat-square)
 
-Dark/light themes, DAX copy buttons, client-side search and sort.
+<p align="center">
+  <img src="docs/screenshots/01-landing.png" alt="Power BI Documenter landing page" width="640">
+</p>
 
-Plus nine generated Markdown documents for sharing in an ADO Wiki / GitHub Wiki / PR review:
+## What you get
 
-| Doc | Content |
+- **Interactive dashboard** — 10 tabs covering measures, columns, tables, relationships, sources, calc groups, UDFs, pages with layout wireframe, unused/orphan analysis, lineage click-through
+- **Nine Markdown docs** auto-generated, paste-ready for ADO Wiki or GitHub
+- **Improvements audit** — 15 checks across five severity tiers (high / medium / low / info / strengths)
+- **Source Map** — flat PBI-column → physical-source lineage with CSV export
+- **Page layout wireframe** — SVG thumbnail of each page showing visuals at true canvas positions
+- **Privacy by default** — browser-mode files never leave your machine; CLI binds to loopback only
+
+## Tour
+
+### Measures, columns, tables — with lineage
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/02-measures.png" alt="Measures tab"></td>
+<td width="50%"><img src="docs/screenshots/03-tables.png" alt="Tables tab"></td>
+</tr>
+<tr>
+<td><b>Measures tab</b> — DAX dependencies, where-used per visual + page, direct/indirect/unused status, descriptions inline.</td>
+<td><b>Tables tab</b> — grouped by role (Fact / Dimension / Bridge / Calc group). Per-table stats for columns, measures, keys, FKs.</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/04-lineage.png" alt="Lineage view"></td>
+<td width="50%"><img src="docs/screenshots/06-functions.png" alt="Functions tab with UDF fan-in"></td>
+</tr>
+<tr>
+<td><b>Click-to-trace lineage</b> — upstream DAX dependencies, source tables, functions. Downstream visuals + measures that feed into it.</td>
+<td><b>UDF reference</b> — parameters, body, and every measure that calls each function. Here: one UDF powering 53 measures.</td>
+</tr>
+</table>
+
+### Report layout — audited
+
+<table>
+<tr>
+<td width="55%"><img src="docs/screenshots/07-pages-layout.png" alt="Page layout SVG wireframe"></td>
+<td width="45%"><img src="docs/screenshots/08-pages-bindings.png" alt="Page visual bindings"></td>
+</tr>
+<tr>
+<td><b>SVG wireframe</b> — each page's visuals at true canvas positions. Charts, cards, slicers, tables, maps, AI visuals — shapes and buttons deliberately filtered.</td>
+<td><b>Per-visual bindings</b> — every measure + column each visual consumes, with type chips and chart-level breakdowns. Hover the wireframe for field-well tooltips.</td>
+</tr>
+</table>
+
+### Wiki-ready Markdown
+
+<p align="center">
+  <img src="docs/screenshots/05-docs-model.png" alt="Docs tab with Model technical specification" width="720">
+</p>
+
+Nine Markdown documents — paste-ready for ADO Wiki or GitHub, anchor-stable, Mermaid-native.
+
+| Doc | What's in it |
 |---|---|
-| **Model** | Technical spec: front matter, schema summary, per-table breakdown, relationships, pages roll-up |
-| **Data Dictionary** | Per-table column catalog with type, key/FK/calc/hidden badges, hierarchies |
-| **Sources** | Data-sources catalog — connections, partition modes, field parameters, composite-model proxies |
-| **Measures** | A–Z measure reference with dependencies, bindings, per-measure Mermaid lineage |
+| **Model** | Technical spec — front matter, schema summary, per-table breakdown, relationships, pages roll-up |
+| **Data Dictionary** | Per-table column catalog with PK / FK / CALC / HIDDEN badges + star-schema Mermaid fragments |
+| **Sources** | Data-sources catalog, partition modes, field parameters, composite-model proxies |
+| **Measures** | A–Z reference with dependencies, bindings, per-measure Mermaid lineage |
 | **Functions** | UDF reference — parameters, description, body |
 | **Calc Groups** | Calculation-group reference with per-item descriptions |
 | **Pages** | Per-page visual catalog — type, title, field bindings for every visual |
-| **Improvements** | Prioritized action list — severity-tiered (high/medium/low/info/strengths) with rationale. **Includes everything the old Quality doc covered, plus more checks.** |
+| **Improvements** | Prioritised action list — severity-tiered with rationale |
 | **Index** | Alphabetical glossary of every named entity across the model |
 
-## Requirements
+Plus a **Changelog** tab exposing the project's release history.
 
-- Node.js 18+
-- A `.Report` folder (PBIP format) with a sibling `.SemanticModel` folder
+## Try it
 
-## Running
+### Browser (no install)
 
-### Double-click (Windows)
+**[→ Open the browser build](https://jonathan-pap.github.io/PowerBI-Lineage/)** — requires Chrome, Edge, or Opera (File System Access API).
+
+1. Click **Open folder** — pick the PBIP project parent folder (the one that contains both `<Name>.Report` and `<Name>.SemanticModel`). Or click **Try a sample** for a one-click demo.
+2. When multiple project pairs exist under one parent, a pair-picker lets you choose which Report + Semantic Model to load. Report-only and Model-only modes are also supported.
+3. Dashboard renders in the same page.
+
+Firefox / Safari users: run the CLI ([see below](#running)) — the File System Access API is Chromium-only.
+
+### Running — CLI mode
+
+Requires Node.js 18+ and a `.Report` folder with its `.SemanticModel` sibling.
+
+**Double-click (Windows):**
 
 ```
 launch.bat
@@ -45,88 +104,80 @@ launch.bat
 
 First run does `npm install` + `npm run build`, then starts the app and opens your browser.
 
-### From the terminal
+**From the terminal:**
 
-```
+```sh
 npm install
 npm run build
 node dist/app.js
 ```
 
-The app listens on `http://localhost:5679` (or the next free port). Paste the path to your `.Report` folder, or use the Browse button to pick it. Recent reports are remembered.
+The app listens on `http://127.0.0.1:5679` (loopback only — nothing leaves your machine). Paste the `.Report` path or use the picker. Recent reports are remembered.
 
-## Browser mode (install-free)
+## How it works
 
-The dashboard can also run **entirely in the browser** with no Node install — pick a PBIP folder via the File System Access API and the parser + renderer run client-side. Your files stay on your machine; nothing is uploaded.
+### Browser mode
 
-### Live
-
-[**→ Open the browser build**](https://jonathan-pap.github.io/PowerBI-Lineage/) (requires Chrome, Edge, or Opera — Firefox and Safari don't support the File System Access API yet)
-
-1. Click **Open folder**.
-2. Pick the PBIP project folder — the one that contains both `<Name>.Report` and `<Name>.SemanticModel`.
-3. Dashboard renders in the same page.
-
-### Build + serve locally
-
-```
-npm run build:browser    # compiles to ./docs/
-npm run serve:browser    # starts a local server on 127.0.0.1:5700
-```
-
-The browser build reuses the existing parser, data-builder, and md-generator unchanged — only three small new modules sit between them and the browser's storage API:
+The same parser + data-builder that power the CLI run client-side via three small shims:
 
 - `src/browser/fs-shim.ts` — pretends to be `fs` but reads from an in-memory Map
 - `src/browser/path-shim.ts` — POSIX-style `path` replacement
 - `src/browser/fsa-walk.ts` — walks a `FileSystemDirectoryHandle` into the Map
 
-At runtime an import-map in `docs/index.html` redirects bare `import ... from "fs"` / `"path"` calls to the shims. The parser never knows the difference.
+An import-map in `docs/index.html` redirects bare `import … from "fs"` / `"path"` to the shims. The parser never knows the difference.
 
-### Deploy
+### Build + deploy
 
-`.github/workflows/pages.yml` auto-publishes `docs/` to GitHub Pages on every push to `main`. No manual deploy step.
+```sh
+npm run build:browser    # → ./docs/
+npm run serve:browser    # → 127.0.0.1:5700
+```
+
+`.github/workflows/pages.yml` auto-publishes `docs/` to GitHub Pages on every push to `main`.
 
 ## Project layout
 
 ```
 src/
-  pbir-reader.ts     Read-only access to PBIR report/page/visual JSON
-  model-parser.ts    findSemanticModelPath + TMDL + BIM parsers
-  report-scanner.ts  Walks visuals/filters/objects to extract field bindings
-  data-builder.ts    Cross-references model + report into FullData
-  html-generator.ts  Dashboard HTML template
-  render/safe.ts     HTML/JS/JSON escape helpers (single source of truth)
-  app.ts             HTTP server + landing page + folder picker
-  browser/           Browser-mode shims: fs + path + FSA-API walker + entry shell
+  pbir-reader.ts       Read-only access to PBIR report/page/visual JSON
+  model-parser.ts      findSemanticModelPath + TMDL + BIM parsers
+  report-scanner.ts    Walks visuals/filters/objects to extract field bindings + positions
+  data-builder.ts      Cross-references model + report into FullData
+  md-generator.ts      Nine MD docs, ADO Wiki-safe anchors, Mermaid lineage/star blocks
+  improvements.ts      15-check audit — severity-tiered recommendations
+  html-generator.ts    Dashboard HTML template
+  client/              Dashboard runtime (tabs, search, sort, lineage view, wireframe)
+  render/              Shared escape helpers
+  app.ts               CLI HTTP server + landing page
+  browser/             FSA walker + shims + entry shell
 
 scripts/
-  build-browser.mjs  Assembles docs/ from dist/ + the browser TS output
-  serve-browser.mjs  Tiny static server for local browser-mode testing
+  build-browser.mjs    Assembles docs/ from dist/ + browser TS output
+  bake-sample.mjs      Bakes a sample PBIP into docs/sample-data.json
+  serve-browser.mjs    Tiny static server for local testing
 
-tests/               Unit tests (compiled via tsconfig.test.json -> dist-test/)
+changelog/             Per-version release notes (one file per release)
+tests/                 node:test suites — 157 tests, zero framework deps
 ```
 
 ## Zero runtime dependencies
 
-Runtime deps: none. Only Node builtins (`fs`, `path`, `http`, `crypto`, `child_process`). The `typescript` and `@types/node` dev-deps are only needed to build.
+Runtime deps: none. Only Node builtins (`fs`, `path`, `http`, `crypto`, `child_process`). Dev-deps are `typescript` + `@types/node` only — needed to build.
 
 ## Developing
 
-```
+```sh
 npm run typecheck    # tsc --noEmit
-npm test             # compile tests + run Node's built-in test runner
-npm run build        # compile to dist/
+npm test             # compile + run Node's built-in test runner
+npm run build        # compile CLI to dist/
+npm run build:browser  # compile + assemble docs/ + bake sample
 ```
 
-Tests use the stdlib `node:test` module (Node 18+). No framework deps — the test tsconfig emits to `dist-test/` and `node --test dist-test/tests/` runs everything.
-
-### CI
-
-`.github/workflows/ci.yml` runs typecheck + tests + build on every push and pull request, across Node 18 / 20 / 22. Zero-dep ethos preserved — the workflow installs only what `package.json` already declares (TypeScript + `@types/node`).
+Tests use the stdlib `node:test` module. `.github/workflows/ci.yml` runs typecheck + tests + build on every push and PR across Node 18 / 20 / 22.
 
 ## Publishing to Azure DevOps Wiki
 
-The nine markdown documents (Model, Data Dictionary, Sources, Measures, Functions, Calc Groups, Pages, Improvements, Index) are designed to paste cleanly into an ADO Wiki without modification. Every generated doc starts with an HTML comment suggesting its wiki page name:
+Each of the nine generated MDs starts with an HTML comment suggesting its wiki page name:
 
 ```markdown
 <!-- Suggested ADO Wiki page name: Health_and_Safety/Measures -->
@@ -135,27 +186,29 @@ The nine markdown documents (Model, Data Dictionary, Sources, Measures, Function
 
 **To publish:**
 
-1. Open the dashboard for your report and switch to the **Docs** tab.
-2. For each of the nine document tabs (Model / Data Dictionary / Sources / Measures / Functions / Calc Groups / Pages / Improvements / Index):
-   - Click **⎘ Copy** to copy the markdown to the clipboard.
-   - In ADO Wiki, create a new page with the name from the `<!-- Suggested ADO Wiki page name: ... -->` hint at the top of the markdown.
-   - Paste.
-3. If you want ADO's auto-generated table of contents in place of the hand-rolled one, type `[[_TOC_]]` on its own line at the top of the page — ADO renders a TOC of every `##` heading in the page.
+1. Open the dashboard for your report, switch to the **Docs** tab
+2. For each doc (Model / Data Dictionary / Sources / Measures / Functions / Calc Groups / Pages / Improvements / Index):
+   - Click **⎘ Copy** to copy the markdown
+   - In ADO Wiki, create a new page with the name from the `<!-- Suggested ADO Wiki page name: ... -->` hint
+   - Paste
+3. If you want ADO's auto-TOC instead of the hand-rolled one, type `[[_TOC_]]` at the top of the page
 
-**Compatibility:**
+### Compatibility
 
 | Feature | ADO Wiki | GitHub | Dashboard |
 |---|---|---|---|
-| Anchors (jump-to nav, cross-references) | ✅ `adoSlug` algorithm | ✅ | ✅ |
+| Anchors (jump-to nav, cross-references) | ✅ via `adoSlug` algorithm | ✅ | ✅ |
 | `<details>` / `<summary>` collapsibles | ✅ native | ✅ native | ✅ native |
 | Pipe tables | ✅ | ✅ | ✅ |
 | Fenced `dax` code blocks | ✅ syntax-highlighted | ✅ | ✅ syntax-highlighted |
-| ```` ```mermaid ```` lineage / star fragments | ✅ native | ✅ native | ⚠ renders as code block (acceptable fallback) |
-| Badge `<span>` styling | ⚠ CSS stripped — falls back to emoji-prefixed plain text (`🔑 PK`) | ⚠ same fallback | ✅ styled as pill |
+| ```` ```mermaid ```` lineage / star fragments | ✅ native | ✅ native | ⚠ code-block fallback (acceptable) |
+| Badge `<span>` styling | ⚠ CSS stripped — emoji-prefixed plain text (`🔑 PK`) | ⚠ same fallback | ✅ styled pill |
 | Auto-anchor from heading | ✅ | ✅ | ✅ |
 
-Every anchor link is automatically verified by `tests/md-anchors.test.ts` — if a heading's slug ever drifts from its references, CI fires.
+Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 
-## Screenshot
+## Changelog
 
-_(placeholder — add once you run it against a real report)_
+Release notes live under [`changelog/`](changelog/) — one file per release. See [`changelog/README.md`](changelog/README.md) for the full index.
+
+Latest: **[v0.8.0](changelog/0.8.0.md)** — Browser mode, pair picker, Source Map, page-layout wireframe.

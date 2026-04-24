@@ -14,6 +14,11 @@ dist-test/
 docs/*
 docs/**/
 !docs/sample-data.json
+# README hero + feature-tour screenshots live here so GitHub and
+# the hosted Pages site can both reference them via relative paths.
+# Keep each file under ~200 KB (optimise before commit).
+!docs/screenshots
+!docs/screenshots/*
 
 # Local sample PBIP — raw folder is 51 MB of binaries; only the
 # ~1.76 MB of text files matter and they get baked into
