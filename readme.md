@@ -4,10 +4,15 @@
 
 Open a PBIP project folder — get a searchable dashboard plus nine Markdown docs ready for ADO Wiki or GitHub. Runs **entirely in your browser** (nothing uploads) or as a **local CLI**.
 
-[![Try it](https://img.shields.io/badge/Try%20it-no%20install%20needed-f59e0b?style=for-the-badge)](https://jonathan-pap.github.io/PowerBI-Lineage/)
-![Tests](https://img.shields.io/badge/tests-157%2F157-22c55e?style=flat-square)
-![Deps](https://img.shields.io/badge/runtime%20deps-0-64748b?style=flat-square)
-![Node](https://img.shields.io/badge/node-%E2%89%A518-5E6A7B?style=flat-square)
+<p align="center">
+  <a href="https://jonathan-pap.github.io/PowerBI-Lineage/"><img alt="Try it — no install needed" src="https://img.shields.io/badge/Try%20it-no%20install%20needed-f59e0b?style=for-the-badge"></a>
+</p>
+
+<p align="center">
+  <img alt="Tests 157/157" src="https://img.shields.io/badge/tests-157%2F157-22c55e?style=flat-square">
+  <img alt="Runtime deps 0" src="https://img.shields.io/badge/runtime%20deps-0-64748b?style=flat-square">
+  <img alt="Node ≥18" src="https://img.shields.io/badge/node-%E2%89%A518-5E6A7B?style=flat-square">
+</p>
 
 <p align="center">
   <img src="docs/screenshots/01-landing.png" alt="Power BI Documenter landing page" width="640">
