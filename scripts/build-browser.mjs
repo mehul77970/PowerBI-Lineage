@@ -330,6 +330,86 @@ const overlayStyles = `
   .br-theme-swatch--dark     { background: linear-gradient(135deg, #0B0D11, #1A1D27); }
   .br-theme-swatch--light    { background: linear-gradient(135deg, #F1F5F9, #FFFFFF); color: #0F172A; }
   .br-theme-swatch--blupulse { background: linear-gradient(135deg, #0B1030, #3B82F6 70%, #8B5CF6); color: rgba(255,255,255,0.92); }
+
+  /* ── Theme-aware landing overlay ──────────────────────────────────
+     Originally the overlay had hardcoded dark colours and ignored the
+     data-theme attribute — swatch clicks updated the dashboard behind
+     but left the landing card looking identical. These overrides fix
+     that by repainting the overlay, card, lede, features box, trust
+     chips, and picker swatches per theme. Active-swatch ring reuses
+     each theme's accent for consistency with the dashboard.          */
+
+  /* Light theme — near-white backdrop, navy text, amber-ring active */
+  [data-theme="light"] #br-overlay {
+    background: rgba(248, 250, 252, 0.92);
+    color: #0F172A;
+  }
+  [data-theme="light"] .br-card {
+    background: rgba(255, 255, 255, 0.90);
+    border-color: rgba(15, 23, 42, 0.10);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  }
+  [data-theme="light"] .br-card h1 {
+    background: linear-gradient(180deg, #0F172A 0%, #475569 100%);
+    -webkit-background-clip: text; background-clip: text;
+  }
+  [data-theme="light"] .br-tagline { color: #D97706; }
+  [data-theme="light"] .br-lede { color: #1E293B; }
+  [data-theme="light"] .br-features {
+    background: rgba(15, 23, 42, 0.03);
+    border-color: rgba(15, 23, 42, 0.08);
+    color: #334155;
+  }
+  [data-theme="light"] .br-features .br-dot { background: #D97706; }
+  [data-theme="light"] #br-pick { background: #D97706; color: #FFFFFF; }
+  [data-theme="light"] #br-sample {
+    background: transparent; color: #334155;
+    border: 1px solid rgba(15, 23, 42, 0.18);
+  }
+  [data-theme="light"] #br-sample:hover:not(:disabled) {
+    border-color: rgba(15, 23, 42, 0.3);
+    background: rgba(15, 23, 42, 0.03);
+  }
+  [data-theme="light"] .br-trust { color: #64748B; }
+  [data-theme="light"] .br-status { color: #64748B; }
+  [data-theme="light"] .br-hint { color: #94A3B8; }
+  [data-theme="light"] .br-hint a { color: #475569; }
+  [data-theme="light"] .br-hint a:hover { color: #0F172A; }
+  [data-theme="light"] .br-theme-picker { color: #94A3B8; }
+  [data-theme="light"] .br-theme-swatch {
+    border-color: rgba(15, 23, 42, 0.12);
+    background: rgba(15, 23, 42, 0.03);
+    color: #475569;
+  }
+  [data-theme="light"] .br-theme-swatch:hover { border-color: rgba(15, 23, 42, 0.3); }
+  /* Light theme's active swatch keeps the amber ring — consistent
+     with the dashboard's amber accent in light mode. */
+
+  /* BluPulse theme — aurora-tinted overlay, purple accent */
+  [data-theme="blupulse"] #br-overlay {
+    background:
+      radial-gradient(900px 520px at 18% 12%, rgba(59,130,246,0.22), transparent 60%),
+      radial-gradient(860px 520px at 82% 18%, rgba(139,92,246,0.20), transparent 60%),
+      rgba(7, 10, 26, 0.92);
+  }
+  [data-theme="blupulse"] .br-card {
+    background: rgba(11, 16, 48, 0.78);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+  [data-theme="blupulse"] .br-tagline { color: #A78BFA; }
+  [data-theme="blupulse"] .br-features { background: rgba(255, 255, 255, 0.04); }
+  [data-theme="blupulse"] .br-features .br-dot { background: #8B5CF6; }
+  [data-theme="blupulse"] #br-pick { background: #8B5CF6; color: #FFFFFF; }
+  [data-theme="blupulse"] #br-pick:hover {
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.45);
+  }
+  /* Active-swatch ring picks up each theme's accent so the landing
+     picker feels like it belongs in the chosen palette. */
+  [data-theme="blupulse"] .br-theme-swatch.active {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.22);
+  }
 </style>
 `.trim();
 
