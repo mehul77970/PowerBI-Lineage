@@ -20,12 +20,29 @@ export interface ModelCalcGroup {
   items: CalcItem[];
 }
 
+/**
+ * Relationship cardinality on either side. Defaults per TMDL spec when
+ * the field is omitted: `fromCardinality = "many"`, `toCardinality = "one"`
+ * (the classic fact → dim shape).
+ */
+export type RelCardinality = "one" | "many";
+
+/**
+ * Cross-filter direction. `"oneDirection"` is the default when the
+ * field is omitted in TMDL/BIM. Bidirectional filters (`"bothDirections"`)
+ * have meaningful modelling consequences and need to be visible.
+ */
+export type CrossFilter = "oneDirection" | "bothDirections";
+
 export interface ModelRelationship {
   fromTable: string;
   fromColumn: string;
   toTable: string;
   toColumn: string;
   isActive: boolean;
+  fromCardinality: RelCardinality;
+  toCardinality: RelCardinality;
+  crossFilteringBehavior: CrossFilter;
 }
 
 export interface ModelFunction {
@@ -59,6 +76,14 @@ export interface RawPartition {
    * identify composite-model proxy tables.
    */
   expressionSource: string | null;
+  /**
+   * SQL extracted from the partition's `Value.NativeQuery(..., "SELECT …")`
+   * call, when present. Empty string if the partition is not a native
+   * query (most partitions). Surfaces the actual SQL a user wrote
+   * against SQL Server / Snowflake / BigQuery instead of relying on
+   * the M-generated folding output.
+   */
+  nativeQuery: string;
 }
 
 export interface RawHierarchyLevel {
@@ -242,6 +267,25 @@ export function findSemanticModelPath(reportPath: string): string {
 // Step 2: Parse Model (TMDL + BIM)
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/**
+ * TMDL defaults per Microsoft spec: when a cardinality or filter direction
+ * field is omitted, the engine assumes `many → one` with single-direction
+ * filtering. We materialise the defaults so downstream code never has to
+ * second-guess an empty string.
+ */
+function flushRel(current: Partial<ModelRelationship>): ModelRelationship {
+  return {
+    fromTable: current.fromTable || "",
+    fromColumn: current.fromColumn || "",
+    toTable: current.toTable || "",
+    toColumn: current.toColumn || "",
+    isActive: current.isActive !== false,
+    fromCardinality: current.fromCardinality || "many",
+    toCardinality: current.toCardinality || "one",
+    crossFilteringBehavior: current.crossFilteringBehavior || "oneDirection",
+  };
+}
+
 function parseTmdlRelationships(modelPath: string): ModelRelationship[] {
   const relFile = path.join(modelPath, "definition", "relationships.tmdl");
   if (!fs.existsSync(relFile)) return [];
@@ -252,7 +296,7 @@ function parseTmdlRelationships(modelPath: string): ModelRelationship[] {
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("relationship ")) {
-      if (current?.fromTable) rels.push({ fromTable: current.fromTable!, fromColumn: current.fromColumn!, toTable: current.toTable!, toColumn: current.toColumn!, isActive: current.isActive !== false });
+      if (current?.fromTable) rels.push(flushRel(current));
       current = { isActive: true };
     } else if (current && trimmed.startsWith("fromColumn:")) {
       const val = trimmed.replace("fromColumn:", "").trim();
@@ -270,9 +314,18 @@ function parseTmdlRelationships(modelPath: string): ModelRelationship[] {
       }
     } else if (current && trimmed.startsWith("isActive:")) {
       current.isActive = trimmed.includes("true");
+    } else if (current && trimmed.startsWith("fromCardinality:")) {
+      const val = trimmed.replace("fromCardinality:", "").trim().toLowerCase();
+      if (val === "one" || val === "many") current.fromCardinality = val;
+    } else if (current && trimmed.startsWith("toCardinality:")) {
+      const val = trimmed.replace("toCardinality:", "").trim().toLowerCase();
+      if (val === "one" || val === "many") current.toCardinality = val;
+    } else if (current && trimmed.startsWith("crossFilteringBehavior:")) {
+      const val = trimmed.replace("crossFilteringBehavior:", "").trim();
+      if (val === "bothDirections" || val === "oneDirection") current.crossFilteringBehavior = val;
     }
   }
-  if (current?.fromTable) rels.push({ fromTable: current.fromTable!, fromColumn: current.fromColumn!, toTable: current.toTable!, toColumn: current.toColumn!, isActive: current.isActive !== false });
+  if (current?.fromTable) rels.push(flushRel(current));
   return rels;
 }
 
@@ -441,6 +494,73 @@ function inferSource(m: string): { sourceType: string; sourceLocation: string } 
 }
 
 /**
+ * Extract the SQL string from a `Value.NativeQuery(<conn>, "<SQL>", …)`
+ * call inside an M expression. Returns the unescaped SQL, or `""` if
+ * no such call is present.
+ *
+ * M string literals escape `"` by doubling it (`""`), so we normalise
+ * that back when walking the literal. We also accept the inline form
+ * `Sql.Database("server", "db", [Query="SELECT …"])` as a fallback
+ * since some connectors bake the SQL into the options record.
+ */
+export function extractNativeQuery(m: string): string {
+  const fromNQ = readNativeQueryCall(m);
+  if (fromNQ) return fromNQ;
+  return readQueryOption(m);
+}
+
+function readMStringAt(m: string, start: number): { value: string; end: number } | null {
+  if (m[start] !== '"') return null;
+  let i = start + 1;
+  let out = "";
+  while (i < m.length) {
+    if (m[i] === '"') {
+      if (m[i + 1] === '"') { out += '"'; i += 2; continue; }
+      return { value: out, end: i + 1 };
+    }
+    out += m[i];
+    i++;
+  }
+  return null;
+}
+
+function readNativeQueryCall(m: string): string {
+  const callStart = m.indexOf("Value.NativeQuery(");
+  if (callStart < 0) return "";
+  // Walk to the first top-level comma inside the call's argument list.
+  let depth = 1;
+  let i = callStart + "Value.NativeQuery(".length;
+  while (i < m.length && depth > 0) {
+    const c = m[i];
+    if (c === '"') {
+      const s = readMStringAt(m, i);
+      if (s) { i = s.end; continue; }
+    }
+    if (c === "(") depth++;
+    else if (c === ")") { depth--; if (depth === 0) return ""; }
+    else if (c === "," && depth === 1) { i++; break; }
+    i++;
+  }
+  while (i < m.length && /\s/.test(m[i])) i++;
+  const s = readMStringAt(m, i);
+  return s ? s.value.trim() : "";
+}
+
+function readQueryOption(m: string): string {
+  // Match `Query="..."` inside a Sql.Database options record. The value
+  // can be a multi-line M string. We find the keyword, verify the `=`,
+  // then read the string literal with escape handling.
+  const re = /\bQuery\s*=\s*/g;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(m)) !== null) {
+    const afterEq = match.index + match[0].length;
+    const s = readMStringAt(m, afterEq);
+    if (s && /select|with|exec/i.test(s.value)) return s.value.trim();
+  }
+  return "";
+}
+
+/**
  * Pull all `partition <name> = <mode>` blocks from a single table TMDL file.
  * Captures the multi-line `source =` body so we can infer the source type.
  * The body itself is not exposed on the returned RawPartition (per design).
@@ -481,6 +601,7 @@ function extractTmdlPartitions(
       if (body) mCode = body;
     }
     const { sourceType, sourceLocation } = inferSource(mCode);
+    const nativeQuery = extractNativeQuery(mCode);
     out.push({
       name: current.name,
       mode: current.mode || "import",
@@ -488,6 +609,7 @@ function extractTmdlPartitions(
       sourceType,
       sourceLocation,
       expressionSource: current.expressionSource,
+      nativeQuery,
     });
     current = null;
     inSource = false;
@@ -1155,6 +1277,7 @@ function parseBimFile(bimPath: string): RawModel {
         sourceType,
         sourceLocation,
         expressionSource,
+        nativeQuery: extractNativeQuery(mCode),
       };
     });
     // Hierarchies defined on the table.
@@ -1202,13 +1325,21 @@ function parseBimFile(bimPath: string): RawModel {
       });
     }
   }
-  const relationships: ModelRelationship[] = (bim.model?.relationships || []).map((r: any) => ({
-    fromTable: r.fromTable || "",
-    fromColumn: r.fromColumn || "",
-    toTable: r.toTable || "",
-    toColumn: r.toColumn || "",
-    isActive: r.isActive !== false,
-  }));
+  const relationships: ModelRelationship[] = (bim.model?.relationships || []).map((r: any) => {
+    const fromCard = typeof r.fromCardinality === "string" ? r.fromCardinality.toLowerCase() : "";
+    const toCard = typeof r.toCardinality === "string" ? r.toCardinality.toLowerCase() : "";
+    const xfilter = typeof r.crossFilteringBehavior === "string" ? r.crossFilteringBehavior : "";
+    return {
+      fromTable: r.fromTable || "",
+      fromColumn: r.fromColumn || "",
+      toTable: r.toTable || "",
+      toColumn: r.toColumn || "",
+      isActive: r.isActive !== false,
+      fromCardinality: (fromCard === "one" || fromCard === "many") ? fromCard : "many",
+      toCardinality: (toCard === "one" || toCard === "many") ? toCard : "one",
+      crossFilteringBehavior: (xfilter === "bothDirections" || xfilter === "oneDirection") ? xfilter : "oneDirection",
+    };
+  });
 
   const functions: ModelFunction[] = [];
   const expressions: RawExpression[] = [];

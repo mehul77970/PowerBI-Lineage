@@ -153,7 +153,7 @@ test("duplicateDaxMeasures — groups identical bodies, ignores trivially short 
 test("deadInactiveRelationships — an inactive rel with no USERELATIONSHIP call is flagged", () => {
   const data = mk({
     relationships: [
-      { fromTable: "F", fromColumn: "k", toTable: "D", toColumn: "k", isActive: false },
+      { fromTable: "F", fromColumn: "k", toTable: "D", toColumn: "k", isActive: false, fromCardinality: "many", toCardinality: "one", crossFilteringBehavior: "oneDirection" },
     ],
   });
   const dead = deadInactiveRelationships(data);
@@ -163,7 +163,7 @@ test("deadInactiveRelationships — an inactive rel with no USERELATIONSHIP call
 test("deadInactiveRelationships — an inactive rel referenced by USERELATIONSHIP is kept alive", () => {
   const data = mk({
     relationships: [
-      { fromTable: "F", fromColumn: "k", toTable: "D", toColumn: "k", isActive: false },
+      { fromTable: "F", fromColumn: "k", toTable: "D", toColumn: "k", isActive: false, fromCardinality: "many", toCardinality: "one", crossFilteringBehavior: "oneDirection" },
     ],
     measures: [
       mkMeasure({

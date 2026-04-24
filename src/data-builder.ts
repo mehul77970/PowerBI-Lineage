@@ -106,6 +106,9 @@ export interface TableRelationshipRef {
   toTable: string;
   toColumn: string;
   isActive: boolean;
+  fromCardinality: "one" | "many";
+  toCardinality: "one" | "many";
+  crossFilteringBehavior: "oneDirection" | "bothDirections";
 }
 
 export interface TableData {
@@ -566,8 +569,24 @@ export function buildFullData(reportPath: string): FullData {
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const tableRels: TableRelationshipRef[] = [
-      ...outgoingRels.map(r => ({ direction: "outgoing" as const, fromTable: r.fromTable, fromColumn: r.fromColumn, toTable: r.toTable, toColumn: r.toColumn, isActive: r.isActive })),
-      ...incomingRels.map(r => ({ direction: "incoming" as const, fromTable: r.fromTable, fromColumn: r.fromColumn, toTable: r.toTable, toColumn: r.toColumn, isActive: r.isActive })),
+      ...outgoingRels.map(r => ({
+        direction: "outgoing" as const,
+        fromTable: r.fromTable, fromColumn: r.fromColumn,
+        toTable: r.toTable, toColumn: r.toColumn,
+        isActive: r.isActive,
+        fromCardinality: r.fromCardinality,
+        toCardinality: r.toCardinality,
+        crossFilteringBehavior: r.crossFilteringBehavior,
+      })),
+      ...incomingRels.map(r => ({
+        direction: "incoming" as const,
+        fromTable: r.fromTable, fromColumn: r.fromColumn,
+        toTable: r.toTable, toColumn: r.toColumn,
+        isActive: r.isActive,
+        fromCardinality: r.fromCardinality,
+        toCardinality: r.toCardinality,
+        crossFilteringBehavior: r.crossFilteringBehavior,
+      })),
     ];
 
     // Classify auto-generated date tables so clients can hide them

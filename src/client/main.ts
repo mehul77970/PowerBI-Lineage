@@ -850,9 +850,16 @@ function renderTables(){
       const arrow=r.direction==='outgoing'?'→':'←';
       const other=r.direction==='outgoing'?`${escHtml(r.toTable)}[${escHtml(r.toColumn)}]`:`${escHtml(r.fromTable)}[${escHtml(r.fromColumn)}]`;
       const self=r.direction==='outgoing'?`[${escHtml(r.fromColumn)}]`:`[${escHtml(r.toColumn)}]`;
+      const fromCard=r.fromCardinality==='many'?'*':'1';
+      const toCard=r.toCardinality==='many'?'*':'1';
+      const isBidi=r.crossFilteringBehavior==='bothDirections';
+      const cardText=`${fromCard}:${toCard}`;
+      const cardTitle=`${r.fromCardinality} → ${r.toCardinality}${isBidi?' (bidirectional filter)':''}`;
+      const bidiIcon=isBidi?' <span title="Bidirectional filter" style="color:var(--clr-warn,#f59e0b);font-size:11px;margin-left:2px">↔</span>':'';
       return `<div class="trel-row${inactive}">
         <span class="badge ${dirClass}">${dirLabel}</span>
         <span>${self} <span style="color:var(--text-faint)">${arrow}</span> ${other}</span>
+        <span title="${escAttr(cardTitle)}" style="font-family:var(--font-mono,monospace);font-size:10px;color:var(--text-muted);margin-left:6px">${cardText}</span>${bidiIcon}
         ${r.isActive?'':'<span style="font-size:9px;color:var(--text-dim);margin-left:4px">(inactive)</span>'}
       </div>`;
     }).join("")||'<div style="padding:8px 10px;color:var(--text-faint);font-size:12px">No relationships</div>';
@@ -1140,15 +1147,52 @@ function renderSources(){
       '</div>';
   }
 
+  // Native queries — collect every partition with `nativeQuery` populated.
+  // These are the hand-written SQL statements that actually run against
+  // the source (`Value.NativeQuery(...)` or `Sql.Database(..., [Query=…])`),
+  // distinct from the folded M output.
+  var nativeQueryRows: Array<{ table: string; partition: string; sql: string }> = [];
+  (DATA.tables || []).forEach(function(t: any){
+    (t.partitions || []).forEach(function(p: any){
+      if (p.nativeQuery) {
+        nativeQueryRows.push({ table: t.name, partition: p.name || "", sql: p.nativeQuery });
+      }
+    });
+  });
+  var nativeQueryBlock = "";
+  if (nativeQueryRows.length > 0) {
+    var nqItems = nativeQueryRows.map(function(nq){
+      var subtitle = (nq.partition && nq.partition !== nq.table)
+        ? '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Partition: <code>'+escHtml(nq.partition)+'</code></div>'
+        : '';
+      return (
+        '<div style="padding:10px 18px;border-top:1px solid var(--border-subtle)">'+
+          '<div style="font-weight:600;font-size:13px;color:var(--text)">'+escHtml(nq.table)+'</div>'+
+          subtitle+
+          '<pre style="margin:8px 0 0;padding:10px 12px;background:var(--surface-deep,var(--surface));border:1px solid var(--border-subtle);border-radius:6px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);font-size:12px;line-height:1.5;overflow-x:auto;white-space:pre;color:var(--text)">'+escHtml(nq.sql)+'</pre>'+
+        '</div>'
+      );
+    }).join("");
+    nativeQueryBlock =
+      '<div class="page-card">'+
+        '<div class="page-header" style="cursor:default"><div style="flex:1">'+
+          '<div class="page-name" style="font-size:14px">Native queries ('+nativeQueryRows.length+')</div>'+
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Hand-written SQL that executes against the source — extracted from <code>Value.NativeQuery</code> / <code>[Query=…]</code>.</div>'+
+        '</div></div>'+
+        nqItems+
+      '</div>';
+  }
+
   var sourcesFooter='<div class="panel-footer"><div class="left">'+
     tablesWithSources.length+' source tables'+
+    (nativeQueryRows.length>0?' · '+nativeQueryRows.length+' native quer'+(nativeQueryRows.length===1?'y':'ies'):'')+
     '</div></div>';
   if(tablesWithSources.length===0&&(DATA.expressions||[]).length===0){
     // Even when there's no partition info, show the model properties card.
     host.innerHTML=modelPropsCard+'<div style="text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px">No partition or expression information found in this model.</div>'+sourcesFooter;
     return;
   }
-  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+sourcesFooter;
+  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+nativeQueryBlock+sourcesFooter;
 }
 
 function renderRelationships(){
@@ -1159,16 +1203,24 @@ function renderRelationships(){
     rels.length+' relationships · '+activeCount+' active · '+inactiveCount+' inactive'+
     '</div></div>';
   if(!rels.length){document.getElementById("relationships-content")!.innerHTML='<div style="text-align:center;padding:40px;color:#6B7280">No relationships found in the model</div>'+relFooter;return;}
-  let h='<div class="table-wrap"><table class="data-table"><thead><tr><th>From Table</th><th>From Column</th><th></th><th>To Table</th><th>To Column</th><th>Status</th></tr></thead><tbody>';
+  let h='<div class="table-wrap"><table class="data-table"><thead><tr><th>From Table</th><th>From Column</th><th></th><th>To Table</th><th>To Column</th><th>Cardinality</th><th>Filter</th><th>Status</th></tr></thead><tbody>';
   for(const r of rels){
     const statusColor=r.isActive?'var(--clr-success)':'var(--text-faint)';
     const statusLabel=r.isActive?'Active':'Inactive';
+    const fromCard=r.fromCardinality==='many'?'*':'1';
+    const toCard=r.toCardinality==='many'?'*':'1';
+    const cardLabel=`${fromCard} → ${toCard}`;
+    const isBidi=r.crossFilteringBehavior==='bothDirections';
+    const filterLabel=isBidi?'↔ both':'→ single';
+    const filterColor=isBidi?'var(--clr-warn, #f59e0b)':'var(--text-muted)';
     h+=`<tr>
-      <td style="font-weight:600">${r.fromTable}</td>
-      <td>${r.fromColumn}</td>
+      <td style="font-weight:600">${escHtml(r.fromTable)}</td>
+      <td>${escHtml(r.fromColumn)}</td>
       <td style="text-align:center;color:#6B7280;font-size:18px">→</td>
-      <td style="font-weight:600">${r.toTable}</td>
-      <td>${r.toColumn}</td>
+      <td style="font-weight:600">${escHtml(r.toTable)}</td>
+      <td>${escHtml(r.toColumn)}</td>
+      <td style="font-family:var(--font-mono, monospace);font-size:12px">${cardLabel}</td>
+      <td><span style="color:${filterColor};font-size:12px;font-weight:500">${filterLabel}</span></td>
       <td><span style="color:${statusColor};font-size:12px;font-weight:500">${statusLabel}</span></td>
     </tr>`;
   }

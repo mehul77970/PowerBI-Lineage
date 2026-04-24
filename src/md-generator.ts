@@ -494,10 +494,12 @@ export function generateMarkdown(data: FullData, reportName: string): string {
   if (data.relationships.length === 0) {
     lines.push("_No relationships defined in this model._");
   } else {
-    lines.push("| # | From (many) | To (one) | Active |");
-    lines.push("|--:|-------------|----------|:------:|");
+    lines.push("| # | From | To | Cardinality | Filter | Active |");
+    lines.push("|--:|------|----|:-----------:|:------:|:------:|");
     data.relationships.forEach((r, i) => {
-      lines.push(`| ${i + 1} | ${esc(r.fromTable)}[${esc(r.fromColumn)}] | ${esc(r.toTable)}[${esc(r.toColumn)}] | ${r.isActive ? "✓" : "—"} |`);
+      const card = `${r.fromCardinality} → ${r.toCardinality}`;
+      const filter = r.crossFilteringBehavior === "bothDirections" ? "both ↔" : "single →";
+      lines.push(`| ${i + 1} | ${esc(r.fromTable)}[${esc(r.fromColumn)}] | ${esc(r.toTable)}[${esc(r.toColumn)}] | ${card} | ${filter} | ${r.isActive ? "✓" : "—"} |`);
     });
   }
   lines.push("");
@@ -1612,6 +1614,40 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
         const sub = fileSubFor(t) || (p?.expressionSource ? `expr: ${p.expressionSource}` : "");
         lines.push(`| ${esc(t.name)} | \`${esc(mode)}\` | \`${esc(kind)}\` | ${t.columnCount} | ${t.measureCount} | ${esc(sub) || "—"} |`);
       }
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
+
+  // ── 2.1 Native queries ────────────────────────────────────────────────────
+  // Surface the actual SQL that each `Value.NativeQuery(...)` or
+  // `Sql.Database(..., [Query="..."])` partition runs against its source.
+  // Power BI's folded query output is machine-generated — the hand-written
+  // SQL in the partition is what the data engineer needs to review.
+  const nativeQueries: Array<{ table: string; partition: string; sql: string }> = [];
+  for (const t of regularTables) {
+    for (const p of t.partitions) {
+      if (p.nativeQuery) {
+        nativeQueries.push({ table: t.name, partition: p.name, sql: p.nativeQuery });
+      }
+    }
+  }
+  if (nativeQueries.length > 0) {
+    lines.push(`## 2.1 Native queries`);
+    lines.push("");
+    lines.push(`**${nativeQueries.length}** partition${nativeQueries.length === 1 ? "" : "s"} execute${nativeQueries.length === 1 ? "s" : ""} a hand-written SQL query instead of relying on folded M. The SQL below is exactly what the source database receives.`);
+    lines.push("");
+    for (const nq of nativeQueries) {
+      lines.push(`### \`${esc(nq.table)}\``);
+      lines.push("");
+      if (nq.partition && nq.partition !== nq.table) {
+        lines.push(`_Partition: \`${esc(nq.partition)}\`_`);
+        lines.push("");
+      }
+      lines.push("```sql");
+      lines.push(nq.sql);
+      lines.push("```");
       lines.push("");
     }
     lines.push("---");
