@@ -358,6 +358,19 @@
   .page-section{margin-bottom:12px}
   .page-section-title{font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
   .page-section-title .line{flex:1;height:1px;background:var(--border-soft)}
+  /* Collapsible page-section (e.g. the Layout wireframe — hidden by
+     default because the SVG takes significant vertical space and is
+     "a bit intrusive" in always-on mode). Native <details> gives us
+     the toggle for free; we just restyle the <summary> to match the
+     other section titles and animate a chevron. */
+  .page-section--collapsible{list-style:none}
+  .page-section--collapsible > summary{cursor:pointer;user-select:none;list-style:none}
+  .page-section--collapsible > summary::-webkit-details-marker{display:none}
+  .page-section--collapsible > summary::marker{content:""}
+  .page-section-chevron{font-size:10px;color:var(--text-faint);transition:transform .15s ease;margin-left:auto}
+  .page-section--collapsible[open] > summary .page-section-chevron{transform:rotate(180deg)}
+  .page-section--collapsible:hover > summary .page-section-title,
+  .page-section--collapsible > summary:hover{color:var(--text-muted)}
   .page-visual-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;transition:background .1s;margin-bottom:2px}
   .page-visual-row:hover{background:var(--surface-alt)}
   .page-visual-type{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

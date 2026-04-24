@@ -606,10 +606,10 @@ function renderPages(){
         <span class="page-expand" aria-hidden="true"></span>
       </div>
       <div class="page-body"><div class="page-body-inner">
-        <div class="page-section">
-          <div class="page-section-title">Layout<span class="line"></span></div>
+        <details class="page-section page-section--collapsible">
+          <summary class="page-section-title">Layout<span class="line"></span><span class="page-section-chevron" aria-hidden="true">▾</span></summary>
           ${renderPageWireframe(p)}
-        </div>
+        </details>
         <div class="page-section">
           <div class="page-section-title">Visual types<span class="line"></span></div>
           <div class="page-type-summary">${typeChips}</div>
