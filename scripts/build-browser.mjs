@@ -296,14 +296,14 @@ const overlayStyles = `
   .br-trust span { white-space: nowrap; }
   .br-trust .br-lock { color: #10B981; }
 
-  /* Secondary action row below the trust chips — "What's new" on
-     the left (opens the release-notes popup), repo link on the
-     right. Ghost buttons so they don't compete with the primary
-     CTAs above. */
+  /* Secondary actions under the trust chips — stacked vertically +
+     centred. "What's new" (popup) is the primary secondary action
+     on top; repo link sits quieter below it. Ghost-button styling
+     so they don't compete with the main CTAs above. */
   .br-links {
     margin-top: 14px;
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px;
   }
   .br-ghost-btn {
     background: transparent;
