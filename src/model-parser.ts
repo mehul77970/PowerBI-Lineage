@@ -84,6 +84,13 @@ export interface RawPartition {
    * the M-generated folding output.
    */
   nativeQuery: string;
+  /**
+   * Ordered list of steps extracted from the partition's M `let…in`
+   * body, each classified into one of ten kinds (source / filter /
+   * join / …). Empty when the partition isn't a let-body query
+   * (shared expressions, simple navigation-only partitions).
+   */
+  steps: MStep[];
 }
 
 export interface RawHierarchyLevel {
@@ -560,6 +567,364 @@ function readQueryOption(m: string): string {
   return "";
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// M-step parser — classify each step in a let…in body by its primary
+// verb so a data engineer can read a partition's ETL at a glance
+// without slogging through raw M.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Step categories. Competitor tools (pbip-documenter) use a similar
+ * 10-kind taxonomy; we mirror it so our output is comparable and
+ * covers the same coarse ETL shapes.
+ */
+export type MStepKind =
+  | "source"
+  | "navigation"
+  | "projection"
+  | "rename"
+  | "filter"
+  | "join"
+  | "addColumn"
+  | "typeChange"
+  | "expand"
+  | "custom";
+
+export interface MStep {
+  /** Step variable name as it appears in M, with outer quoting stripped
+   *  (e.g. `#"Filtered Rows"` → `Filtered Rows`). */
+  name: string;
+  kind: MStepKind;
+  /** Dominant M function call detected in the step body (e.g. `Table.SelectRows`).
+   *  Empty when the step is a bare identifier, literal, or record navigation. */
+  primaryFn: string;
+  /** One-line best-effort summary — column names touched, source
+   *  referenced, etc. Empty when nothing pithy could be extracted. */
+  summary: string;
+}
+
+// Function-prefix → kind table. First prefix that appears inside the
+// step body wins; see classifyStep() for the lookup order. Source
+// connectors are matched by name-pattern rather than prefix since
+// there are dozens of `X.Contents` / `X.Database` connectors.
+const STEP_FUNCTION_MAP: Array<{ fn: string; kind: MStepKind }> = [
+  { fn: "Table.SelectColumns",       kind: "projection" },
+  { fn: "Table.RemoveColumns",       kind: "projection" },
+  { fn: "Table.ReorderColumns",      kind: "projection" },
+  { fn: "Table.RenameColumns",       kind: "rename" },
+  { fn: "Table.SelectRows",          kind: "filter" },
+  { fn: "Table.RemoveRowsWithErrors", kind: "filter" },
+  { fn: "Table.Distinct",            kind: "filter" },
+  { fn: "Table.NestedJoin",          kind: "join" },
+  { fn: "Table.Join",                kind: "join" },
+  { fn: "Table.Combine",             kind: "join" },
+  { fn: "Table.Merge",               kind: "join" },
+  { fn: "Table.AddColumn",           kind: "addColumn" },
+  { fn: "Table.AddIndexColumn",      kind: "addColumn" },
+  { fn: "Table.AddConditionalColumn", kind: "addColumn" },
+  { fn: "Table.TransformColumnTypes", kind: "typeChange" },
+  { fn: "Table.TransformColumns",    kind: "typeChange" },
+  { fn: "Table.ExpandTableColumn",   kind: "expand" },
+  { fn: "Table.ExpandRecordColumn",  kind: "expand" },
+  { fn: "Table.ExpandListColumn",    kind: "expand" },
+];
+
+// Connector pattern → step is a Source when any of these match. The
+// set is deliberately broad; any `<Cluster>.(Contents|Database|DataSource|Workbook|Document|Tables|Files)`-style
+// entry point counts as a source connection.
+const SOURCE_CONNECTORS_RX =
+  /\b(Sql|Odbc|OleDb|Oracle|Snowflake|GoogleBigQuery|BigQuery|AzureStorage|AzureBlob|AzureDataLakeStorage|AzureSynapse|AmazonRedshift|AmazonAthena|AmazonS3|Databricks|Salesforce|SharePoint|Dataverse|Cds|MySql|PostgreSQL|Db2|Teradata|Vertica|Exasol|Hive|Impala|Sap|Mongo|Cosmos|Hdfs|Web|File|Csv|Excel|Json|Xml|Html|Value|AnalysisServices|Pq|PowerBI|Folder)\.(Database|Contents|DataSource|Workbook|Document|Files|Folders|Tables|NativeQuery|DataFeeds|Schemas)\s*\(/;
+
+// In-memory table constructors — Power BI's "Enter Data" feature
+// generates these with an embedded Base64 blob. They're sources in the
+// sense that they instantiate a table, so match them explicitly rather
+// than relying on the nested `Json.Document` / `Binary.FromText` inner
+// calls to trip the connector regex.
+// No leading `\b` because `#table` starts with a non-word character
+// (`#`) which breaks the word-boundary rule. Leading whitespace / start
+// / punctuation is implicit since the match is anchored at the literal
+// constructor name.
+const SOURCE_LITERAL_RX = /(Table\.FromRows|Table\.FromList|Table\.FromRecords|Table\.FromColumns|#table)\s*\(/;
+
+function unquoteMIdent(s: string): string {
+  const t = s.trim();
+  // #"Some Name" → Some Name
+  if (t.startsWith('#"') && t.endsWith('"') && t.length >= 3) {
+    return t.substring(2, t.length - 1).replace(/""/g, '"');
+  }
+  return t;
+}
+
+/**
+ * Scan for a function call of the form `<Cluster>.<Verb>(` (two-part)
+ * or `<Cluster>.<Sub>.<Verb>(` (three-part, used for namespaced
+ * custom connectors). Returns the longest dotted name immediately
+ * before a `(`, or `""`.
+ */
+function firstFunctionCall(body: string): string {
+  const rx = /\b([A-Z][A-Za-z0-9]*(?:\.[A-Za-z][A-Za-z0-9]*)+)\s*\(/g;
+  const m = rx.exec(body);
+  return m ? m[1] : "";
+}
+
+function classifyStep(body: string): { kind: MStepKind; primaryFn: string } {
+  // Navigation: `<Source>{[Schema="x",Item="y"]}[Data]` or `<Source>{[Name=…]}[Data]`.
+  // The shape is `{[...=...]}[Data|Schema|Item|Name]` — a record-lookup
+  // inside a set, followed by a field access on the selected record.
+  if (/\{\s*\[\s*(Schema|Item|Name|Kind)\s*=[^}]*\}\s*\[\s*(Data|Schema|Item|Name)\s*\]/.test(body)) {
+    return { kind: "navigation", primaryFn: "" };
+  }
+  // Source — either a connector call or an in-memory constructor.
+  // Literal-constructor check runs first so `Table.FromRows(Json.Document(…))`
+  // (Power BI "Enter Data") reports its outer constructor as the
+  // primary function rather than the decode-layer `Json.Document`.
+  const literalMatch = body.match(SOURCE_LITERAL_RX);
+  if (literalMatch) {
+    return { kind: "source", primaryFn: literalMatch[1] };
+  }
+  if (SOURCE_CONNECTORS_RX.test(body)) {
+    const fn = firstFunctionCall(body);
+    return { kind: "source", primaryFn: fn };
+  }
+  // Generic function-based classification.
+  for (const entry of STEP_FUNCTION_MAP) {
+    const idx = body.indexOf(entry.fn + "(");
+    if (idx >= 0) {
+      // Must be at a word boundary so `Table.SelectColumns` doesn't
+      // accidentally also match `Table.SelectColumnsByFoo`.
+      const prev = idx === 0 ? " " : body[idx - 1];
+      if (!/[A-Za-z0-9._]/.test(prev)) return { kind: entry.kind, primaryFn: entry.fn };
+    }
+  }
+  const fn = firstFunctionCall(body);
+  return { kind: "custom", primaryFn: fn };
+}
+
+function summaryForStep(body: string, kind: MStepKind): string {
+  // A short, lossy human summary. We intentionally stay regex-based
+  // — any M the parser can't make sense of falls back to "".
+  const readList = (startIdx: number): string[] => {
+    // Parse a `{ "A", "B", ... }` list from startIdx. Stops at the
+    // first unbalanced `}`.
+    const out: string[] = [];
+    let i = startIdx;
+    let depth = 0;
+    while (i < body.length) {
+      const c = body[i];
+      if (c === "{") { depth++; i++; continue; }
+      if (c === "}") { depth--; i++; if (depth === 0) return out; continue; }
+      if (c === '"') {
+        const s = readMStringAt(body, i);
+        if (s) { out.push(s.value); i = s.end; continue; }
+      }
+      i++;
+    }
+    return out;
+  };
+  switch (kind) {
+    case "source": {
+      // First string literal inside the source connector call.
+      const m = body.match(/"([^"]+)"/);
+      return m ? m[1] : "";
+    }
+    case "navigation": {
+      const m = body.match(/(?:Schema|Item|Name)\s*=\s*"([^"]+)"/);
+      return m ? m[1] : "";
+    }
+    case "filter": {
+      // Try to extract the column in `each [Col] = …` / `each [Col] > …`.
+      const m = body.match(/each\s*\[([^\]]+)\]/);
+      return m ? `where [${m[1]}] …` : "";
+    }
+    case "projection": {
+      const brace = body.indexOf("{", body.indexOf("(") + 1);
+      if (brace < 0) return "";
+      const cols = readList(brace);
+      if (cols.length === 0) return "";
+      return cols.length > 4 ? `${cols.slice(0, 4).join(", ")} (+${cols.length - 4} more)` : cols.join(", ");
+    }
+    case "rename":
+    case "typeChange": {
+      // Pair lists: {{"Old","New"}, {"Old2","New2"}}. Count pairs.
+      const pairs = body.match(/\{\s*"[^"]*"\s*,\s*(?:"[^"]*"|type\s+[A-Za-z0-9_.]+)\s*\}/g);
+      return pairs ? `${pairs.length} column${pairs.length === 1 ? "" : "s"}` : "";
+    }
+    case "addColumn": {
+      const m = body.match(/\(\s*[^,]+,\s*"([^"]+)"/);
+      return m ? `+[${m[1]}]` : "";
+    }
+    case "join": {
+      // Which two tables — best effort from the first two identifiers.
+      const ids = body.match(/\b[A-Z][A-Za-z0-9_]*\b/g);
+      return ids ? `${ids.slice(0, 2).join(" ⋈ ")}` : "";
+    }
+    case "expand": {
+      const m = body.match(/,\s*"([^"]+)"\s*,\s*\{/);
+      return m ? `expand [${m[1]}]` : "";
+    }
+    case "custom":
+    default:
+      return "";
+  }
+}
+
+function stripMCommentsOnly(m: string): string {
+  // Removes /* … */ and // … comments so `let`/`in` tokens inside
+  // comments can't confuse the boundary finder. Strings are left
+  // intact — the depth tracker walks them with readMStringAt.
+  let out = "";
+  let i = 0;
+  while (i < m.length) {
+    if (m[i] === "/" && m[i + 1] === "*") {
+      const end = m.indexOf("*/", i + 2);
+      // Preserve length so indices from the cleaned string still
+      // line up with offsets in the original. Not needed here, but
+      // cheap.
+      out += "  " + " ".repeat(Math.max(0, (end < 0 ? m.length : end + 2) - i - 2));
+      i = end < 0 ? m.length : end + 2;
+      continue;
+    }
+    if (m[i] === "/" && m[i + 1] === "/") {
+      const end = m.indexOf("\n", i + 2);
+      const stop = end < 0 ? m.length : end;
+      out += " ".repeat(stop - i);
+      i = stop;
+      continue;
+    }
+    if (m[i] === '"') {
+      const s = readMStringAt(m, i);
+      if (s) { out += m.substring(i, s.end); i = s.end; continue; }
+    }
+    out += m[i];
+    i++;
+  }
+  return out;
+}
+
+function findOuterLetBody(m: string): { body: string; start: number; end: number } | null {
+  const clean = stripMCommentsOnly(m);
+  // Find first word-boundary `let` at paren-depth 0.
+  let i = 0;
+  let depth = 0;
+  const letRx = /\blet\b/g;
+  let letIdx = -1;
+  while (i < clean.length) {
+    const c = clean[i];
+    if (c === '"') {
+      const s = readMStringAt(clean, i);
+      if (s) { i = s.end; continue; }
+    }
+    if (c === "(" || c === "[" || c === "{") { depth++; i++; continue; }
+    if (c === ")" || c === "]" || c === "}") { depth--; i++; continue; }
+    if (depth === 0 && /[A-Za-z_]/.test(c)) {
+      letRx.lastIndex = i;
+      const m2 = letRx.exec(clean);
+      if (m2 && m2.index === i) {
+        letIdx = i;
+        break;
+      }
+      // Skip past this identifier.
+      while (i < clean.length && /[A-Za-z0-9_]/.test(clean[i])) i++;
+      continue;
+    }
+    i++;
+  }
+  if (letIdx < 0) return null;
+  // Walk forward to find matching `in`, tracking nested let/in pairs.
+  i = letIdx + 3;
+  depth = 0;
+  let letDepth = 1;
+  while (i < clean.length && letDepth > 0) {
+    const c = clean[i];
+    if (c === '"') {
+      const s = readMStringAt(clean, i);
+      if (s) { i = s.end; continue; }
+    }
+    if (c === "(" || c === "[" || c === "{") { depth++; i++; continue; }
+    if (c === ")" || c === "]" || c === "}") { depth--; i++; continue; }
+    if (depth === 0 && /[A-Za-z_]/.test(c)) {
+      // Check for `let` / `in` with word boundaries.
+      const rest = clean.substring(i);
+      if (/^let\b/.test(rest)) { letDepth++; i += 3; continue; }
+      if (/^in\b/.test(rest))  { letDepth--; if (letDepth === 0) return { body: m.substring(letIdx + 3, i), start: letIdx + 3, end: i }; i += 2; continue; }
+      while (i < clean.length && /[A-Za-z0-9_]/.test(clean[i])) i++;
+      continue;
+    }
+    i++;
+  }
+  return null;
+}
+
+function splitLetStatements(body: string): string[] {
+  // Split on top-level commas, skipping strings / comments / nested brackets.
+  // Comments are *dropped* from the output entirely — they'd otherwise
+  // poison the subsequent `indexOf("=")` when a commented line leads
+  // the statement.
+  const out: string[] = [];
+  let buf = "";
+  let depth = 0;
+  let i = 0;
+  while (i < body.length) {
+    const c = body[i];
+    if (c === "/" && body[i + 1] === "*") {
+      const end = body.indexOf("*/", i + 2);
+      i = end < 0 ? body.length : end + 2;
+      continue;
+    }
+    if (c === "/" && body[i + 1] === "/") {
+      const end = body.indexOf("\n", i + 2);
+      i = end < 0 ? body.length : end;
+      continue;
+    }
+    if (c === '"') {
+      const s = readMStringAt(body, i);
+      if (s) { buf += body.substring(i, s.end); i = s.end; continue; }
+    }
+    if (c === "(" || c === "[" || c === "{") depth++;
+    else if (c === ")" || c === "]" || c === "}") depth--;
+    if (c === "," && depth === 0) {
+      if (buf.trim()) out.push(buf.trim());
+      buf = "";
+      i++;
+      continue;
+    }
+    buf += c;
+    i++;
+  }
+  if (buf.trim()) out.push(buf.trim());
+  return out;
+}
+
+/**
+ * Parse an M expression's `let … in` body into a sequence of typed
+ * steps. Returns an empty array when no `let` block is found (shared
+ * expressions that are literal records / functions / navigation-only
+ * queries) — callers should treat absence as "nothing to show",
+ * not an error.
+ */
+export function parseMSteps(m: string): MStep[] {
+  if (!m || !m.trim()) return [];
+  const range = findOuterLetBody(m);
+  if (!range) return [];
+  const statements = splitLetStatements(range.body);
+  const steps: MStep[] = [];
+  for (const stmt of statements) {
+    const eqIdx = stmt.indexOf("=");
+    if (eqIdx < 0) continue;
+    const rawName = stmt.substring(0, eqIdx).trim();
+    const stepBody = stmt.substring(eqIdx + 1).trim();
+    if (!rawName || !stepBody) continue;
+    const { kind, primaryFn } = classifyStep(stepBody);
+    steps.push({
+      name: unquoteMIdent(rawName),
+      kind,
+      primaryFn,
+      summary: summaryForStep(stepBody, kind),
+    });
+  }
+  return steps;
+}
+
 /**
  * Pull all `partition <name> = <mode>` blocks from a single table TMDL file.
  * Captures the multi-line `source =` body so we can infer the source type.
@@ -602,6 +967,7 @@ function extractTmdlPartitions(
     }
     const { sourceType, sourceLocation } = inferSource(mCode);
     const nativeQuery = extractNativeQuery(mCode);
+    const steps = parseMSteps(mCode);
     out.push({
       name: current.name,
       mode: current.mode || "import",
@@ -610,6 +976,7 @@ function extractTmdlPartitions(
       sourceLocation,
       expressionSource: current.expressionSource,
       nativeQuery,
+      steps,
     });
     current = null;
     inSource = false;
@@ -1278,6 +1645,7 @@ function parseBimFile(bimPath: string): RawModel {
         sourceLocation,
         expressionSource,
         nativeQuery: extractNativeQuery(mCode),
+        steps: parseMSteps(mCode),
       };
     });
     // Hierarchies defined on the table.

@@ -9,7 +9,7 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 </p>
 
 <p align="center">
-  <img alt="Tests 194/194" src="https://img.shields.io/badge/tests-194%2F194-22c55e?style=flat-square">
+  <img alt="Tests 237/237" src="https://img.shields.io/badge/tests-237%2F237-22c55e?style=flat-square">
   <img alt="Runtime deps 0" src="https://img.shields.io/badge/runtime%20deps-0-64748b?style=flat-square">
   <img alt="Node ≥18" src="https://img.shields.io/badge/node-%E2%89%A518-5E6A7B?style=flat-square">
 </p>
@@ -22,7 +22,7 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 
 - **Interactive dashboard** — 10 tabs covering measures, columns, tables, relationships, sources, calc groups, UDFs, pages with layout wireframe, unused/orphan analysis, lineage click-through
 - **Nine Markdown docs** auto-generated, paste-ready for ADO Wiki or GitHub
-- **Improvements audit** — 15 checks across five severity tiers (high / medium / low / info / strengths)
+- **Improvements audit** — 16 checks across five severity tiers (high / medium / low / info / strengths)
 - **Source Map** — flat PBI-column → physical-source lineage with CSV export
 - **Page layout wireframe** — SVG thumbnail of each page showing visuals at true canvas positions
 - **Privacy by default** — browser-mode files never leave your machine; CLI binds to loopback only
@@ -149,7 +149,7 @@ src/
   report-scanner.ts    Walks visuals/filters/objects to extract field bindings + positions
   data-builder.ts      Cross-references model + report into FullData
   md-generator.ts      Nine MD docs, ADO Wiki-safe anchors, Mermaid lineage/star blocks
-  improvements.ts      15-check audit — severity-tiered recommendations
+  improvements.ts      16-check audit (incl. broken-ref detection) — severity-tiered
   html-generator.ts    Dashboard HTML template
   client/              Dashboard runtime (tabs, search, sort, lineage view, wireframe)
                          main.ts · render/escape.ts · render/md.ts · globals.d.ts
@@ -164,7 +164,7 @@ scripts/
   serve-browser.mjs    Tiny static server for local testing
 
 changelog/             Per-version release notes (one file per release)
-tests/                 node:test suites — 194 tests, zero framework deps
+tests/                 node:test suites — 237 tests, zero framework deps
 ```
 
 ## Zero runtime dependencies
@@ -219,4 +219,4 @@ Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 - **What shipped** — [`changelog/`](changelog/), one file per release. Full index in [`changelog/README.md`](changelog/README.md).
 - **What's parked for future design** — [`ROADMAP.md`](ROADMAP.md). Not a commitment — a scratchpad of ideas (XMLA endpoint support, broken-DAX audit, column drill-down, physical-source index, M-query steps, CSV exports) with rough scopes.
 
-Latest release: **[v0.8.1](changelog/0.8.1.md)** — Post-`/sc:analyze` hardening (CI bundle guard, pair-picker extraction + tests, strict typing on main.ts).
+Latest release: **[v0.9.0](changelog/0.9.0.md)** — Data-engineer depth pass: relationship cardinality + cross-filter, `Value.NativeQuery` SQL preview, broken-reference detection in Improvements, M-step parser with 10-kind ETL classification.

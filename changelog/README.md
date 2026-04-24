@@ -11,6 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 | Version | Date | Theme |
 |---|---|---|
+| [0.9.0](0.9.0.md) | 2026-04-24 | Data-engineer depth — relationship cardinality + cross-filter, Value.NativeQuery SQL preview, broken-ref detection, M-step parser (10 kinds) |
 | [0.8.1](0.8.1.md) | 2026-04-24 | Post-/sc:analyze hardening — CI bundle guard, pair-picker extraction + 37 tests, strict typing on main.ts |
 | [0.8.0](0.8.0.md) | 2026-04-24 | Browser mode, pair picker, Source Map, page-layout wireframe |
 | [0.7.0](0.7.0.md) | 2026-04-18 | ADO Wiki + GitHub MD compatibility |

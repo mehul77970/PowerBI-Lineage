@@ -1654,6 +1654,39 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
+  // ── 2.2 M-step breakdown ──────────────────────────────────────────────────
+  // Per-partition ETL walk — each step classified by its primary verb so
+  // the review eye can jump straight to filter / join / custom steps
+  // without reading raw M.
+  const withSteps = regularTables.filter(t => t.partitions.some(p => p.steps && p.steps.length > 0));
+  if (withSteps.length > 0) {
+    lines.push(`## 2.2 M-step breakdown`);
+    lines.push("");
+    lines.push(`**${withSteps.length}** table${withSteps.length === 1 ? "" : "s"} with a \`let … in\` M body. Each step below is classified by its dominant M function so you can spot filter / join / custom steps without reading raw M.`);
+    lines.push("");
+    for (const t of withSteps) {
+      for (const p of t.partitions) {
+        if (!p.steps || p.steps.length === 0) continue;
+        lines.push(`### \`${esc(t.name)}\``);
+        lines.push("");
+        if (p.name && p.name !== t.name) {
+          lines.push(`_Partition: \`${esc(p.name)}\`_`);
+          lines.push("");
+        }
+        lines.push("| # | Step | Kind | Function | Detail |");
+        lines.push("|--:|------|:-----|----------|--------|");
+        p.steps.forEach((s, i) => {
+          const fn = s.primaryFn ? `\`${esc(s.primaryFn)}\`` : "—";
+          const detail = s.summary ? esc(s.summary) : "—";
+          lines.push(`| ${i + 1} | ${esc(s.name)} | \`${s.kind}\` | ${fn} | ${detail} |`);
+        });
+        lines.push("");
+      }
+    }
+    lines.push("---");
+    lines.push("");
+  }
+
   lines.push(`## 3. Field Parameters`);
   lines.push("");
   if (fieldParams.length === 0) {

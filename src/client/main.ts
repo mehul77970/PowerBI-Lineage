@@ -1183,16 +1183,83 @@ function renderSources(){
       '</div>';
   }
 
+  // M-step breakdown — per-partition ETL flow, one row per step with
+  // kind chip + function name + best-effort detail. Collapsed by default
+  // so the Sources tab stays scannable for small models.
+  var tablesWithSteps: any[] = (DATA.tables || []).filter((t: any) =>
+    (t.partitions || []).some((p: any) => Array.isArray(p.steps) && p.steps.length > 0),
+  );
+  var mStepsBlock = "";
+  if (tablesWithSteps.length > 0) {
+    var stepKindStyles: Record<string, string> = {
+      source:      "background:rgba(34,197,94,.12);color:var(--clr-success);border-color:rgba(34,197,94,.25)",
+      navigation:  "background:rgba(99,102,241,.12);color:#818CF8;border-color:rgba(99,102,241,.25)",
+      projection:  "background:rgba(14,165,233,.12);color:#38BDF8;border-color:rgba(14,165,233,.25)",
+      rename:      "background:rgba(168,85,247,.12);color:var(--clr-calc);border-color:rgba(168,85,247,.25)",
+      filter:      "background:rgba(245,158,11,.12);color:#F59E0B;border-color:rgba(245,158,11,.25)",
+      join:        "background:rgba(239,68,68,.12);color:#F87171;border-color:rgba(239,68,68,.25)",
+      addColumn:   "background:rgba(16,185,129,.12);color:#34D399;border-color:rgba(16,185,129,.25)",
+      typeChange:  "background:rgba(236,72,153,.12);color:#F472B6;border-color:rgba(236,72,153,.25)",
+      expand:      "background:rgba(6,182,212,.12);color:#22D3EE;border-color:rgba(6,182,212,.25)",
+      custom:      "background:rgba(148,163,184,.12);color:var(--text-muted);border-color:rgba(148,163,184,.25)",
+    };
+    var mStepsItems = tablesWithSteps.map(function(t: any){
+      var partitionsHtml = (t.partitions || []).filter(function(p: any){
+        return Array.isArray(p.steps) && p.steps.length > 0;
+      }).map(function(p: any){
+        var header = (p.name && p.name !== t.name)
+          ? '<div style="font-size:11px;color:var(--text-dim);margin:0 0 6px">Partition: <code>'+escHtml(p.name)+'</code></div>'
+          : '';
+        var rows = p.steps.map(function(s: any, i: number){
+          var kindStyle = stepKindStyles[s.kind] || stepKindStyles.custom;
+          var fn = s.primaryFn
+            ? '<code style="font-size:11px;color:var(--text-muted)">'+escHtml(s.primaryFn)+'</code>'
+            : '<span style="color:var(--text-faint)">—</span>';
+          var detail = s.summary
+            ? '<span style="color:var(--text-dim);font-size:12px">'+escHtml(s.summary)+'</span>'
+            : '<span style="color:var(--text-faint)">—</span>';
+          return '<tr>'+
+            '<td style="color:var(--text-faint);font-size:11px;padding-right:8px">'+(i+1)+'</td>'+
+            '<td style="font-weight:500;color:var(--text)">'+escHtml(s.name)+'</td>'+
+            '<td><span class="dep-chip" style="'+kindStyle+';font-size:10.5px">'+escHtml(s.kind)+'</span></td>'+
+            '<td>'+fn+'</td>'+
+            '<td>'+detail+'</td>'+
+          '</tr>';
+        }).join("");
+        return '<div style="padding:10px 18px;border-top:1px solid var(--border-subtle)">'+
+          '<div style="font-weight:600;font-size:13px;color:var(--text);margin-bottom:4px">'+escHtml(t.name)+'</div>'+
+          header+
+          '<table class="data-table" style="font-size:12px"><thead><tr><th>#</th><th>Step</th><th>Kind</th><th>Function</th><th>Detail</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+        '</div>';
+      }).join("");
+      return partitionsHtml;
+    }).join("");
+    var totalSteps = tablesWithSteps.reduce(function(a: number, t: any){
+      return a + (t.partitions || []).reduce(function(b: number, p: any){
+        return b + (Array.isArray(p.steps) ? p.steps.length : 0);
+      }, 0);
+    }, 0);
+    mStepsBlock =
+      '<div class="page-card">'+
+        '<div class="page-header" style="cursor:default"><div style="flex:1">'+
+          '<div class="page-name" style="font-size:14px">M-step breakdown · '+tablesWithSteps.length+' table'+(tablesWithSteps.length===1?'':'s')+' · '+totalSteps+' step'+(totalSteps===1?'':'s')+'</div>'+
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Each step classified by its primary M verb so you can spot filter / join / custom logic without reading raw M.</div>'+
+        '</div></div>'+
+        mStepsItems+
+      '</div>';
+  }
+
   var sourcesFooter='<div class="panel-footer"><div class="left">'+
     tablesWithSources.length+' source tables'+
     (nativeQueryRows.length>0?' · '+nativeQueryRows.length+' native quer'+(nativeQueryRows.length===1?'y':'ies'):'')+
+    (tablesWithSteps.length>0?' · '+tablesWithSteps.length+' with M-steps':'')+
     '</div></div>';
   if(tablesWithSources.length===0&&(DATA.expressions||[]).length===0){
     // Even when there's no partition info, show the model properties card.
     host.innerHTML=modelPropsCard+'<div style="text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px">No partition or expression information found in this model.</div>'+sourcesFooter;
     return;
   }
-  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+nativeQueryBlock+sourcesFooter;
+  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+nativeQueryBlock+mStepsBlock+sourcesFooter;
 }
 
 function renderRelationships(){

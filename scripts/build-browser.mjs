@@ -491,7 +491,7 @@ const overlayHtml = `
     <div class="br-trust">
       <span class="br-lock">🔒 Files stay on your machine</span>
       <span>·</span>
-      <span>194 tests</span>
+      <span>237 tests</span>
       <span>·</span>
       <span>Zero runtime deps</span>
     </div>

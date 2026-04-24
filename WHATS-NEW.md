@@ -5,10 +5,10 @@ Drop in a PBIP folder — get a **searchable dashboard** plus **nine Markdown do
 ## What this dashboard shows
 
 ### Model
-- **Sources** — data connections, partition modes, composite-model proxies (switch between Cards + Flat-map views)
+- **Sources** — data connections, partition modes, composite-model proxies (switch between Cards + Flat-map views) · hand-written SQL from `Value.NativeQuery` surfaced as `sql` code blocks · per-partition **M-step breakdown** classifying every ETL step (source / filter / join / typeChange / …)
 - **Tables** — grouped by role (Fact / Dimension / Bridge / Calc Group) with columns, measures, and relationships at a glance
 - **Columns** — types, usage counts, direct / indirect / unused status
-- **Relationships** — active + inactive, cross-filter direction
+- **Relationships** — active + inactive, cardinality (`1:*`, `1:1`, etc.), cross-filter direction (single ↔ both)
 - **Measures** — A–Z reference with DAX, dependencies, where-used per visual + page
 - **Calc Groups** — items, precedence, format-string expressions
 - **Functions** — UDFs with parameters + every measure that calls each one
@@ -19,7 +19,7 @@ Drop in a PBIP folder — get a **searchable dashboard** plus **nine Markdown do
 
 ### Analysis
 - **Unused** — orphan measures, dead-chain measures, indirect-use detection
-- **Improvements** — 15-check model-health audit, severity-tiered (high · medium · low · info · strengths)
+- **Improvements** — 16-check model-health audit, severity-tiered (high · medium · low · info · strengths) — includes **broken-reference detection**: flags any DAX referencing a table / column / measure that doesn't exist
 
 ### Output
 - **Docs tab** — nine Markdown files ready to paste into ADO Wiki or GitHub:
@@ -28,7 +28,7 @@ Drop in a PBIP folder — get a **searchable dashboard** plus **nine Markdown do
 ## Under the hood
 
 - Runs **entirely in your browser** (File System Access API — nothing uploads) *or* as a **local CLI**
-- **Zero runtime dependencies**, MIT-licensed, 194 tests
+- **Zero runtime dependencies**, MIT-licensed, 237 tests
 - Three themes: dark · light · BluPulse — pick from the bottom of this overlay
 
 ## Running locally (CLI mode)

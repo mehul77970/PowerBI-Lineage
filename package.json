@@ -1,6 +1,6 @@
 {
   "name": "powerbi-lineage",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Generate documentation from Power BI PBIP projects — runs in your browser (nothing uploaded) or as a local CLI. Outputs a searchable dashboard plus 9+ Markdown docs ready for ADO Wiki or GitHub.",
   "license": "MIT",
   "author": "Jonathan Papworth",
