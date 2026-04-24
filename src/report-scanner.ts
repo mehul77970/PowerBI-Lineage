@@ -48,14 +48,41 @@ export interface PageMeta {
   name: string;
   hidden: boolean;
   visualCount: number;
+  /** Canvas width in PBI coordinate space (default 1280 for 16:9). */
+  width: number;
+  /** Canvas height (default 720). */
+  height: number;
 }
 
-export function scanReportBindings(reportPath: string): { bindings: RawBinding[]; pageCount: number; visualCount: number; hiddenPages: string[]; allPages: PageMeta[] } {
+/** Position of a visual on its page, in the same coordinate space as the page width/height. */
+export interface VisualPosition {
+  x: number;
+  y: number;
+  z: number;
+  width: number;
+  height: number;
+}
+
+/** Per-visual structure used by the page-layout wireframe renderer. */
+export interface ScannedVisual {
+  pageId: string;
+  pageName: string;
+  visualId: string;
+  visualType: string;
+  visualTitle: string;
+  position: VisualPosition;
+}
+
+const DEFAULT_PAGE_WIDTH = 1280;
+const DEFAULT_PAGE_HEIGHT = 720;
+
+export function scanReportBindings(reportPath: string): { bindings: RawBinding[]; pageCount: number; visualCount: number; hiddenPages: string[]; allPages: PageMeta[]; scannedVisuals: ScannedVisual[] } {
   const project = new PbirProject(reportPath);
   const pageIds = project.listPageIds();
   const bindings: RawBinding[] = [];
   const hiddenPages: string[] = [];
   const allPages: PageMeta[] = [];
+  const scannedVisuals: ScannedVisual[] = [];
   let totalVisuals = 0;
 
   for (const pageId of pageIds) {
@@ -64,7 +91,9 @@ export function scanReportBindings(reportPath: string): { bindings: RawBinding[]
     const isHidden = page.visibility === "HiddenInViewMode";
     if (isHidden) hiddenPages.push(pageName);
     const visualIds = project.listVisualIds(pageId);
-    allPages.push({ name: pageName, hidden: isHidden, visualCount: visualIds.length });
+    const pageWidth = typeof (page as any).width === "number" && (page as any).width > 0 ? (page as any).width : DEFAULT_PAGE_WIDTH;
+    const pageHeight = typeof (page as any).height === "number" && (page as any).height > 0 ? (page as any).height : DEFAULT_PAGE_HEIGHT;
+    allPages.push({ name: pageName, hidden: isHidden, visualCount: visualIds.length, width: pageWidth, height: pageHeight });
 
     for (const visualId of visualIds) {
       totalVisuals++;
@@ -74,6 +103,21 @@ export function scanReportBindings(reportPath: string): { bindings: RawBinding[]
         const visualTitle = extractVisualTitle(visual) || visualType;
         const vId = (visual as any).name || visualId;
         const ctx = { pageId, pageName, visualId: vId, visualType, visualTitle };
+
+        // Capture position for the wireframe view. Defaults place a
+        // small marker at origin if position is missing so the visual
+        // still appears in the layout.
+        const pos = (visual as any).position || {};
+        scannedVisuals.push({
+          pageId, pageName, visualId: vId, visualType, visualTitle,
+          position: {
+            x: typeof pos.x === "number" ? pos.x : 0,
+            y: typeof pos.y === "number" ? pos.y : 0,
+            z: typeof pos.z === "number" ? pos.z : 0,
+            width:  typeof pos.width  === "number" && pos.width  > 0 ? pos.width  : 100,
+            height: typeof pos.height === "number" && pos.height > 0 ? pos.height : 60,
+          },
+        });
 
         // Scan queryState projections
         const queryState = (visual as any).visual?.query?.queryState;
@@ -119,5 +163,5 @@ export function scanReportBindings(reportPath: string): { bindings: RawBinding[]
     }
   }
 
-  return { bindings, pageCount: pageIds.length, visualCount: totalVisuals, hiddenPages, allPages };
+  return { bindings, pageCount: pageIds.length, visualCount: totalVisuals, hiddenPages, allPages, scannedVisuals };
 }

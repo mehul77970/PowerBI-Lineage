@@ -473,6 +473,58 @@ function navigateLineage(type,name){
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Page-layout wireframe — SVG thumbnail showing each visual at its
+// actual position on the PBI canvas. Data-builder has already
+// filtered wireframeVisuals to the whitelist (chart/table/card/
+// slicer/map/ai); shapes, buttons, text, images are excluded by
+// design ("over kill" per user feedback).
+// ─────────────────────────────────────────────────────────────────────
+
+const WF_COLORS:{[k:string]:string}={
+  chart:   "#3B82F6",  // blue
+  table:   "#64748B",  // slate
+  card:    "#10B981",  // emerald
+  slicer:  "#EC4899",  // pink
+  map:     "#F59E0B",  // amber
+  ai:      "#EF4444",  // red
+};
+
+function renderPageWireframe(p){
+  const w=p.width||1280, h=p.height||720;
+  const visuals=p.wireframeVisuals||[];
+  if(visuals.length===0){
+    return '<div style="font-size:11px;color:var(--text-faint);padding:8px 0">No chart / card / slicer / table / map / AI visuals on this page.</div>';
+  }
+  const nodes=visuals.map(v=>{
+    const color=WF_COLORS[v.category]||"#6B7280";
+    const pos=v.position||{x:0,y:0,width:100,height:60};
+    const label=v.title||v.type||"";
+    const tip=v.type+' · '+(v.title||'(untitled)')+' · '+v.category;
+    return '<g class="wf-visual">'+
+      '<title>'+escAttr(tip)+'</title>'+
+      '<rect x="'+pos.x+'" y="'+pos.y+'" width="'+pos.width+'" height="'+pos.height+'" rx="4" ry="4" fill="'+color+'" fill-opacity="0.20" stroke="'+color+'" stroke-width="1.5"/>'+
+      '<text class="wf-type" x="'+(pos.x+8)+'" y="'+(pos.y+14)+'" fill="'+color+'">'+escHtml(v.type)+'</text>'+
+      '<text class="wf-title" x="'+(pos.x+pos.width/2)+'" y="'+(pos.y+pos.height/2+4)+'" text-anchor="middle">'+escHtml(label)+'</text>'+
+    '</g>';
+  }).join("");
+
+  const cats={};
+  visuals.forEach(v=>{cats[v.category]=(cats[v.category]||0)+1;});
+  const legend=Object.keys(cats).sort().map(c=>{
+    const color=WF_COLORS[c]||"#6B7280";
+    return '<span class="wf-legend-chip" style="background:'+color+'22;color:'+color+';border:1px solid '+color+'55">'+c+' \u00d7 '+cats[c]+'</span>';
+  }).join("");
+
+  return '<div class="wf-wrap">'+
+    '<svg class="wf-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Page layout wireframe">'+
+      '<rect x="0" y="0" width="'+w+'" height="'+h+'" fill="var(--surface-alt)" stroke="var(--border)" stroke-width="2"/>'+
+      nodes+
+    '</svg>'+
+    '<div class="wf-legend">'+legend+'</div>'+
+  '</div>';
+}
+
 function renderPages(){
   const FC={measure:"#F59E0B",column:"#3B82F6"};
   const hiddenSet=new Set(DATA.hiddenPages||[]);
@@ -509,6 +561,10 @@ function renderPages(){
         <span class="page-expand" aria-hidden="true"></span>
       </div>
       <div class="page-body"><div class="page-body-inner">
+        <div class="page-section">
+          <div class="page-section-title">Layout<span class="line"></span></div>
+          ${renderPageWireframe(p)}
+        </div>
         <div class="page-section">
           <div class="page-section-title">Visual types<span class="line"></span></div>
           <div class="page-type-summary">${typeChips}</div>

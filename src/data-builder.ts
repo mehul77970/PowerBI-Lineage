@@ -162,6 +162,53 @@ export interface TableData {
   hierarchies: TableHierarchy[];
 }
 
+/**
+ * Semantic category for the wireframe renderer. The whitelist below
+ * includes only "actual visuals" — charts, cards, slicers, tables,
+ * maps, AI visuals. Shapes, buttons, images, textboxes, and
+ * uncategorised visuals are skipped entirely: they clutter the
+ * layout without adding data-lineage signal.
+ */
+export type VisualCategory =
+  | "chart" | "table" | "card" | "slicer" | "map" | "ai";
+
+/** Categories actually drawn in the wireframe. Everything else is filtered out. */
+const WIREFRAME_CATEGORIES: ReadonlyArray<VisualCategory> = [
+  "chart", "table", "card", "slicer", "map", "ai",
+];
+
+/**
+ * Map a raw visualType string to a wireframe category, or null when
+ * the visual should be excluded from the wireframe (shapes, buttons,
+ * text, images, unknowns).
+ */
+export function categorizeVisualForWireframe(visualType: string): VisualCategory | null {
+  const t = (visualType || "").toLowerCase();
+  if (t === "tableex" || t === "pivottable") return "table";
+  if (t === "card" || t === "cardvisual" || t === "cardnew" ||
+      t === "multirowcard" || t === "kpi" || t === "gauge") return "card";
+  if (t === "slicer" || t === "listslicer" || t === "textslicer" ||
+      t === "advancedslicervisual") return "slicer";
+  if (t === "map" || t === "filledmap" || t === "azuremap" ||
+      t === "shapemap") return "map";
+  if (t === "decompositiontreevisual" || t === "qnavisual" ||
+      t === "keyinfluencers") return "ai";
+  // Chart family — anything containing "chart" or well-known chart names.
+  if (t.includes("chart") || t === "treemap" || t === "funnel" ||
+      t === "ribbon" || t === "waterfall") return "chart";
+  // Shapes, buttons, text, images, unknowns → excluded from wireframe.
+  return null;
+}
+
+export interface WireframeVisual {
+  type: string;
+  title: string;
+  category: VisualCategory;
+  position: { x: number; y: number; z: number; width: number; height: number };
+  /** Optional bindings summary for the hover tooltip (truncated in the renderer). */
+  bindings?: Array<{ fieldName: string; fieldTable: string; bindingRole: string }>;
+}
+
 export interface PageData {
   name: string;
   visualCount: number;
@@ -173,6 +220,11 @@ export interface PageData {
   typeCounts: Record<string, number>;
   coverage: number;
   visuals: Array<{ type: string; title: string; bindings: Array<{ fieldName: string; fieldTable: string; fieldType: string }> }>;
+  /** PBI canvas size (defaults to 1280×720 if not declared). */
+  width: number;
+  height: number;
+  /** Visuals included in the wireframe (filtered by category whitelist). */
+  wireframeVisuals: WireframeVisual[];
 }
 
 export interface FullData {
@@ -235,7 +287,7 @@ export function buildFullData(reportPath: string): FullData {
   const modelPath = findSemanticModelPath(reportPath);
   const rawModel = parseModel(modelPath);
   const allMeasureNames = rawModel.measures.map(m => m.name);
-  const { bindings, pageCount, visualCount, hiddenPages, allPages } = scanReportBindings(reportPath);
+  const { bindings, pageCount, visualCount, hiddenPages, allPages, scannedVisuals } = scanReportBindings(reportPath);
 
   // Build a lookup from shared-expression name to its AS cluster URL
   // (first string literal argument to `AnalysisServices.Database(...)`).
@@ -577,7 +629,32 @@ export function buildFullData(reportPath: string): FullData {
   // tooltip/drillthrough scaffolds, etc.). Pages with bindings come from
   // `pageMap`; pages without bindings get a zero-binding stub from `allPages`
   // so they still appear in the Pages tab with the correct visualCount.
+  // Pre-bucket scannedVisuals by pageName so the PageData builder
+  // can pull just the visuals for each page without re-iterating.
+  // Also resolve category and position here so the per-page build
+  // just filters the already-prepared list.
+  const wireframeByPage = new Map<string, WireframeVisual[]>();
+  for (const sv of scannedVisuals) {
+    const cat = categorizeVisualForWireframe(sv.visualType);
+    if (!cat) continue;                                      // skip shapes/buttons/text/etc.
+    if (!WIREFRAME_CATEGORIES.includes(cat)) continue;       // belt-and-braces whitelist check
+    const list = wireframeByPage.get(sv.pageName) || [];
+    list.push({
+      type: sv.visualType,
+      title: sv.visualTitle,
+      category: cat,
+      position: { ...sv.position },
+    });
+    wireframeByPage.set(sv.pageName, list);
+  }
+  // Sort each page's wireframe visuals by ascending z so later-drawn
+  // visuals stack on top (matches PBI rendering order).
+  for (const [, list] of wireframeByPage) {
+    list.sort((a, b) => a.position.z - b.position.z);
+  }
+
   const pages: PageData[] = allPages.map(meta => {
+    const wireframeVisuals = wireframeByPage.get(meta.name) || [];
     const p = pageMap.get(meta.name);
     if (p) {
       const visuals = [...p.visuals.values()];
@@ -597,6 +674,9 @@ export function buildFullData(reportPath: string): FullData {
         typeCounts,
         coverage: rawModel.measures.length > 0 ? Math.round(p.measures.size / rawModel.measures.length * 100) : 0,
         visuals,
+        width: meta.width,
+        height: meta.height,
+        wireframeVisuals,
       };
     }
     // Page has no data-bound visuals — emit an empty stub so it still lists.
@@ -611,6 +691,9 @@ export function buildFullData(reportPath: string): FullData {
       typeCounts: {},
       coverage: 0,
       visuals: [],
+      width: meta.width,
+      height: meta.height,
+      wireframeVisuals,
     };
   });
 

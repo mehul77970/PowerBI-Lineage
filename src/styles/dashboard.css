@@ -216,6 +216,20 @@
   .src-view-btn.active{background:rgba(245,158,11,0.12);color:var(--accent);font-weight:600}
   [data-theme="light"] .src-view-btn.active{background:rgba(245,158,11,0.18)}
   .src-view-hint{font-size:12px;color:var(--text-dim);flex:1;min-width:200px}
+
+  /* ── Page-layout wireframe (Pages tab > expanded card > Layout) ─────
+     SVG thumbnail showing every "actual visual" (chart / table /
+     card / slicer / map / AI) at its PBI canvas position. Shapes,
+     buttons, text, images are excluded upstream in data-builder so
+     the layout stays signal-dense. */
+  .wf-wrap{display:flex;flex-direction:column;gap:8px}
+  .wf-svg{width:100%;max-height:520px;display:block;border-radius:6px;background:var(--surface-deep)}
+  .wf-svg .wf-visual{cursor:help}
+  .wf-svg .wf-type{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.02em;pointer-events:none}
+  .wf-svg .wf-title{font-family:'DM Sans',system-ui,sans-serif;font-size:11px;fill:var(--text);font-weight:500;pointer-events:none}
+  .wf-svg .wf-visual:hover rect{fill-opacity:.4;stroke-width:2.5}
+  .wf-legend{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+  .wf-legend-chip{font-size:10px;padding:1px 7px;border-radius:3px;font-family:'JetBrains Mono',monospace;letter-spacing:.02em;text-transform:uppercase}
   .panel{display:none}.panel.active{display:block}
   .search-row{display:flex;gap:var(--space-5);margin-bottom:var(--space-4);align-items:center;flex-wrap:wrap}
   /* Docs-tab subtitle — moved out of .search-row and onto its own
