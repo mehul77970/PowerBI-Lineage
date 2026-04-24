@@ -956,7 +956,6 @@ function sourceMapRows(){
   const calcGroupTables=new Set(DATA.calcGroups.map(cg=>cg.name));
   const rows=[];
   for(const c of DATA.columns){
-    if(isAutoName&&false){} // no-op placeholder — future auto-date carve
     const tbl=tableByName.get(c.table);
     if(!tbl)continue;
     if(!showAutoDate && tbl.origin==="auto-date")continue;
