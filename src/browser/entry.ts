@@ -660,17 +660,83 @@ function showPairPicker(
     // Tier 3: no match — leave current selection, verdict will flag it
   };
 
-  // Wire radio change events. Report-change first auto-selects the
-  // matching model, THEN refreshes the verdict. Model-change just
-  // refreshes the verdict (no symmetric auto-pick because one model
-  // can legitimately pair with multiple reports).
+  /**
+   * When the Model radio changes, try to auto-select the matching
+   * Report. Symmetric to autoSelectModelForReport, with one twist:
+   * a single Model can pair with multiple Reports (two reports
+   * sharing one model for different audiences). We disambiguate in
+   * this order:
+   *   1. Prefer the Report whose pbir points AT THIS model exactly.
+   *   2. Then prefer the Report whose name prefix matches the model's.
+   *   3. Then first pbir pointer that matches (fallback).
+   *   4. No match → leave current selection alone.
+   */
+  const autoSelectReportForModel = (modelPath: string): void => {
+    if (modelPath === NONE_VALUE) return;
+    const modelName = modelPath.split("/").pop() || "";
+    const mPrefix = modelName.replace(/\.SemanticModel$/i, "");
+
+    // Collect every report whose pbir points at this model.
+    const pbirMatches: string[] = [];
+    for (const r of candidates.reports) {
+      const pbirContent = files.get(r + "/definition.pbir");
+      if (!pbirContent) continue;
+      try {
+        const parsed = JSON.parse(pbirContent) as {
+          datasetReference?: { byPath?: { path?: string } };
+        };
+        const rawPath = parsed.datasetReference?.byPath?.path;
+        if (rawPath) {
+          const expected = rawPath.split(/[/\\]/).pop() || "";
+          if (expected.toLowerCase() === modelName.toLowerCase()) {
+            pbirMatches.push(r);
+          }
+        }
+      } catch { /* skip malformed pbir */ }
+    }
+
+    // Within pbir matches, prefer the one whose report-name prefix
+    // matches the model's prefix — that's the "closest" pairing.
+    const pickFromList = (list: string[]): string | null => {
+      if (list.length === 0) return null;
+      const exact = list.find(r => {
+        const n = r.split("/").pop() || "";
+        return n.replace(/\.Report$/i, "").toLowerCase() === mPrefix.toLowerCase();
+      });
+      return exact || list[0];
+    };
+
+    const chosen = pickFromList(pbirMatches)
+      // If no pbir match, try pure prefix match across ALL reports.
+      || pickFromList(candidates.reports.filter(r => {
+        const n = r.split("/").pop() || "";
+        return n.replace(/\.Report$/i, "").toLowerCase() === mPrefix.toLowerCase();
+      }));
+
+    if (chosen) {
+      const radio = document.querySelector<HTMLInputElement>(
+        `input[name="br-pair-report"][value="${CSS.escape(chosen)}"]`,
+      );
+      if (radio) radio.checked = true;
+    }
+    // No match → leave whatever the user had selected (including
+    // "(none) — semantic model only"). They can still Load.
+  };
+
+  // Wire radio change events. Both directions auto-select the
+  // matching partner, then refresh the verdict. Model → Report uses
+  // pbir-first-then-prefix with prefix-exact preference inside pbir
+  // matches, since one model can pair with multiple reports.
   document.querySelectorAll<HTMLInputElement>('input[name="br-pair-report"]')
     .forEach(r => r.addEventListener("change", () => {
       autoSelectModelForReport(r.value);
       updateVerdict();
     }));
   document.querySelectorAll<HTMLInputElement>('input[name="br-pair-model"]')
-    .forEach(r => r.addEventListener("change", updateVerdict));
+    .forEach(r => r.addEventListener("change", () => {
+      autoSelectReportForModel(r.value);
+      updateVerdict();
+    }));
 
   updateVerdict();
 
