@@ -58,6 +58,68 @@ function toggleTheme(){
   setTheme(next);
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Release-notes popup — surfaces the latest `## [x.y.z]` entry from
+// the baked MARKDOWN_CHANGELOG as a modal. Replaces the dedicated
+// Docs-tab Changelog entry (removed) with a lighter-weight
+// "What's new" button on the landing overlay.
+// ─────────────────────────────────────────────────────────────────────
+
+/** Extract just the latest release block from the concatenated
+ *  changelog: from the first `## [` header to the next one (or EOF).
+ *  Returns the full block including the header. Empty string if the
+ *  MD doesn't have any release headers. */
+function extractLatestRelease(md: string): string {
+  if (!md) return "";
+  const first = md.indexOf("\n## [");
+  if (first < 0) return "";
+  const start = first + 1;
+  const next = md.indexOf("\n## [", start + 1);
+  const end = next < 0 ? md.length : next;
+  // Strip any trailing `---` separator from the concat.
+  return md.slice(start, end).replace(/\n+---\s*$/, "").trim();
+}
+
+function showChangelogPopup(): void {
+  const md = extractLatestRelease(MARKDOWN_CHANGELOG || "");
+  const body = md
+    ? mdRender(md)
+    : '<p style="color:var(--text-muted)">No release notes available.</p>';
+
+  // Remove any pre-existing popup before mounting a new one.
+  const existing = document.getElementById("wn-modal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "wn-modal";
+  modal.className = "wn-modal";
+  modal.innerHTML = `
+    <div class="wn-backdrop" data-action="close-whats-new"></div>
+    <div class="wn-card" role="dialog" aria-modal="true" aria-label="What's new in this build">
+      <button type="button" class="wn-close" data-action="close-whats-new" aria-label="Close">×</button>
+      <div class="wn-body md-rendered">${body}</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  // Focus the close button for accessibility.
+  const closeBtn = modal.querySelector<HTMLButtonElement>(".wn-close");
+  if (closeBtn) closeBtn.focus();
+  // Dismiss on Escape.
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape") { closeChangelogPopup(); }
+  };
+  document.addEventListener("keydown", onKey);
+  (modal as HTMLElement & { __escHandler?: (e: KeyboardEvent) => void }).__escHandler = onKey;
+}
+
+function closeChangelogPopup(): void {
+  const modal = document.getElementById("wn-modal");
+  if (!modal) return;
+  const handler = (modal as HTMLElement & { __escHandler?: (e: KeyboardEvent) => void }).__escHandler;
+  if (handler) document.removeEventListener("keydown", handler);
+  modal.remove();
+}
+
 // Colourise every .lineage-dax block that hasn't been highlighted
 // yet. Safe to call repeatedly — DaxHighlight.highlightElement is
 // idempotent via a __daxHighlighted flag, and we filter on the
@@ -207,6 +269,8 @@ document.addEventListener('click', function(e){
     case 'unused-filter':   toggleUnused(d.entity); break;
     case 'theme':           toggleTheme(); break;
     case 'theme-set':       setTheme(d.themeName || 'dark'); break;
+    case 'show-whats-new':  showChangelogPopup(); break;
+    case 'close-whats-new': closeChangelogPopup(); break;
     case 'reload':          location.reload(); break;
     case 'md-expand-all':   expandAllDetails(); break;
     case 'md-collapse-all': collapseAllDetails(); break;
@@ -1384,7 +1448,6 @@ function currentMd(){
     case "pages":        return MARKDOWN_PAGES;
     case "index":        return MARKDOWN_INDEX;
     case "improvements": return MARKDOWN_IMPROVEMENTS;
-    case "changelog":    return MARKDOWN_CHANGELOG;
     default:             return MARKDOWN;
   }
 }
@@ -1398,13 +1461,12 @@ function currentMdFilename(){
   else if(activeMd==="pages")        suffix="-pages.md";
   else if(activeMd==="index")        suffix="-index.md";
   else if(activeMd==="improvements") suffix="-improvements.md";
-  else if(activeMd==="changelog")    return "CHANGELOG.md";    // project-level, no report prefix
   return REPORT_NAME+suffix;
 }
 
 function switchMd( which: any) {
   activeMd=which;
-  var ids=["model","datadict","measures","functions","calcgroups","sources","pages","index","improvements","changelog"];
+  var ids=["model","datadict","measures","functions","calcgroups","sources","pages","index","improvements"];
   ids.forEach(function(id: any){
     var el=document.getElementById("md-tab-"+id);
     if(el)el.classList.toggle("active",which===id);

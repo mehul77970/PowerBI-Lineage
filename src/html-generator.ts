@@ -278,7 +278,6 @@ export function generateHTML(
         <button class="filter-btn" id="md-tab-pages" data-action="md-tab" data-md="pages">Pages</button>
         <button class="filter-btn" id="md-tab-improvements" data-action="md-tab" data-md="improvements">Improvements</button>
         <button class="filter-btn" id="md-tab-index" data-action="md-tab" data-md="index">Index</button>
-        <button class="filter-btn" id="md-tab-changelog" data-action="md-tab" data-md="changelog" title="Project changelog — what's new in the tool itself">Changelog</button>
       </div>
       <div style="flex:1"></div>
       <div style="display:flex;gap:4px">

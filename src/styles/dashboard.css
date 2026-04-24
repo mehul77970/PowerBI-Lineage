@@ -445,6 +445,42 @@
   .has-tip::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border);pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000}
   .has-tip:hover::after,.has-tip:hover::before{opacity:1}
   .summary .stat.has-tip:first-child::after{left:0;transform:none}
+
+  /* ── What's-new release popup ─────────────────────────────────────
+     Modal surfaced from the landing-overlay "✨ What's new" button
+     (and reusable from any data-action="show-whats-new" control).
+     Renders the latest release block from the baked MARKDOWN_CHANGELOG.
+     Structure: full-viewport backdrop + centred card. Backdrop click
+     + Escape key + close button all dismiss. Body uses .md-rendered
+     so it picks up the same MD styling as the Docs tab. */
+  .wn-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .wn-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .wn-card {
+    position: relative; z-index: 1;
+    max-width: min(720px, 92vw);
+    max-height: 80vh;
+    background: var(--tooltip-bg);
+    color: var(--text);
+    border: 1px solid var(--tooltip-border);
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .wn-close {
+    position: absolute; top: 10px; right: 12px;
+    width: 32px; height: 32px;
+    background: transparent; border: 0;
+    color: var(--text-dim);
+    font-size: 22px; line-height: 1; cursor: pointer;
+    border-radius: 6px;
+    transition: background .12s, color .12s;
+  }
+  .wn-close:hover { background: var(--row-hover); color: var(--text); }
+  .wn-body { padding: 32px 28px 28px; overflow-y: auto; line-height: 1.5; }
+  .wn-body > :first-child { margin-top: 0; }
+  [data-theme="blupulse"] .wn-backdrop { background: rgba(7,10,26,0.65); }
+  [data-theme="light"] .wn-backdrop { background: rgba(15,23,42,0.40); }
   .summary .stat.has-tip:first-child::before{left:24px}
   .summary .stat.has-tip:last-child::after{left:auto;right:0;transform:none}
   .summary .stat.has-tip:last-child::before{left:auto;right:24px;transform:none}

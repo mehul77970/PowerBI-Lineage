@@ -296,6 +296,46 @@ const overlayStyles = `
   .br-trust span { white-space: nowrap; }
   .br-trust .br-lock { color: #10B981; }
 
+  /* Secondary action row below the trust chips — "What's new" on
+     the left (opens the release-notes popup), repo link on the
+     right. Ghost buttons so they don't compete with the primary
+     CTAs above. */
+  .br-links {
+    margin-top: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px;
+  }
+  .br-ghost-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #94A3B8;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color .12s, border-color .12s, background .12s;
+  }
+  .br-ghost-btn:hover {
+    color: #E2E8F0;
+    border-color: rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.03);
+  }
+  .br-ghost-btn--link { display: inline-block; }
+  [data-theme="light"] .br-ghost-btn {
+    border-color: rgba(15,23,42,0.12); color: #475569;
+  }
+  [data-theme="light"] .br-ghost-btn:hover {
+    border-color: rgba(15,23,42,0.3); color: #0F172A;
+    background: rgba(15,23,42,0.03);
+  }
+  [data-theme="blupulse"] .br-ghost-btn:hover {
+    border-color: rgba(139,92,246,0.4);
+    background: rgba(139,92,246,0.08);
+    color: #E2E8F0;
+  }
+
   .br-status {
     margin-top: 18px;
     font-size: 12px;
@@ -458,6 +498,11 @@ const overlayHtml = `
       <span>194 tests</span>
       <span>·</span>
       <span>Zero runtime deps</span>
+    </div>
+
+    <div class="br-links">
+      <button type="button" class="br-ghost-btn" data-action="show-whats-new" title="What's new in this build">✨ What's new</button>
+      <a class="br-ghost-btn br-ghost-btn--link" href="https://github.com/jonathan-pap/PowerBI-Lineage" target="_blank" rel="noopener">View on GitHub →</a>
     </div>
 
     <div id="br-status" class="br-status" aria-live="polite"></div>
