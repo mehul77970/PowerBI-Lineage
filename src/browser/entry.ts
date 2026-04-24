@@ -160,8 +160,8 @@ async function pickAndLoad(): Promise<void> {
     return;
   }
 
-  // ── One-step path (current behaviour): user picked a parent
-  // containing both folders. Walk, find the .Report, proceed.
+  // ── Parent-pick path: walker reads everything, then we scan for
+  // .Report + .SemanticModel candidates.
   setStatus(`Reading ${pickedName}…`);
   let files: Map<string, string>;
   try {
@@ -172,7 +172,31 @@ async function pickAndLoad(): Promise<void> {
   }
   // eslint-disable-next-line no-console
   console.log(`[entry] Walker read ${files.size} text files under /virt/${pickedName}`);
-  await processFiles(files, pickedName, /*fromSample=*/ false);
+
+  const candidates = scanPairCandidates(files, pickedName);
+  // eslint-disable-next-line no-console
+  console.log(`[entry] Pair scan: ${candidates.reports.length} report(s), ${candidates.semanticModels.length} model(s)`);
+
+  // Fast path: exactly one Report + one SemanticModel AND the pair
+  // validates. No selection UI, no extra click — just auto-load.
+  if (candidates.reports.length === 1 && candidates.semanticModels.length === 1) {
+    const verdict = validatePair(files, candidates.reports[0], candidates.semanticModels[0]);
+    if (verdict.kind === "paired") {
+      await processFiles(files, pickedName, /*fromSample=*/ false);
+      return;
+    }
+  }
+
+  // Anything else → pair-picker UI. Zero candidates = error message.
+  // Multiple candidates or mismatch = user picks explicitly.
+  if (candidates.reports.length === 0 && candidates.semanticModels.length === 0) {
+    setStatus(
+      `No PBIP content found in "${pickedName}". Pick a folder that contains a .Report folder, a .SemanticModel folder, or both.`,
+      "error",
+    );
+    return;
+  }
+  showPairPicker(files, pickedName, candidates);
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -309,6 +333,371 @@ function showStep2Prompt(
       await processFiles(firstFiles, "__pbip", /*fromSample=*/ false);
     });
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Parent-pick pair-picker — user picks a parent folder; we enumerate
+// all `.Report` + `.SemanticModel` subfolders, let them choose which
+// pair to load (or model-only), and validate the selection before
+// enabling Load.
+// ─────────────────────────────────────────────────────────────────────
+
+interface PairCandidates {
+  /** Top-level .Report dirs as virtual paths under /virt/<pickedName>/ */
+  reports: string[];
+  /** Top-level .SemanticModel dirs, same shape */
+  semanticModels: string[];
+}
+
+/**
+ * Scan the VFS map for every `*.Report` and `*.SemanticModel`
+ * directory and return them as full virtual paths. We look at all
+ * depths (some users nest projects under a workspace folder), then
+ * dedupe — each unique dir appears once.
+ */
+function scanPairCandidates(
+  files: Map<string, string>,
+  pickedName: string,
+): PairCandidates {
+  const rootPrefix = `/virt/${pickedName}/`;
+  const reports = new Set<string>();
+  const models = new Set<string>();
+  for (const key of files.keys()) {
+    if (!key.startsWith(rootPrefix)) continue;
+    const parts = key.slice(rootPrefix.length).split("/");
+    for (let i = 0; i < parts.length; i++) {
+      const seg = parts[i];
+      const fullPath = rootPrefix + parts.slice(0, i + 1).join("/");
+      if (/\.Report$/i.test(seg)) reports.add(fullPath);
+      else if (/\.SemanticModel$/i.test(seg)) models.add(fullPath);
+    }
+  }
+  // Sort by name so the picker renders alphabetically.
+  const byBasename = (a: string, b: string): number =>
+    (a.split("/").pop() || "").localeCompare(b.split("/").pop() || "");
+  return {
+    reports: [...reports].sort(byBasename),
+    semanticModels: [...models].sort(byBasename),
+  };
+}
+
+type PairVerdict =
+  | { kind: "paired"; reason: "pbir" | "prefix"; message: string }
+  | { kind: "mismatch"; expected: string; message: string };
+
+/**
+ * Decide whether a given .Report / .SemanticModel pair belongs
+ * together. Three-tier:
+ *   1. pbir pointer in <report>/definition.pbir resolves to the
+ *      selected .SemanticModel → authoritative match
+ *   2. Filename prefixes match (training.Report ↔ training.SemanticModel)
+ *      → heuristic match
+ *   3. Neither → hard mismatch; caller disables Load.
+ */
+function validatePair(
+  files: Map<string, string>,
+  reportPath: string,
+  semanticPath: string,
+): PairVerdict {
+  const reportName = reportPath.split("/").pop() || "";
+  const modelName = semanticPath.split("/").pop() || "";
+  const reportPrefix_ = reportName.replace(/\.Report$/i, "");
+  const modelPrefix = modelName.replace(/\.SemanticModel$/i, "");
+
+  // Tier 1: pbir authoritative pointer
+  const pbirKey = reportPath + "/definition.pbir";
+  const pbirContent = files.get(pbirKey);
+  if (pbirContent) {
+    try {
+      const parsed = JSON.parse(pbirContent) as {
+        datasetReference?: { byPath?: { path?: string } };
+      };
+      const rawPath = parsed.datasetReference?.byPath?.path;
+      if (rawPath) {
+        // The pbir path is relative; extract just the final segment
+        // (basename) since the selected .SemanticModel is known by
+        // name, not by a cross-picker path.
+        const expectedModel = rawPath.split(/[/\\]/).pop() || "";
+        if (expectedModel.toLowerCase() === modelName.toLowerCase()) {
+          return {
+            kind: "paired",
+            reason: "pbir",
+            message: `Report paired with this model (via pbir)`,
+          };
+        }
+        return {
+          kind: "mismatch",
+          expected: expectedModel,
+          message: `Report's pbir points to "${expectedModel}", not "${modelName}".`,
+        };
+      }
+    } catch {
+      /* malformed pbir — fall through to prefix match */
+    }
+  }
+
+  // Tier 2: prefix heuristic
+  if (reportPrefix_ && modelPrefix &&
+      reportPrefix_.toLowerCase() === modelPrefix.toLowerCase()) {
+    return {
+      kind: "paired",
+      reason: "prefix",
+      message: `Prefix match — assumed paired`,
+    };
+  }
+
+  // Tier 3: mismatch
+  return {
+    kind: "mismatch",
+    expected: reportPrefix_ ? `${reportPrefix_}.SemanticModel` : "",
+    message: reportPrefix_
+      ? `"${reportName}" doesn't match "${modelName}" — expected "${reportPrefix_}.SemanticModel".`
+      : `"${reportName}" and "${modelName}" don't appear to be paired.`,
+  };
+}
+
+const NONE_VALUE = "__none";
+const escForAttr = (s: string): string => s.replace(/[&<>"']/g, c => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}[c]!));
+
+/**
+ * Render the pair-picker overlay. Radio groups for .Report and
+ * .SemanticModel; live validation below the lists drives the
+ * Load button's enabled state.
+ */
+function showPairPicker(
+  files: Map<string, string>,
+  pickedName: string,
+  candidates: PairCandidates,
+): void {
+  const card = document.querySelector(".br-card");
+  if (!card) {
+    setStatus("Internal error: overlay card missing.", "error");
+    return;
+  }
+  const originalHtml = card.innerHTML;
+
+  const nameOnly = (p: string): string => p.split("/").pop() || "";
+
+  // Pre-select the default pair: first report + matching model (or
+  // first model if no match), or "(none)" for the report when there
+  // are no reports at all.
+  let defaultReport: string = candidates.reports[0] || NONE_VALUE;
+  let defaultModel: string = candidates.semanticModels[0] || "";
+  if (defaultReport !== NONE_VALUE && candidates.semanticModels.length > 1) {
+    // Try to find a prefix-matching model
+    const rName = nameOnly(defaultReport);
+    const rPrefix = rName.replace(/\.Report$/i, "");
+    const match = candidates.semanticModels.find(m => {
+      const mName = nameOnly(m);
+      return mName.replace(/\.SemanticModel$/i, "").toLowerCase() === rPrefix.toLowerCase();
+    });
+    if (match) defaultModel = match;
+  }
+
+  const reportRadios = [
+    ...candidates.reports.map(p => {
+      const n = nameOnly(p);
+      return `<label class="br-radio"><input type="radio" name="br-pair-report" value="${escForAttr(p)}"${p === defaultReport ? " checked" : ""}>${escForAttr(n)}</label>`;
+    }),
+    `<label class="br-radio br-radio--none"><input type="radio" name="br-pair-report" value="${NONE_VALUE}"${defaultReport === NONE_VALUE ? " checked" : ""}>(none — semantic model only)</label>`,
+  ].join("");
+
+  const modelRadios = candidates.semanticModels.map(p => {
+    const n = nameOnly(p);
+    return `<label class="br-radio"><input type="radio" name="br-pair-model" value="${escForAttr(p)}"${p === defaultModel ? " checked" : ""}>${escForAttr(n)}</label>`;
+  }).join("") || `<p class="br-empty">No .SemanticModel folder found under "${escForAttr(pickedName)}".</p>`;
+
+  card.innerHTML = `
+    <h1>Power BI Documenter</h1>
+    <p class="br-lede" style="margin:8px 0 20px">Choose what to document from <code>${escForAttr(pickedName)}</code>.</p>
+
+    <div class="br-pair-picker">
+      <div class="br-pair-col">
+        <h3>Report</h3>
+        ${reportRadios}
+      </div>
+      <div class="br-pair-col">
+        <h3>Semantic Model</h3>
+        ${modelRadios}
+      </div>
+    </div>
+
+    <div id="br-pair-verdict" class="br-pair-verdict" aria-live="polite"></div>
+
+    <div class="br-ctas">
+      <button id="br-pair-cancel" class="br-btn" type="button"
+              style="background:transparent;color:#CBD5E1;border:1px solid rgba(255,255,255,0.18);">
+        Cancel
+      </button>
+      <button id="br-pair-load" class="br-btn" type="button"
+              style="background:#F59E0B;color:#0B0D11;">
+        Load
+      </button>
+    </div>
+  `;
+
+  const verdictEl = document.getElementById("br-pair-verdict");
+  const loadBtn = document.getElementById("br-pair-load") as HTMLButtonElement | null;
+  const cancelBtn = document.getElementById("br-pair-cancel");
+
+  const getSelected = (): { reportPath: string | null; modelPath: string } => {
+    const r = document.querySelector<HTMLInputElement>('input[name="br-pair-report"]:checked');
+    const m = document.querySelector<HTMLInputElement>('input[name="br-pair-model"]:checked');
+    const rVal = r?.value || NONE_VALUE;
+    return {
+      reportPath: rVal === NONE_VALUE ? null : rVal,
+      modelPath: m?.value || "",
+    };
+  };
+
+  const updateVerdict = (): void => {
+    if (!verdictEl || !loadBtn) return;
+    const sel = getSelected();
+
+    // Must have a model selected
+    if (!sel.modelPath) {
+      verdictEl.innerHTML = `<span class="br-v-error">Select a semantic model to continue.</span>`;
+      loadBtn.disabled = true;
+      return;
+    }
+
+    // Model-only mode: no report selected
+    if (sel.reportPath === null) {
+      verdictEl.innerHTML = `<span class="br-v-info">Model-only mode — pages and usage stats will be empty.</span>`;
+      loadBtn.disabled = false;
+      return;
+    }
+
+    // Full mode: validate pair
+    const verdict = validatePair(files, sel.reportPath, sel.modelPath);
+    if (verdict.kind === "paired") {
+      verdictEl.innerHTML = `<span class="br-v-ok">✓ ${escForAttr(verdict.message)}</span>`;
+      loadBtn.disabled = false;
+    } else {
+      verdictEl.innerHTML = `<span class="br-v-error">✗ ${escForAttr(verdict.message)} Pick a matching pair, or set Report to "(none)" for model-only.</span>`;
+      loadBtn.disabled = true;
+    }
+  };
+
+  // Wire radio change events
+  document.querySelectorAll<HTMLInputElement>('input[name="br-pair-report"], input[name="br-pair-model"]')
+    .forEach(r => r.addEventListener("change", updateVerdict));
+
+  updateVerdict();
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      card.innerHTML = originalHtml;
+      rewireLandingButtons();
+      setStatus("Cancelled. Pick a different folder.");
+    });
+  }
+
+  if (loadBtn) {
+    loadBtn.addEventListener("click", async () => {
+      const sel = getSelected();
+      if (!sel.modelPath || loadBtn.disabled) return;
+
+      setStatus("Loading selection…");
+      // eslint-disable-next-line no-console
+      console.log(`[entry] Pair picker: report="${sel.reportPath || "(none)"}", model="${sel.modelPath}"`);
+
+      // Filter the VFS to only the selected pair's files, remount
+      // under a synthetic `/virt/__pbip/` parent so processFiles'
+      // pickedName is stable regardless of the original parent name.
+      const filtered = filterAndRemount(files, sel.reportPath, sel.modelPath);
+
+      if (sel.reportPath === null) {
+        // Model-only: synthesize an empty .Report shell so the parser
+        // can still run. data-builder calls findSemanticModelPath then
+        // scanReportBindings — without a .Report folder the second
+        // call explodes, so we manufacture a stub report with no
+        // pages/visuals. Done here (browser) so CLI stays untouched.
+        installModelOnlyShim(filtered, sel.modelPath);
+      }
+
+      await processFiles(filtered, "__pbip", /*fromSample=*/ false);
+    });
+  }
+}
+
+/**
+ * Keep only files under the selected Report + SemanticModel paths,
+ * and remap them under `/virt/__pbip/<basename>/…` so the parser's
+ * sibling scan finds them as peers regardless of the parent name.
+ */
+function filterAndRemount(
+  files: Map<string, string>,
+  reportPath: string | null,
+  modelPath: string,
+): Map<string, string> {
+  const reportPrefix = reportPath ? reportPath + "/" : null;
+  const modelPrefix = modelPath + "/";
+  const reportBase = reportPath ? reportPath.split("/").pop() || "" : "";
+  const modelBase = modelPath.split("/").pop() || "";
+  const out = new Map<string, string>();
+
+  for (const [key, val] of files) {
+    if (reportPrefix && key.startsWith(reportPrefix)) {
+      const rest = key.slice(reportPrefix.length);
+      out.set(`/virt/__pbip/${reportBase}/${rest}`, val);
+    } else if (key.startsWith(modelPrefix)) {
+      const rest = key.slice(modelPrefix.length);
+      out.set(`/virt/__pbip/${modelBase}/${rest}`, val);
+    }
+  }
+  return out;
+}
+
+/**
+ * Model-only mode shim: the parser's `buildFullData()` calls both
+ * `findSemanticModelPath` AND `scanReportBindings`. Without a
+ * .Report the latter would throw. We fabricate a minimal .Report
+ * folder with an empty pages directory so everything resolves, and
+ * the resulting FullData has zero pages/visuals — exactly what
+ * "model-only" means.
+ *
+ * The synthesised .Report is named after the model's prefix so
+ * findSemanticModelPath's prefix-matching still resolves cleanly.
+ */
+function installModelOnlyShim(
+  files: Map<string, string>,
+  modelPath: string,
+): void {
+  const modelBase = modelPath.split("/").pop() || "";
+  const prefix = modelBase.replace(/\.SemanticModel$/i, "") || "model-only";
+  const reportBase = `${prefix}.Report`;
+
+  files.set(`/virt/__pbip/${reportBase}/definition.pbir`, JSON.stringify({
+    version: "1.0",
+    datasetReference: { byPath: { path: `../${modelBase}` } },
+  }));
+  // Empty pages list — scanReportBindings yields zero pages/visuals.
+  files.set(`/virt/__pbip/${reportBase}/definition/pages/pages.json`, JSON.stringify({
+    pageOrder: [],
+    activePageName: "",
+    $schema: "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  }));
+  files.set(`/virt/__pbip/${reportBase}/report.json`, JSON.stringify({
+    $schema: "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.2.0/schema.json",
+    resourcePackages: [],
+  }));
+}
+
+/**
+ * Re-attach click handlers after the overlay card's innerHTML has
+ * been rebuilt (either by Cancel-out of the pair picker or by the
+ * "Load another" header button). Idempotent — if buttons aren't
+ * present yet, we silently do nothing.
+ */
+function rewireLandingButtons(): void {
+  const p = pickButton();
+  if (p && isFsaSupported()) p.addEventListener("click", () => { void pickAndLoad(); });
+  else if (p) p.disabled = true;
+  const s = sampleButton();
+  if (s) s.addEventListener("click", () => { void loadSample(); });
 }
 
 /**

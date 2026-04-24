@@ -182,6 +182,55 @@ const overlayStyles = `
   #br-sample:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
   #br-sample:disabled { color: #6B7280; cursor: not-allowed; border-color: rgba(255,255,255,0.08); }
 
+  /* ── Pair picker (parent-pick flow) ─────────────────────────── */
+  .br-pair-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 14px 0 18px;
+    text-align: left;
+  }
+  .br-pair-col {
+    padding: 14px 14px 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .br-pair-col h3 {
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94A3B8;
+  }
+  .br-radio {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 2px;
+    font-size: 13px;
+    color: #E2E8F0;
+    cursor: pointer;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .br-radio:hover { color: #F9FAFB; }
+  .br-radio input[type="radio"] { margin-top: 3px; accent-color: #F59E0B; flex-shrink: 0; }
+  .br-radio--none { color: #94A3B8; font-style: italic; }
+  .br-empty { color: #F87171; font-size: 12px; margin: 6px 2px; }
+
+  .br-pair-verdict {
+    min-height: 22px;
+    margin: 6px 0 14px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    text-align: left;
+  }
+  .br-v-ok    { color: #22C55E; }
+  .br-v-info  { color: #94A3B8; }
+  .br-v-error { color: #F87171; }
+
   .br-trust {
     margin: 4px 0 0;
     font-size: 11.5px;
