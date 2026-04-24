@@ -2,7 +2,13 @@
   :root{
     --bg:#0B0D11;--surface:#1A1D27;--surface-alt:#12141A;--surface-deep:#12141C;--surface-center:#14161C;
     --border:#2A2D3A;--border-soft:#1E2028;--border-row:#1A1D27;
-    --text:#F8FAFC;--text-body:#E2E8F0;--text-muted:#94A3B8;--text-dim:#7A8595;--text-faint:#5E6A7B;--text-fainter:#4A5566;
+    /* Dim tiers bumped for legibility. The prior values (#7A8595 /
+       #5E6A7B / #4A5566) were too dark on neutral-black for small
+       (12px) text — data-table cells, inline metadata, chip values.
+       New ramp preserves the hierarchy (text > text-body > muted >
+       dim > faint > fainter) while shifting each non-primary tier
+       about 30 lumens lighter. */
+    --text:#F8FAFC;--text-body:#E2E8F0;--text-muted:#94A3B8;--text-dim:#8796A8;--text-faint:#6C7A8E;--text-fainter:#566273;
     --row-hover:#20242F;--hover-border:#475569;
     --chip-dep-bg:rgba(139,92,246,.1);--chip-dep-bd:rgba(139,92,246,.2);--chip-dep-tx:#A78BFA;--chip-dep-hover:rgba(139,92,246,.2);
     --chip-used-bg:rgba(59,130,246,.1);--chip-used-bd:rgba(59,130,246,.15);--chip-used-tx:#93C5FD;

@@ -1393,10 +1393,19 @@ function __loadBrowserData(opts: {
     if (typeof opts.markdown.improvementsMd === "string") MARKDOWN_IMPROVEMENTS = opts.markdown.improvementsMd;
   }
 
-  // Refresh the banner text baked at build time (report name +
-  // "Last scan …" timestamp). Harmless if selectors don't match.
+  // Refresh every piece of chrome baked at build time that shows the
+  // report name or timestamp. Two distinct header layouts exist:
+  //   • `.header-sub` — the big "Usage Map | <name>" heading at the
+  //     top-left of the page (the one users actually see).
+  //   • `.rb-report` — a secondary bar below it, present in some
+  //     layouts, hidden in others. Updated too for resilience.
+  // Silent-no-op if a selector isn't in the current layout.
+  const headerSubEl = document.querySelector<HTMLElement>(".header-sub");
+  if (headerSubEl) headerSubEl.textContent = opts.reportName;
   const reportEl = document.querySelector<HTMLElement>(".rb-report");
   if (reportEl) reportEl.textContent = opts.reportName;
+  const tsEl = document.querySelector<HTMLElement>(".timestamp");
+  if (tsEl) tsEl.textContent = "Generated: " + opts.generatedAt;
   const timerEl = document.querySelector<HTMLElement>(".rb-center .timer");
   if (timerEl) timerEl.textContent = "Last scan " + opts.generatedAt;
   document.title = opts.reportName + " — Power BI Documenter";
