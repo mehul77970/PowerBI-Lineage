@@ -1147,6 +1147,43 @@ function renderSources(){
       '</div>';
   }
 
+  // Physical-source index — aggregate external-source → model-table →
+  // visual table. Sits above the native-queries / M-steps / raw-M
+  // cards so the reader sees "what sources exist + who consumes them"
+  // before drilling into individual partitions.
+  var psIndex: any[] = Array.isArray(DATA.physicalSourceIndex) ? DATA.physicalSourceIndex : [];
+  var psBlock = "";
+  if (psIndex.length > 0) {
+    var psRows = psIndex.map(function(e: any){
+      var s = e.source || {};
+      var tlabel = e.tables.length <= 3
+        ? e.tables.map(function(n: string){ return '<code style="font-size:11px">'+escHtml(n)+'</code>'; }).join(", ")
+        : '<code style="font-size:11px">'+escHtml(e.tables[0])+'</code>, <code style="font-size:11px">'+escHtml(e.tables[1])+'</code> <span style="color:var(--text-faint)">+'+(e.tables.length-2)+' more</span>';
+      return '<tr>'+
+        '<td><span class="dep-chip" style="background:rgba(99,102,241,.12);color:#818CF8;border-color:rgba(99,102,241,.25);font-size:10.5px">'+escHtml(s.kind||"—")+'</span></td>'+
+        '<td style="color:var(--text);font-size:12px">'+escHtml(s.server||"—")+'</td>'+
+        '<td style="color:var(--text-muted);font-size:12px">'+escHtml(s.database||"—")+'</td>'+
+        '<td style="color:var(--text-muted);font-size:12px">'+escHtml(s.schema||"—")+'</td>'+
+        '<td style="color:var(--text);font-size:12px;font-weight:500">'+escHtml(s.name||"—")+'</td>'+
+        '<td style="font-size:12px">'+tlabel+'</td>'+
+        '<td style="text-align:right;color:var(--text-muted);font-size:12px">'+e.visualCount+'</td>'+
+        '<td style="text-align:right;color:var(--text-muted);font-size:12px">'+e.pageCount+'</td>'+
+      '</tr>';
+    }).join("");
+    psBlock =
+      '<div class="page-card">'+
+        '<div class="page-header" style="cursor:default"><div style="flex:1">'+
+          '<div class="page-name" style="font-size:14px">Physical-source index · '+psIndex.length+' source'+(psIndex.length===1?'':'s')+'</div>'+
+          '<div style="font-size:11px;color:var(--text-dim);margin-top:2px">Unique external coordinates extracted from M bodies. Answers "what breaks if this source goes away?"</div>'+
+        '</div></div>'+
+        '<div style="padding:0 18px 14px">'+
+          '<table class="data-table" style="font-size:12px"><thead><tr>'+
+            '<th>Kind</th><th>Server / Host</th><th>Database</th><th>Schema / Folder</th><th>Table / File</th><th>Model tables</th><th style="text-align:right">Visuals</th><th style="text-align:right">Pages</th>'+
+          '</tr></thead><tbody>'+psRows+'</tbody></table>'+
+        '</div>'+
+      '</div>';
+  }
+
   // Native queries — collect every partition with `nativeQuery` populated.
   // These are the hand-written SQL statements that actually run against
   // the source (`Value.NativeQuery(...)` or `Sql.Database(..., [Query=…])`),
@@ -1169,7 +1206,7 @@ function renderSources(){
         '<div style="padding:10px 18px;border-top:1px solid var(--border-subtle)">'+
           '<div style="font-weight:600;font-size:13px;color:var(--text)">'+escHtml(nq.table)+'</div>'+
           subtitle+
-          '<pre style="margin:8px 0 0;padding:10px 12px;background:var(--surface-deep,var(--surface));border:1px solid var(--border-subtle);border-radius:6px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);font-size:12px;line-height:1.5;overflow-x:auto;white-space:pre;color:var(--text)">'+escHtml(nq.sql)+'</pre>'+
+          '<pre style="margin:8px 0 0;padding:10px 12px;background:var(--surface-deep,var(--surface));border:1px solid var(--border-subtle);border-radius:6px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text)">'+escHtml(nq.sql)+'</pre>'+
         '</div>'
       );
     }).join("");
@@ -1272,7 +1309,7 @@ function renderSources(){
           '<summary style="cursor:pointer;font-weight:600;font-size:13px;color:var(--text);padding:4px 0">'+
             escHtml(r.name)+subtitle+
           '</summary>'+
-          '<pre style="margin:8px 0 4px;padding:10px 12px;background:var(--surface-deep,var(--surface));border:1px solid var(--border-subtle);border-radius:6px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);font-size:12px;line-height:1.5;overflow-x:auto;white-space:pre;color:var(--text)">'+escHtml(r.m)+'</pre>'+
+          '<pre style="margin:8px 0 4px;padding:10px 12px;background:var(--surface-deep,var(--surface));border:1px solid var(--border-subtle);border-radius:6px;font-family:var(--font-mono,ui-monospace,SFMono-Regular,Consolas,monospace);font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:var(--text)">'+escHtml(r.m)+'</pre>'+
         '</details>'
       );
     }).join("");
@@ -1288,6 +1325,7 @@ function renderSources(){
 
   var sourcesFooter='<div class="panel-footer"><div class="left">'+
     tablesWithSources.length+' source tables'+
+    (psIndex.length>0?' · '+psIndex.length+' physical source'+(psIndex.length===1?'':'s'):'')+
     (nativeQueryRows.length>0?' · '+nativeQueryRows.length+' native quer'+(nativeQueryRows.length===1?'y':'ies'):'')+
     (tablesWithSteps.length>0?' · '+tablesWithSteps.length+' with M-steps':'')+
     (rawMTables.length>0?' · '+rawMTables.length+' with raw M':'')+
@@ -1297,7 +1335,7 @@ function renderSources(){
     host.innerHTML=modelPropsCard+'<div style="text-align:center;padding:40px 20px;color:var(--text-faint);font-size:13px">No partition or expression information found in this model.</div>'+sourcesFooter;
     return;
   }
-  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+nativeQueryBlock+mStepsBlock+rawMBlock+sourcesFooter;
+  host.innerHTML=modelPropsCard+summary+exprBlock+perTableBlock+psBlock+nativeQueryBlock+mStepsBlock+rawMBlock+sourcesFooter;
 }
 
 function renderRelationships(){

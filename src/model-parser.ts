@@ -100,6 +100,14 @@ export interface RawPartition {
    * anything longer is truncated with a trailing marker.
    */
   mExpression: string;
+  /**
+   * External data-source coordinates extracted from the M body, when
+   * the connector shape is recognisable. `null` for in-memory
+   * (`Table.FromRows`), composite-model proxies, and custom connectors
+   * we haven't patterned. Downstream aggregation builds the physical-
+   * source index from this field.
+   */
+  physicalSource: PhysicalSource | null;
 }
 
 /** Upper bound on the M body we ship to the client, per partition.
@@ -107,11 +115,33 @@ export interface RawPartition {
  *  auto-generated blobs (huge inline CSV via `Table.FromRows`) truncate. */
 const M_EXPRESSION_CAP = 10_000;
 
+/**
+ * Remove the common leading-whitespace block from every non-empty line.
+ * TMDL partition source bodies come in with three tabs of leading
+ * indent (the partition → source → body nesting); preserving that
+ * verbatim creates ugly left-margin gutter in the client's raw-M
+ * preview and forces horizontal scroll. Dedenting restores a
+ * zero-indent baseline while preserving *relative* indentation inside
+ * the M body.
+ */
+function dedentMBody(m: string): string {
+  const lines = m.split("\n");
+  let minIndent = Infinity;
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const match = line.match(/^[\t ]*/);
+    const indent = match ? match[0].length : 0;
+    if (indent < minIndent) minIndent = indent;
+  }
+  if (minIndent === 0 || minIndent === Infinity) return m;
+  return lines.map(line => line.length >= minIndent && line.slice(0, minIndent).trim() === "" ? line.slice(minIndent) : line).join("\n");
+}
+
 function capMExpression(m: string): string {
   if (!m) return "";
-  const trimmed = m.trim();
-  if (trimmed.length <= M_EXPRESSION_CAP) return trimmed;
-  return trimmed.substring(0, M_EXPRESSION_CAP) + `\n\n… (truncated — ${trimmed.length - M_EXPRESSION_CAP} more chars)`;
+  const dedented = dedentMBody(m).trim();
+  if (dedented.length <= M_EXPRESSION_CAP) return dedented;
+  return dedented.substring(0, M_EXPRESSION_CAP) + `\n\n… (truncated — ${dedented.length - M_EXPRESSION_CAP} more chars)`;
 }
 
 export interface RawHierarchyLevel {
@@ -589,6 +619,135 @@ function readQueryOption(m: string): string {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Physical-source extractor — map a partition's M body down to the
+// concrete external coordinates (server · database · schema · table /
+// file path). Lets the Sources tab answer the data-engineer question
+// "what upstream source does this model table come from?" without the
+// reader having to read raw M.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface PhysicalSource {
+  /** Connector kind label — "SQL Server", "BigQuery", "Parquet", "CSV", … */
+  kind: string;
+  /** Server / host / cluster root. Empty for file-based sources. */
+  server: string;
+  /** Database / catalog. For BigQuery, the project ID. Empty for files. */
+  database: string;
+  /** Schema / namespace. For BigQuery, the dataset. For files, the parent folder. */
+  schema: string;
+  /** Table / item / filename (with extension for files). */
+  name: string;
+}
+
+function splitPath(path: string): { folder: string; file: string } {
+  const normalised = path.replace(/\\/g, "/");
+  const idx = normalised.lastIndexOf("/");
+  if (idx < 0) return { folder: "", file: path };
+  return { folder: normalised.substring(0, idx), file: normalised.substring(idx + 1) };
+}
+
+function extractSqlStyle(m: string): PhysicalSource | null {
+  // `<Cluster>.Database(...)` or `<Cluster>.Databases(...)` with a
+  // server + optional db pair. Captures Sql, Snowflake, PostgreSQL,
+  // Oracle, MySql, Databricks, AmazonRedshift, etc. — any cluster
+  // whose entry point is `.Database(server, db[, opts])`.
+  const dbMatch = m.match(/\b([A-Z][A-Za-z0-9]*)\.(Database|Databases|DataSource)\s*\(\s*"([^"]*)"(?:\s*,\s*"([^"]*)")?/);
+  if (!dbMatch) return null;
+  const cluster = dbMatch[1];
+  const server = dbMatch[3] || "";
+  const db = dbMatch[4] || "";
+  // Follow-up: schema/item navigation. Schema/Item order can swap.
+  const navA = m.match(/\{\s*\[\s*Schema\s*=\s*"([^"]+)"\s*,\s*Item\s*=\s*"([^"]+)"/);
+  const navB = m.match(/\{\s*\[\s*Item\s*=\s*"([^"]+)"\s*,\s*Schema\s*=\s*"([^"]+)"/);
+  const schema = navA?.[1] || navB?.[2] || "";
+  const name = navA?.[2] || navB?.[1] || "";
+  return { kind: `${cluster}`, server, database: db, schema, name };
+}
+
+function extractBigQueryStyle(m: string): PhysicalSource | null {
+  if (!/GoogleBigQuery\.Database|\bBigQuery\.Database/.test(m)) return null;
+  // BigQuery navigation is a three-step chain of `{[Name="x",Kind="Schema|Table"]}`.
+  // The very first Name lookup (or the entry-point argument to
+  // `GoogleBigQuery.Database("project")`) is the project.
+  let project = "";
+  const bqArgMatch = m.match(/GoogleBigQuery\.Database\s*\(\s*"([^"]+)"/);
+  if (bqArgMatch) project = bqArgMatch[1];
+
+  let dataset = "";
+  let table = "";
+  const nameRefs = [...m.matchAll(/\{\s*\[\s*Name\s*=\s*"([^"]+)"(?:\s*,\s*Kind\s*=\s*"([^"]+)")?[^}]*\}/g)];
+  for (const ref of nameRefs) {
+    const n = ref[1];
+    const k = ref[2] || "";
+    if (k === "Schema") dataset = n;
+    else if (k === "Table") table = n;
+    else if (!project) project = n;
+  }
+  return { kind: "BigQuery", server: "GoogleBigQuery", database: project, schema: dataset, name: table };
+}
+
+function extractFileStyle(m: string): PhysicalSource | null {
+  // Wrapped form — `Csv.Document(File.Contents("path"))` / `Excel.Workbook(...)`.
+  const wrapped = m.match(/\b(Csv|Excel|Parquet|Json|Xml|Html|Pdf)\.(Document|Workbook|Table|Tables)\s*\(\s*File\.Contents\s*\(\s*"([^"]+)"/);
+  if (wrapped) {
+    const parts = splitPath(wrapped[3]);
+    const kindMap: Record<string, string> = {
+      Csv: "CSV", Excel: "Excel", Parquet: "Parquet", Json: "JSON",
+      Xml: "XML", Html: "HTML", Pdf: "PDF",
+    };
+    return { kind: kindMap[wrapped[1]] || wrapped[1], server: "", database: "", schema: parts.folder, name: parts.file };
+  }
+  // Bare `File.Contents("path")` — kind unknown, still worth extracting.
+  const bare = m.match(/\bFile\.Contents\s*\(\s*"([^"]+)"/);
+  if (bare) {
+    const parts = splitPath(bare[1]);
+    return { kind: "File", server: "", database: "", schema: parts.folder, name: parts.file };
+  }
+  return null;
+}
+
+function extractWebStyle(m: string): PhysicalSource | null {
+  const web = m.match(/\bWeb\.Contents\s*\(\s*"([^"]+)"/);
+  if (!web) return null;
+  try {
+    const url = new URL(web[1]);
+    return { kind: "Web", server: url.hostname, database: "", schema: "", name: url.pathname || "/" };
+  } catch {
+    return { kind: "Web", server: "", database: "", schema: "", name: web[1] };
+  }
+}
+
+function extractSharePointStyle(m: string): PhysicalSource | null {
+  const sp = m.match(/\bSharePoint\.(Files|Tables|Contents)\s*\(\s*"([^"]+)"/);
+  if (!sp) return null;
+  try {
+    const url = new URL(sp[2]);
+    return { kind: "SharePoint", server: url.hostname, database: "", schema: url.pathname, name: "" };
+  } catch {
+    return { kind: "SharePoint", server: "", database: "", schema: "", name: sp[2] };
+  }
+}
+
+/**
+ * Best-effort extraction of the external source coordinates from a
+ * partition's M body. Tries connector shapes in most-common-first
+ * order; returns `null` when nothing recognisable is found (typical
+ * for in-memory `Table.FromRows` "Enter Data" partitions and composite
+ * AnalysisServices proxies, neither of which have a meaningful
+ * physical source).
+ */
+export function extractPhysicalSource(m: string): PhysicalSource | null {
+  if (!m) return null;
+  return (
+    extractSqlStyle(m) ||
+    extractBigQueryStyle(m) ||
+    extractFileStyle(m) ||
+    extractSharePointStyle(m) ||
+    extractWebStyle(m)
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // M-step parser — classify each step in a let…in body by its primary
 // verb so a data engineer can read a partition's ETL at a glance
 // without slogging through raw M.
@@ -989,6 +1148,7 @@ function extractTmdlPartitions(
     const { sourceType, sourceLocation } = inferSource(mCode);
     const nativeQuery = extractNativeQuery(mCode);
     const steps = parseMSteps(mCode);
+    const physicalSource = extractPhysicalSource(mCode);
     out.push({
       name: current.name,
       mode: current.mode || "import",
@@ -999,6 +1159,7 @@ function extractTmdlPartitions(
       nativeQuery,
       steps,
       mExpression: capMExpression(mCode),
+      physicalSource,
     });
     current = null;
     inSource = false;
@@ -1669,6 +1830,7 @@ function parseBimFile(bimPath: string): RawModel {
         nativeQuery: extractNativeQuery(mCode),
         steps: parseMSteps(mCode),
         mExpression: capMExpression(mCode),
+        physicalSource: extractPhysicalSource(mCode),
       };
     });
     // Hierarchies defined on the table.

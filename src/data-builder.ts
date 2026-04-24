@@ -1,4 +1,4 @@
-import { findSemanticModelPath, parseModel, ModelRelationship, ModelFunction, ModelCalcGroup, RawExpression, RawPartition, ModelProperties, RawHierarchy } from "./model-parser.js";
+import { findSemanticModelPath, parseModel, ModelRelationship, ModelFunction, ModelCalcGroup, RawExpression, RawPartition, ModelProperties, RawHierarchy, PhysicalSource } from "./model-parser.js";
 import { scanReportBindings } from "./report-scanner.js";
 
 export type ModelExpression = RawExpression;
@@ -230,6 +230,29 @@ export interface PageData {
   wireframeVisuals: WireframeVisual[];
 }
 
+/**
+ * One row in the physical-source index — a unique external data-source
+ * coordinate (server · database · schema · table or file path) with
+ * the model tables sourced from it and the report visuals that
+ * consume columns/measures from those tables.
+ *
+ * Answers the data-engineer question "what breaks if I drop this
+ * source?" — surface in the Sources tab and Sources.md.
+ */
+export interface PhysicalSourceEntry {
+  /** Composite key: `kind|server|database|schema|name`. Stable across builds. */
+  key: string;
+  /** Extracted coordinates. */
+  source: PhysicalSource;
+  /** Model tables whose partition points at this physical source. */
+  tables: string[];
+  /** Number of distinct (page, visual) pairs consuming columns/measures
+   *  from the tables above. Zero means no report-side usage. */
+  visualCount: number;
+  /** Number of distinct report pages touched. */
+  pageCount: number;
+}
+
 export interface FullData {
   measures: ModelMeasure[];
   columns: ModelColumn[];
@@ -239,6 +262,9 @@ export interface FullData {
   tables: TableData[];
   pages: PageData[];
   hiddenPages: string[];
+  /** Aggregated physical-source → model tables → visual-consumer index.
+   *  Empty when no partition has a recognisable physical source. */
+  physicalSourceIndex: PhysicalSourceEntry[];
   /** All pages in the report, including those with no data-field bindings
    *  (e.g., text-only pages, blank pages, tooltip/drillthrough pages that
    *  weren't populated yet). Needed so the Pages tab can show the full list. */
@@ -738,6 +764,63 @@ export function buildFullData(reportPath: string): FullData {
     };
   });
 
+  // ─────────────────────────────────────────────────────────────────────
+  // Physical-source index — aggregate each unique external source and
+  // the model tables / visuals consuming it. Answers "what breaks if
+  // this source goes away?" without the reader having to trace every
+  // partition by hand.
+  // ─────────────────────────────────────────────────────────────────────
+  const physicalKey = (s: PhysicalSource): string =>
+    [s.kind, s.server, s.database, s.schema, s.name].join("|");
+
+  const psIndex = new Map<string, { source: PhysicalSource; tables: Set<string> }>();
+  for (const t of tables) {
+    for (const p of t.partitions) {
+      if (!p.physicalSource) continue;
+      const k = physicalKey(p.physicalSource);
+      if (!psIndex.has(k)) psIndex.set(k, { source: p.physicalSource, tables: new Set() });
+      psIndex.get(k)!.tables.add(t.name);
+    }
+  }
+
+  // Build a usage map from model table name → set of "page|visual" keys.
+  // Union of each column's and measure's usedIn[] bindings.
+  const usageByTable = new Map<string, Set<string>>();
+  const pagesByTable = new Map<string, Set<string>>();
+  const track = (table: string, usedIn: BindingRef[]): void => {
+    if (!usageByTable.has(table)) usageByTable.set(table, new Set());
+    if (!pagesByTable.has(table)) pagesByTable.set(table, new Set());
+    for (const u of usedIn) {
+      usageByTable.get(table)!.add(`${u.pageName}|${u.visualTitle}`);
+      pagesByTable.get(table)!.add(u.pageName);
+    }
+  };
+  for (const c of columns) track(c.table, c.usedIn);
+  for (const m of measures) track(m.table, m.usedIn);
+
+  const physicalSourceIndex: PhysicalSourceEntry[] = [];
+  for (const [key, entry] of psIndex) {
+    const visuals = new Set<string>();
+    const pageSet = new Set<string>();
+    for (const tname of entry.tables) {
+      for (const k of usageByTable.get(tname) || []) visuals.add(k);
+      for (const p of pagesByTable.get(tname) || []) pageSet.add(p);
+    }
+    physicalSourceIndex.push({
+      key,
+      source: entry.source,
+      tables: [...entry.tables].sort(),
+      visualCount: visuals.size,
+      pageCount: pageSet.size,
+    });
+  }
+  // Sort: most-used first, then by kind + name for stability.
+  physicalSourceIndex.sort((a, b) => {
+    if (b.visualCount !== a.visualCount) return b.visualCount - a.visualCount;
+    if (b.tables.length !== a.tables.length) return b.tables.length - a.tables.length;
+    return a.key.localeCompare(b.key);
+  });
+
   return {
     measures,
     columns,
@@ -748,6 +831,7 @@ export function buildFullData(reportPath: string): FullData {
     pages,
     hiddenPages,
     allPages,
+    physicalSourceIndex,
     expressions: rawModel.expressions,
     compatibilityLevel: rawModel.compatibilityLevel,
     modelProperties: rawModel.modelProperties,

@@ -1620,7 +1620,7 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.1 Native queries ────────────────────────────────────────────────────
+  // ── 2.2 Native queries ────────────────────────────────────────────────────
   // Surface the actual SQL that each `Value.NativeQuery(...)` or
   // `Sql.Database(..., [Query="..."])` partition runs against its source.
   // Power BI's folded query output is machine-generated — the hand-written
@@ -1634,7 +1634,7 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     }
   }
   if (nativeQueries.length > 0) {
-    lines.push(`## 2.1 Native queries`);
+    lines.push(`## 2.2 Native queries`);
     lines.push("");
     lines.push(`**${nativeQueries.length}** partition${nativeQueries.length === 1 ? "" : "s"} execute${nativeQueries.length === 1 ? "s" : ""} a hand-written SQL query instead of relying on folded M. The SQL below is exactly what the source database receives.`);
     lines.push("");
@@ -1654,13 +1654,37 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.2 M-step breakdown ──────────────────────────────────────────────────
+  // ── 2.1 Physical-source index ─────────────────────────────────────────────
+  // Aggregated external-source → model-table → visual-consumer table.
+  // Separate from §2 (which groups by connector bucket) because the
+  // index answers "what breaks if this source goes away?" rather than
+  // "which connectors do we use?".
+  if (data.physicalSourceIndex && data.physicalSourceIndex.length > 0) {
+    lines.push(`## 2.1 Physical-source index`);
+    lines.push("");
+    lines.push(`**${data.physicalSourceIndex.length}** unique external source${data.physicalSourceIndex.length === 1 ? "" : "s"} detected from M bodies. Columns show the fully-qualified coordinate, the model tables sourced from it, and the downstream report reach.`);
+    lines.push("");
+    lines.push("| Kind | Server / Host | Database | Schema / Folder | Table / File | Model tables | Visuals | Pages |");
+    lines.push("|------|---------------|----------|-----------------|--------------|:------------:|:------:|:-----:|");
+    for (const entry of data.physicalSourceIndex) {
+      const s = entry.source;
+      const tList = entry.tables.length <= 3
+        ? entry.tables.map(n => `\`${esc(n)}\``).join(", ")
+        : `\`${esc(entry.tables[0])}\`, \`${esc(entry.tables[1])}\` (+${entry.tables.length - 2} more)`;
+      lines.push(`| ${esc(s.kind) || "—"} | ${esc(s.server) || "—"} | ${esc(s.database) || "—"} | ${esc(s.schema) || "—"} | ${esc(s.name) || "—"} | ${tList} | ${entry.visualCount} | ${entry.pageCount} |`);
+    }
+    lines.push("");
+    lines.push("---");
+    lines.push("");
+  }
+
+  // ── 2.3 M-step breakdown ──────────────────────────────────────────────────
   // Per-partition ETL walk — each step classified by its primary verb so
   // the review eye can jump straight to filter / join / custom steps
   // without reading raw M.
   const withSteps = regularTables.filter(t => t.partitions.some(p => p.steps && p.steps.length > 0));
   if (withSteps.length > 0) {
-    lines.push(`## 2.2 M-step breakdown`);
+    lines.push(`## 2.3 M-step breakdown`);
     lines.push("");
     lines.push(`**${withSteps.length}** table${withSteps.length === 1 ? "" : "s"} with a \`let … in\` M body. Each step below is classified by its dominant M function so you can spot filter / join / custom steps without reading raw M.`);
     lines.push("");
@@ -1687,13 +1711,13 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.3 Raw M expressions ─────────────────────────────────────────────────
+  // ── 2.4 Raw M expressions ─────────────────────────────────────────────────
   // The verbatim M body for every partition, in a collapsible per-table
   // list. Kept separate from the step breakdown so reviewers who just
   // want the classified flow aren't buried in raw Power Query.
   const withM = regularTables.filter(t => t.partitions.some(p => p.mExpression && p.mExpression.trim().length > 0));
   if (withM.length > 0) {
-    lines.push(`## 2.3 Raw M expressions`);
+    lines.push(`## 2.4 Raw M expressions`);
     lines.push("");
     lines.push(`Verbatim M body for every partition that has one. Truncated at 10 KB per partition; the dashboard's Sources tab shows the same content inline.`);
     lines.push("");
