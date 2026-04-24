@@ -514,7 +514,33 @@ function renderPageWireframe(p){
     const color=WF_COLORS[v.category]||"#6B7280";
     const pos=v.position||{x:0,y:0,width:100,height:60};
     const label=v.title||v.type||"";
-    const tip=v.type+' · '+(v.title||'(untitled)')+' · '+v.category;
+
+    // Build the hover tooltip: visual metadata + field-well bindings
+    // grouped by bucket role (Values, Category, Y, Rows, etc.).
+    // Filters were already excluded upstream in data-builder. Cap at
+    // 12 bindings to keep the tooltip legible on dense visuals; any
+    // overflow gets a "+N more" line.
+    let tip = v.type + ' · ' + (v.title || '(untitled)') + ' · ' + v.category;
+    const bindings = v.bindings || [];
+    if (bindings.length > 0) {
+      const MAX_SHOWN = 12;
+      const shown = bindings.slice(0, MAX_SHOWN);
+      const byRole: { [role: string]: string[] } = {};
+      for (const b of shown) {
+        const fqn = (b.fieldTable ? b.fieldTable + '[' : '[') + b.fieldName + ']';
+        (byRole[b.bindingRole] = byRole[b.bindingRole] || []).push(fqn);
+      }
+      const lines = Object.keys(byRole).sort().map(role =>
+        role + ': ' + byRole[role].join(', '),
+      );
+      if (bindings.length > MAX_SHOWN) {
+        lines.push('+ ' + (bindings.length - MAX_SHOWN) + ' more');
+      }
+      tip += '\n\n' + lines.join('\n');
+    } else {
+      tip += '\n\nNo field-well bindings (decorative / text / empty).';
+    }
+
     const showLabels = ALWAYS_LABEL[v.category] ||
                        (pos.width >= MIN_W_FOR_LABEL && pos.height >= MIN_H_FOR_LABEL);
     const labelMarkup = showLabels

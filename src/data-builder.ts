@@ -629,6 +629,27 @@ export function buildFullData(reportPath: string): FullData {
   // tooltip/drillthrough scaffolds, etc.). Pages with bindings come from
   // `pageMap`; pages without bindings get a zero-binding stub from `allPages`
   // so they still appear in the Pages tab with the correct visualCount.
+  // Index field-well bindings per visual so we can surface them in
+  // the wireframe tooltip. "Field well" = queryState projections,
+  // explicitly NOT filters. Conditional-format object roles ride
+  // along — distinguishing them reliably requires tracking the
+  // binding source through report-scanner, which would be a bigger
+  // change. Good enough in practice: formatting bindings are rare
+  // and their roles (e.g. "dataLabels") read naturally alongside
+  // field-well bucket roles (e.g. "Values").
+  const fieldWellByVisual = new Map<string, Array<{ fieldName: string; fieldTable: string; bindingRole: string }>>();
+  for (const b of bindings) {
+    if (b.bindingRole === "Filter") continue;                // explicitly excluded per user ask
+    const key = `${b.pageName}|${b.visualId}`;
+    const list = fieldWellByVisual.get(key) || [];
+    list.push({
+      fieldName: b.fieldName,
+      fieldTable: b.tableName,
+      bindingRole: b.bindingRole,
+    });
+    fieldWellByVisual.set(key, list);
+  }
+
   // Pre-bucket scannedVisuals by pageName so the PageData builder
   // can pull just the visuals for each page without re-iterating.
   // Also resolve category and position here so the per-page build
@@ -644,6 +665,7 @@ export function buildFullData(reportPath: string): FullData {
       title: sv.visualTitle,
       category: cat,
       position: { ...sv.position },
+      bindings: fieldWellByVisual.get(`${sv.pageName}|${sv.visualId}`) || [],
     });
     wireframeByPage.set(sv.pageName, list);
   }
