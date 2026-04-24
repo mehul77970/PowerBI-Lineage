@@ -293,6 +293,10 @@ document.addEventListener('click', function(e){
     case 'sm-sort':         sourceMapSortBy(d.key); break;
     case 'sm-filter-type':  sourceMapSetFilterType(d.type); break;
     case 'sm-export-csv':   sourceMapExportCsv(); break;
+    // Per-tab CSV export — one entry per tab that has a dedicated table.
+    case 'export-measures-csv':       exportMeasuresCsv(); break;
+    case 'export-columns-csv':        exportColumnsCsv(); break;
+    case 'export-relationships-csv':  exportRelationshipsCsv(); break;
   }
 });
 
@@ -1346,7 +1350,13 @@ function renderRelationships(){
     rels.length+' relationships · '+activeCount+' active · '+inactiveCount+' inactive'+
     '</div></div>';
   if(!rels.length){document.getElementById("relationships-content")!.innerHTML='<div style="text-align:center;padding:40px;color:#6B7280">No relationships found in the model</div>'+relFooter;return;}
-  let h='<div class="table-wrap"><table class="data-table"><thead><tr><th>From Table</th><th>From Column</th><th></th><th>To Table</th><th>To Column</th><th>Cardinality</th><th>Filter</th><th>Status</th></tr></thead><tbody>';
+  // Tiny toolbar above the table for the Export CSV button. No search /
+  // filter for this tab (full list is small enough to scroll).
+  const relToolbar =
+    '<div style="display:flex;justify-content:flex-end;margin-bottom:10px">' +
+      '<button class="filter-btn" data-action="export-relationships-csv" title="Download the full relationship list as CSV">\u2913 CSV</button>' +
+    '</div>';
+  let h=relToolbar+'<div class="table-wrap"><table class="data-table"><thead><tr><th>From Table</th><th>From Column</th><th></th><th>To Table</th><th>To Column</th><th>Cardinality</th><th>Filter</th><th>Status</th></tr></thead><tbody>';
   for(const r of rels){
     const statusColor=r.isActive?'var(--clr-success)':'var(--text-faint)';
     const statusLabel=r.isActive?'Active':'Inactive';
@@ -1528,6 +1538,35 @@ function sourceMapSetFilterType( t: any) {
   sourceMapFilterType=(sourceMapFilterType===t?"":t);
   renderSourceMap();
 }
+// ─────────────────────────────────────────────────────────────────────
+// Shared CSV export helpers
+//
+// Single-source escape + download so every tab's Export CSV button
+// produces the same quoting rules (RFC 4180 — wrap fields containing
+// `"`, `,`, `\n`, or `\r` in quotes; double embedded quotes) and the
+// same UTF-8 + BOM behaviour. BOM is omitted — Excel on macOS handles
+// its absence fine and Windows Excel with a modern build does too;
+// including a BOM broke some downstream pandas / awk pipelines.
+// ─────────────────────────────────────────────────────────────────────
+function csvEscape(v: unknown): string {
+  const s = String(v == null ? "" : v);
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+function downloadCsv(filenameStem: string, headers: string[], rows: Array<Array<unknown>>): void {
+  const lines = [headers.join(",")];
+  for (const row of rows) lines.push(row.map(csvEscape).join(","));
+  const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = (REPORT_NAME || "report") + "-" + filenameStem + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
 function sourceMapExportCsv(){
   const rows=sourceMapRows();
   // Apply same filter+search as the current view so users export what they see
@@ -1541,22 +1580,59 @@ function sourceMapExportCsv(){
     }
     return true;
   });
-  const headers=["PBI Column","Table","Data Type","Mode","Source Type","Source Location","Hidden","Calculated"];
-  const csvEscape = (v: unknown): string => {
-    const s = String(v == null ? "" : v);
-    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-  const lines=[headers.join(",")];
-  for(const r of visible){
-    lines.push([r.column,r.table,r.dataType,r.mode,r.sourceType,r.sourceLocation,r.isHidden?"yes":"no",r.isCalculated?"yes":"no"].map(csvEscape).join(","));
-  }
-  const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download=(REPORT_NAME||"report")+"-source-map.csv";
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  downloadCsv(
+    "source-map",
+    ["PBI Column", "Table", "Data Type", "Mode", "Source Type", "Source Location", "Hidden", "Calculated"],
+    visible.map((r: any) => [r.column, r.table, r.dataType, r.mode, r.sourceType, r.sourceLocation, r.isHidden ? "yes" : "no", r.isCalculated ? "yes" : "no"]),
+  );
+}
+
+function exportMeasuresCsv(): void {
+  // Honour the current Measures-tab search + unused-filter so users
+  // export what they see in the table (matches sourceMapExportCsv UX).
+  const q = (searchTerms.measures || "").toLowerCase();
+  const rows = (DATA.measures || []).filter(function(m: any){
+    if (showUnusedOnly.measures && m.status !== "unused") return false;
+    if (q && !(m.name.toLowerCase().includes(q) || m.table.toLowerCase().includes(q)
+            || (m.daxExpression || "").toLowerCase().includes(q)
+            || (m.description || "").toLowerCase().includes(q))) return false;
+    return true;
+  });
+  downloadCsv(
+    "measures",
+    ["Measure", "Table", "Status", "Usage Count", "Page Count", "Display Folder", "Format String", "Description", "DAX"],
+    rows.map(function(m: any){
+      return [m.name, m.table, m.status, m.usageCount, m.pageCount, m.displayFolder || "", m.formatString || "", m.description || "", m.daxExpression || ""];
+    }),
+  );
+}
+
+function exportColumnsCsv(): void {
+  const q = (searchTerms.columns || "").toLowerCase();
+  const rows = (DATA.columns || []).filter(function(c: any){
+    if (showUnusedOnly.columns && c.status !== "unused") return false;
+    if (q && !(c.name.toLowerCase().includes(q) || c.table.toLowerCase().includes(q)
+            || (c.dataType || "").toLowerCase().includes(q))) return false;
+    return true;
+  });
+  downloadCsv(
+    "columns",
+    ["Column", "Table", "Data Type", "Status", "Usage Count", "Page Count", "Is Key", "Is Hidden", "Is Calculated", "Format String", "Display Folder", "Sort By Column", "Description"],
+    rows.map(function(c: any){
+      return [c.name, c.table, c.dataType, c.status, c.usageCount, c.pageCount, c.isKey ? "yes" : "no", c.isHidden ? "yes" : "no", c.isCalculated ? "yes" : "no", c.formatString || "", c.displayFolder || "", c.sortByColumn || "", c.description || ""];
+    }),
+  );
+}
+
+function exportRelationshipsCsv(): void {
+  const rows = DATA.relationships || [];
+  downloadCsv(
+    "relationships",
+    ["From Table", "From Column", "To Table", "To Column", "From Cardinality", "To Cardinality", "Cross Filter", "Active"],
+    rows.map(function(r: any){
+      return [r.fromTable, r.fromColumn, r.toTable, r.toColumn, r.fromCardinality, r.toCardinality, r.crossFilteringBehavior, r.isActive ? "yes" : "no"];
+    }),
+  );
 }
 
 function renderFunctions(){

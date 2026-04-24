@@ -238,6 +238,7 @@ export function generateHTML(
     <div class="search-row">
       <input class="search-input" placeholder="Search measures..." data-action="filter" data-entity="measures">
       <button class="filter-btn" id="btn-unused-m" data-action="unused-filter" data-entity="measures">Not on visual</button>
+      <button class="filter-btn" data-action="export-measures-csv" title="Download the current (filtered) measure list as CSV">⤓ CSV</button>
     </div>
     <div class="table-wrap"><table class="data-table"><thead><tr>
       <th data-action="sort" data-table="measures" data-key="name">Measure ↕</th><th data-action="sort" data-table="measures" data-key="table">Table ↕</th>
@@ -251,6 +252,7 @@ export function generateHTML(
     <div class="search-row">
       <input class="search-input" placeholder="Search columns..." data-action="filter" data-entity="columns">
       <button class="filter-btn" id="btn-unused-c" data-action="unused-filter" data-entity="columns">Not on visual</button>
+      <button class="filter-btn" data-action="export-columns-csv" title="Download the current (filtered) column list as CSV">⤓ CSV</button>
     </div>
     <div class="table-wrap"><table class="data-table"><thead><tr>
       <th data-action="sort" data-table="columns" data-key="name">Column ↕</th><th data-action="sort" data-table="columns" data-key="table">Table ↕</th>
