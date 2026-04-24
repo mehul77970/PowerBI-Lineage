@@ -14,6 +14,13 @@
     --chip-used-bg:rgba(59,130,246,.1);--chip-used-bd:rgba(59,130,246,.15);--chip-used-tx:#93C5FD;
     --code-name:#93C5FD;--code-type:#A78BFA;--code-punct:#475569;
     --accent:#F59E0B;
+    /* Tooltip background — must be opaque across every theme or the
+       page content behind (headers, other cards) bleeds through the
+       has-tip::after pseudo-element. Dark + light themes can reuse
+       their --surface values because those are solid; BluPulse
+       overrides this explicitly because its --surface is translucent. */
+    --tooltip-bg:#1A1D27;
+    --tooltip-border:#2A2D3A;
     --glass-bg:rgba(26,29,39,0.72);
     --glass-border:rgba(255,255,255,0.06);
     --glass-shadow:0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 30px rgba(0,0,0,0.35);
@@ -72,6 +79,8 @@
     --chip-used-bg:rgba(59,130,246,.08);--chip-used-bd:rgba(59,130,246,.25);--chip-used-tx:#1D4ED8;
     --code-name:#1D4ED8;--code-type:#6D28D9;--code-punct:#94A3B8;
     --accent:#D97706;
+    --tooltip-bg:#FFFFFF;
+    --tooltip-border:#E2E8F0;
     --glass-bg:rgba(255,255,255,0.80);
     --glass-border:rgba(15,23,42,0.06);
     --glass-shadow:0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
@@ -124,6 +133,11 @@
     --chip-used-bg:rgba(59,130,246,.14);--chip-used-bd:rgba(59,130,246,.40);--chip-used-tx:#BFDBFE;
     --code-name:#BFDBFE;--code-type:#C4B5FD;--code-punct:rgba(255,255,255,0.35);
     --accent:#8B5CF6;
+    /* Solid dark navy — overrides the default because --surface here
+       is translucent (rgba 4%) and would let underlying page content
+       bleed through tooltips. */
+    --tooltip-bg:#0B1030;
+    --tooltip-border:rgba(255,255,255,0.18);
     --glass-bg:rgba(11,16,48,0.72);
     --glass-border:rgba(255,255,255,0.10);
     --glass-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 12px 34px rgba(0,0,0,0.5);
@@ -427,7 +441,7 @@
   .field-name[data-desc]{cursor:help}
 
   .has-tip{position:relative;cursor:help}
-  .has-tip::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--surface);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:6px;font-size:11px;font-weight:400;white-space:normal;width:max-content;max-width:240px;text-align:left;pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.4);line-height:1.5;text-transform:none;letter-spacing:0}
+  .has-tip::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--tooltip-bg);color:var(--text);border:1px solid var(--tooltip-border);padding:8px 12px;border-radius:6px;font-size:11px;font-weight:400;white-space:normal;width:max-content;max-width:240px;text-align:left;pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.4);line-height:1.5;text-transform:none;letter-spacing:0}
   .has-tip::before{content:"";position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border);pointer-events:none;opacity:0;transition:opacity .15s;z-index:1000}
   .has-tip:hover::after,.has-tip:hover::before{opacity:1}
   .summary .stat.has-tip:first-child::after{left:0;transform:none}
