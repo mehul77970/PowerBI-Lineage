@@ -509,10 +509,18 @@ function showPairPicker(
     `<label class="br-radio br-radio--none"><input type="radio" name="br-pair-report" value="${NONE_VALUE}"${defaultReport === NONE_VALUE ? " checked" : ""}>(none — semantic model only)</label>`,
   ].join("");
 
-  const modelRadios = candidates.semanticModels.map(p => {
-    const n = nameOnly(p);
-    return `<label class="br-radio"><input type="radio" name="br-pair-model" value="${escForAttr(p)}"${p === defaultModel ? " checked" : ""}>${escForAttr(n)}</label>`;
-  }).join("") || `<p class="br-empty">No .SemanticModel folder found under "${escForAttr(pickedName)}".</p>`;
+  const modelRadios = [
+    ...candidates.semanticModels.map(p => {
+      const n = nameOnly(p);
+      return `<label class="br-radio"><input type="radio" name="br-pair-model" value="${escForAttr(p)}"${p === defaultModel ? " checked" : ""}>${escForAttr(n)}</label>`;
+    }),
+    // Symmetric "(none)" option for report-only mode. Required
+    // when the user wants to document pages + visuals from a
+    // .Report without the associated SemanticModel in reach, or
+    // for a report whose model lives in a shared workspace the
+    // user can't pick alongside.
+    `<label class="br-radio br-radio--none"><input type="radio" name="br-pair-model" value="${NONE_VALUE}"${defaultModel === "" ? " checked" : ""}>(none — report only)</label>`,
+  ].join("");
 
   card.innerHTML = `
     <h1>Power BI Documenter</h1>
@@ -547,13 +555,14 @@ function showPairPicker(
   const loadBtn = document.getElementById("br-pair-load") as HTMLButtonElement | null;
   const cancelBtn = document.getElementById("br-pair-cancel");
 
-  const getSelected = (): { reportPath: string | null; modelPath: string } => {
+  const getSelected = (): { reportPath: string | null; modelPath: string | null } => {
     const r = document.querySelector<HTMLInputElement>('input[name="br-pair-report"]:checked');
     const m = document.querySelector<HTMLInputElement>('input[name="br-pair-model"]:checked');
-    const rVal = r?.value || NONE_VALUE;
+    const rVal = r?.value || "";
+    const mVal = m?.value || "";
     return {
-      reportPath: rVal === NONE_VALUE ? null : rVal,
-      modelPath: m?.value || "",
+      reportPath: rVal === NONE_VALUE || rVal === "" ? null : rVal,
+      modelPath:  mVal === NONE_VALUE || mVal === "" ? null : mVal,
     };
   };
 
@@ -561,27 +570,37 @@ function showPairPicker(
     if (!verdictEl || !loadBtn) return;
     const sel = getSelected();
 
-    // Must have a model selected
-    if (!sel.modelPath) {
-      verdictEl.innerHTML = `<span class="br-v-error">Select a semantic model to continue.</span>`;
+    // Four possible states for the two radio groups:
+    //   1. both null       → nothing selected, Load off
+    //   2. model only      → existing model-only mode (pages empty)
+    //   3. report only     → NEW: report-only mode (model empty)
+    //   4. both selected   → validate pair, Load when paired
+    if (!sel.modelPath && !sel.reportPath) {
+      verdictEl.innerHTML = `<span class="br-v-error">Select at least one of Report or Semantic Model to continue.</span>`;
       loadBtn.disabled = true;
       return;
     }
 
-    // Model-only mode: no report selected
-    if (sel.reportPath === null) {
+    if (!sel.modelPath && sel.reportPath) {
+      verdictEl.innerHTML = `<span class="br-v-info">Report-only mode — model docs (tables, measures, columns, DAX) will be empty.</span>`;
+      loadBtn.disabled = false;
+      return;
+    }
+
+    if (sel.modelPath && !sel.reportPath) {
       verdictEl.innerHTML = `<span class="br-v-info">Model-only mode — pages and usage stats will be empty.</span>`;
       loadBtn.disabled = false;
       return;
     }
 
-    // Full mode: validate pair
-    const verdict = validatePair(files, sel.reportPath, sel.modelPath);
+    // Full mode: validate pair. At this point both paths are non-null
+    // (early returns above handled the three partial states).
+    const verdict = validatePair(files, sel.reportPath as string, sel.modelPath as string);
     if (verdict.kind === "paired") {
       verdictEl.innerHTML = `<span class="br-v-ok">✓ ${escForAttr(verdict.message)}</span>`;
       loadBtn.disabled = false;
     } else {
-      verdictEl.innerHTML = `<span class="br-v-error">✗ ${escForAttr(verdict.message)} Pick a matching pair, or set Report to "(none)" for model-only.</span>`;
+      verdictEl.innerHTML = `<span class="br-v-error">✗ ${escForAttr(verdict.message)} Pick a matching pair, or set either side to "(none)" for partial docs.</span>`;
       loadBtn.disabled = true;
     }
   };
@@ -667,7 +686,8 @@ function showPairPicker(
   if (loadBtn) {
     loadBtn.addEventListener("click", async () => {
       const sel = getSelected();
-      if (!sel.modelPath || loadBtn.disabled) return;
+      if (loadBtn.disabled) return;
+      if (!sel.modelPath && !sel.reportPath) return;
 
       // Keep --wide while the pair-picker HTML is still on screen —
       // if processFiles throws (parser error etc) the user stays in
@@ -676,20 +696,22 @@ function showPairPicker(
       // the user sees the narrow landing card again.
       setStatus("Loading selection…");
       // eslint-disable-next-line no-console
-      console.log(`[entry] Pair picker: report="${sel.reportPath || "(none)"}", model="${sel.modelPath}"`);
+      console.log(`[entry] Pair picker: report="${sel.reportPath || "(none)"}", model="${sel.modelPath || "(none)"}"`);
 
       // Filter the VFS to only the selected pair's files, remount
       // under a synthetic `/virt/__pbip/` parent so processFiles'
       // pickedName is stable regardless of the original parent name.
       const filtered = filterAndRemount(files, sel.reportPath, sel.modelPath);
 
-      if (sel.reportPath === null) {
-        // Model-only: synthesize an empty .Report shell so the parser
-        // can still run. data-builder calls findSemanticModelPath then
-        // scanReportBindings — without a .Report folder the second
-        // call explodes, so we manufacture a stub report with no
-        // pages/visuals. Done here (browser) so CLI stays untouched.
+      // Partial-mode shims: the parser (buildFullData → findSemantic-
+      // ModelPath + scanReportBindings) expects BOTH halves to exist.
+      // When one half isn't selected we synthesize a minimal empty
+      // stub for the missing side. Browser-only concern; CLI always
+      // has both halves on disk.
+      if (sel.reportPath === null && sel.modelPath !== null) {
         installModelOnlyShim(filtered, sel.modelPath);
+      } else if (sel.modelPath === null && sel.reportPath !== null) {
+        installReportOnlyShim(filtered, sel.reportPath);
       }
 
       await processFiles(filtered, "__pbip", /*fromSample=*/ false);
@@ -705,19 +727,19 @@ function showPairPicker(
 function filterAndRemount(
   files: Map<string, string>,
   reportPath: string | null,
-  modelPath: string,
+  modelPath: string | null,
 ): Map<string, string> {
   const reportPrefix = reportPath ? reportPath + "/" : null;
-  const modelPrefix = modelPath + "/";
+  const modelPrefix  = modelPath  ? modelPath  + "/" : null;
   const reportBase = reportPath ? reportPath.split("/").pop() || "" : "";
-  const modelBase = modelPath.split("/").pop() || "";
+  const modelBase  = modelPath  ? modelPath.split("/").pop()  || "" : "";
   const out = new Map<string, string>();
 
   for (const [key, val] of files) {
     if (reportPrefix && key.startsWith(reportPrefix)) {
       const rest = key.slice(reportPrefix.length);
       out.set(`/virt/__pbip/${reportBase}/${rest}`, val);
-    } else if (key.startsWith(modelPrefix)) {
+    } else if (modelPrefix && key.startsWith(modelPrefix)) {
       const rest = key.slice(modelPrefix.length);
       out.set(`/virt/__pbip/${modelBase}/${rest}`, val);
     }
@@ -758,6 +780,35 @@ function installModelOnlyShim(
     $schema: "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.2.0/schema.json",
     resourcePackages: [],
   }));
+}
+
+/**
+ * Report-only mode shim: user picked a .Report without a matching
+ * .SemanticModel (the model lives in a shared workspace they can't
+ * grant access to, for example). We synthesize a minimal empty
+ * .SemanticModel so the parser's findSemanticModelPath sibling-scan
+ * + parseModel calls resolve cleanly. Result: FullData has zero
+ * tables/measures/columns but populated pages/visuals — exactly
+ * what "report-only" means.
+ *
+ * parseModel routes to parseTmdlModel when definition/tables/ has
+ * any .tmdl file. We ship a single empty one; parseTmdlModel
+ * iterates and finds no `table X` declarations → empty tables[].
+ * parseTmdlDatabaseLevel + parseTmdlModelProperties both bail to
+ * defaults when their files don't exist, so no other stubs needed.
+ */
+function installReportOnlyShim(
+  files: Map<string, string>,
+  reportPath: string,
+): void {
+  const reportBase = reportPath.split("/").pop() || "";
+  const prefix = reportBase.replace(/\.Report$/i, "") || "report-only";
+  const modelBase = `${prefix}.SemanticModel`;
+
+  // Empty TMDL that causes parseTmdlModel to run and produce an
+  // empty RawModel. Comment-only so the file is valid TMDL.
+  files.set(`/virt/__pbip/${modelBase}/definition/tables/_empty.tmdl`,
+    "/// Empty placeholder — report-only mode\n");
 }
 
 /**
