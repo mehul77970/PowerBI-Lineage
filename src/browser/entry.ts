@@ -372,27 +372,17 @@ function applyToDashboard(
 // ─────────────────────────────────────────────────────────────────────
 
 function init(): void {
-  // Always enable the sample button — it's a same-origin fetch and
-  // doesn't depend on the File System Access API. Firefox/Safari
-  // users can still click it to see what the tool produces even
-  // though their browser can't run the folder-picker path.
+  // The sample button ships enabled — the sample-data.json is
+  // committed alongside this script, so it always deploys as a
+  // unit. If fetch fails at click-time (edge case: GitHub Pages
+  // CDN hiccup) loadSample() surfaces a clear error.
+  //
+  // Earlier versions of this code used a HEAD probe to conditionally
+  // enable the button. That introduced a race where a quick
+  // first-click happened before the probe finished, felt like
+  // "nothing happened". Always-enabled is simpler and more robust.
   const sBtn = sampleButton();
   if (sBtn) {
-    // Only enable if the baked sample manifest exists at build time.
-    // We test this cheaply with a HEAD/GET; if it 404s the button
-    // stays disabled with its existing "SOON" chip. Fire-and-forget.
-    void (async () => {
-      try {
-        const res = await fetch("./sample-data.json", { method: "HEAD", cache: "no-cache" });
-        if (res.ok) {
-          sBtn.disabled = false;
-          // Strip the "SOON" chip now that the sample is available.
-          const soon = sBtn.querySelector(".br-soon");
-          if (soon) soon.remove();
-          sBtn.title = "Load the bundled sample PBIP — runs entirely in-browser";
-        }
-      } catch { /* offline / CORS / 404 — button stays disabled */ }
-    })();
     sBtn.addEventListener("click", () => { void loadSample(); });
   }
 

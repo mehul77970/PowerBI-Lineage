@@ -181,17 +181,6 @@ const overlayStyles = `
   }
   #br-sample:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.03); }
   #br-sample:disabled { color: #6B7280; cursor: not-allowed; border-color: rgba(255,255,255,0.08); }
-  #br-sample .br-soon {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 7px;
-    background: rgba(245,158,11,0.14);
-    color: #FBBF24;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
 
   .br-trust {
     margin: 4px 0 0;
@@ -255,7 +244,7 @@ const overlayHtml = `
 
     <div class="br-ctas">
       <button id="br-pick" class="br-btn" type="button">Open folder</button>
-      <button id="br-sample" class="br-btn" type="button" disabled title="Sample report coming soon">Try a sample<span class="br-soon">soon</span></button>
+      <button id="br-sample" class="br-btn" type="button" title="Load the bundled sample PBIP — runs entirely in-browser">Try a sample</button>
     </div>
 
     <div class="br-trust">
