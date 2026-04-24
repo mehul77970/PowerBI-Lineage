@@ -477,6 +477,11 @@ function showPairPicker(
     return;
   }
   const originalHtml = card.innerHTML;
+  // Expand the overlay card so two columns of radios fit without
+  // wrapping folder names. Reverted on Cancel or after Load so the
+  // landing state (next time the overlay shows) is the narrow card
+  // again. processFiles hides the overlay outright on success.
+  card.classList.add("br-card--wide");
 
   const nameOnly = (p: string): string => p.split("/").pop() || "";
 
@@ -652,6 +657,7 @@ function showPairPicker(
 
   if (cancelBtn) {
     cancelBtn.addEventListener("click", () => {
+      card.classList.remove("br-card--wide");
       card.innerHTML = originalHtml;
       rewireLandingButtons();
       setStatus("Cancelled. Pick a different folder.");
@@ -663,6 +669,11 @@ function showPairPicker(
       const sel = getSelected();
       if (!sel.modelPath || loadBtn.disabled) return;
 
+      // Keep --wide while the pair-picker HTML is still on screen —
+      // if processFiles throws (parser error etc) the user stays in
+      // the picker with a sensible width. On success, processFiles
+      // hides the overlay, and reopenPicker resets --wide before
+      // the user sees the narrow landing card again.
       setStatus("Loading selection…");
       // eslint-disable-next-line no-console
       console.log(`[entry] Pair picker: report="${sel.reportPath || "(none)"}", model="${sel.modelPath}"`);
@@ -1050,6 +1061,10 @@ function init(): void {
  * had swapped them mid-pick) and clears any lingering status text.
  */
 function reopenPicker(): void {
+  // Reset the wide-card modifier from any previous pair-picker
+  // session so the landing card renders at the narrow default.
+  const card = document.querySelector(".br-card");
+  if (card) card.classList.remove("br-card--wide");
   // Restore the default CTA row — step-2 might have replaced it.
   const ctas = document.getElementById("br-ctas");
   if (ctas) {

@@ -110,6 +110,15 @@ const overlayStyles = `
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     text-align: center;
+    transition: max-width .18s ease;
+  }
+  /* Expanded state for the pair picker — wider card stops long
+     folder names from wrapping across the two radio columns.
+     Capped so the card doesn't span a 4K monitor; word-break in
+     .br-radio stays as the belt-and-braces fallback for truly
+     extreme names. */
+  .br-card.br-card--wide {
+    max-width: min(960px, 95vw);
   }
   .br-card h1 {
     margin: 0 0 4px;
