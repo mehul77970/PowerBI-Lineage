@@ -496,16 +496,29 @@ function renderPageWireframe(p){
   if(visuals.length===0){
     return '<div style="font-size:11px;color:var(--text-faint);padding:8px 0">No chart / card / slicer / table / map / AI visuals on this page.</div>';
   }
+  // Size thresholds — below these, skip inline text labels entirely
+  // to avoid overlap on dense dashboards (cards stacked inside
+  // wrappers etc.). Native SVG <title> hover tooltip still fires, so
+  // small visuals stay identifiable on mouseover. Matches user ask:
+  // "if the svg is to small we shld not include the text and only at
+  // mouse over".
+  const MIN_W_FOR_LABEL = 150;
+  const MIN_H_FOR_LABEL = 80;
+
   const nodes=visuals.map(v=>{
     const color=WF_COLORS[v.category]||"#6B7280";
     const pos=v.position||{x:0,y:0,width:100,height:60};
     const label=v.title||v.type||"";
     const tip=v.type+' · '+(v.title||'(untitled)')+' · '+v.category;
+    const showLabels = pos.width >= MIN_W_FOR_LABEL && pos.height >= MIN_H_FOR_LABEL;
+    const labelMarkup = showLabels
+      ? '<text class="wf-type" x="'+(pos.x+8)+'" y="'+(pos.y+14)+'" fill="'+color+'">'+escHtml(v.type)+'</text>'+
+        '<text class="wf-title" x="'+(pos.x+pos.width/2)+'" y="'+(pos.y+pos.height/2+4)+'" text-anchor="middle">'+escHtml(label)+'</text>'
+      : '';
     return '<g class="wf-visual">'+
       '<title>'+escAttr(tip)+'</title>'+
       '<rect x="'+pos.x+'" y="'+pos.y+'" width="'+pos.width+'" height="'+pos.height+'" rx="4" ry="4" fill="'+color+'" fill-opacity="0.20" stroke="'+color+'" stroke-width="1.5"/>'+
-      '<text class="wf-type" x="'+(pos.x+8)+'" y="'+(pos.y+14)+'" fill="'+color+'">'+escHtml(v.type)+'</text>'+
-      '<text class="wf-title" x="'+(pos.x+pos.width/2)+'" y="'+(pos.y+pos.height/2+4)+'" text-anchor="middle">'+escHtml(label)+'</text>'+
+      labelMarkup+
     '</g>';
   }).join("");
 
