@@ -29,44 +29,79 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 
 ## Tour
 
-### Measures, columns, tables — with lineage
+### Inspect the model
 
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots/02-measures.png" alt="Measures tab"></td>
+<td width="50%"><img src="docs/screenshots/06-measures.png" alt="Measures tab"></td>
+<td width="50%"><img src="docs/screenshots/04-columns.png" alt="Columns tab"></td>
+</tr>
+<tr>
+<td><b>Measures</b> — DAX dependencies, where-used per visual + page, direct/indirect/unused status, descriptions inline. CSV export honours filters.</td>
+<td><b>Columns</b> — types, usage counts, status, sortable + searchable. Same CSV export pattern.</td>
+</tr>
+<tr>
 <td width="50%"><img src="docs/screenshots/03-tables.png" alt="Tables tab"></td>
+<td width="50%"><img src="docs/screenshots/03-tablesB.png" alt="Tables tab — drill-down"></td>
 </tr>
 <tr>
-<td><b>Measures tab</b> — DAX dependencies, where-used per visual + page, direct/indirect/unused status, descriptions inline.</td>
-<td><b>Tables tab</b> — grouped by role (Fact / Dimension / Bridge / Calc group). Per-table stats for columns, measures, keys, FKs.</td>
-</tr>
-<tr>
-<td width="50%"><img src="docs/screenshots/04-lineage.png" alt="Lineage view"></td>
-<td width="50%"><img src="docs/screenshots/06-functions.png" alt="Functions tab with UDF fan-in"></td>
-</tr>
-<tr>
-<td><b>Click-to-trace lineage</b> — upstream DAX dependencies, source tables, functions. Downstream visuals + measures that feed into it.</td>
-<td><b>UDF reference</b> — parameters, body, and every measure that calls each function. Here: one UDF powering 53 measures.</td>
+<td><b>Tables</b> — grouped by role (Fact / Dimension / Bridge / Calc Group). Per-table stats for columns, measures, keys, FKs.</td>
+<td><b>Tables drill-down</b> — expand any table to see columns, measures, and per-relationship cardinality chips (<code>*:1</code>, <code>↔</code> for bidi).</td>
 </tr>
 </table>
 
-### Report layout — audited
+### Relationships, sources & lineage
 
 <table>
 <tr>
-<td width="55%"><img src="docs/screenshots/07-pages-layout.png" alt="Page layout SVG wireframe"></td>
-<td width="45%"><img src="docs/screenshots/08-pages-bindings.png" alt="Page visual bindings"></td>
+<td width="50%"><img src="docs/screenshots/05-relationships.png" alt="Relationships tab"></td>
+<td width="50%"><img src="docs/screenshots/02-sources.png" alt="Sources tab"></td>
 </tr>
 <tr>
-<td><b>SVG wireframe</b> — each page's visuals at true canvas positions. Charts, cards, slicers, tables, maps, AI visuals — shapes and buttons deliberately filtered.</td>
-<td><b>Per-visual bindings</b> — every measure + column each visual consumes, with type chips and chart-level breakdowns. Hover the wireframe for field-well tooltips.</td>
+<td><b>Relationships</b> — active + inactive, cardinality (one/many on each side), cross-filter direction (single → / both ↔). CSV export.</td>
+<td><b>Sources</b> — connection buckets, partition modes, <b>physical-source index</b> (what breaks if this source goes away?), hand-written SQL from <code>Value.NativeQuery</code>, M-step breakdown classifying every ETL step, raw M expressions on demand.</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/11-lineage.png" alt="Lineage view"></td>
+<td width="50%"><img src="docs/screenshots/10-Unused.png" alt="Unused tab"></td>
+</tr>
+<tr>
+<td><b>Click-to-trace lineage</b> — upstream DAX dependencies, source tables, functions. Downstream visuals + measures that feed into it.</td>
+<td><b>Unused</b> — orphan measures, dead-chain measures, indirect-use detection. Pairs with the Improvements audit's broken-reference detection.</td>
+</tr>
+</table>
+
+### Pages, functions, calc groups
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/09-pages.png" alt="Pages tab — overview"></td>
+<td width="50%"><img src="docs/screenshots/09-pagesB.png" alt="Pages tab — wireframe"></td>
+</tr>
+<tr>
+<td><b>Pages overview</b> — every page in the report with visual count, slicers, measure / column bindings.</td>
+<td><b>SVG wireframe</b> — each page's visuals at true canvas positions. Charts, cards, slicers, tables, maps — shapes and buttons deliberately filtered.</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/09-pagesC.png" alt="Pages tab — bindings"></td>
+<td width="50%"><img src="docs/screenshots/07-functions.png" alt="Functions tab"></td>
+</tr>
+<tr>
+<td><b>Per-visual bindings</b> — every measure + column each visual consumes, with type chips. Hover the wireframe for field-well tooltips.</td>
+<td><b>UDF reference</b> — parameters, body, and every measure that calls each function. Tabular 1702+.</td>
+</tr>
+<tr>
+<td width="50%" colspan="2" align="center"><img src="docs/screenshots/13-calcgroups.png" alt="Calc Groups tab" width="720"></td>
+</tr>
+<tr>
+<td colspan="2" align="center"><b>Calc Groups</b> — items, precedence, format-string expressions per item.</td>
 </tr>
 </table>
 
 ### Wiki-ready Markdown
 
 <p align="center">
-  <img src="docs/screenshots/05-docs-model.png" alt="Docs tab with Model technical specification" width="720">
+  <img src="docs/screenshots/12-modeldocuments.png" alt="Docs tab with Model technical specification" width="720">
 </p>
 
 Nine Markdown documents — paste-ready for ADO Wiki or GitHub, anchor-stable, Mermaid-native.
