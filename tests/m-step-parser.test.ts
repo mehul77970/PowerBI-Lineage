@@ -113,6 +113,20 @@ test("parseMSteps — navigation detected for `Source{[Item=...]}[Data]`", () =>
   assert.equal(steps[1].summary, "Sales");
 });
 
+test("parseMSteps — Table.Combine and List.Combine classify as 'union', not 'join'", () => {
+  // Composite-model entity partitions emit `Cubes = Table.Combine(...)`
+  // — that's a UNION/concat operation, not a join. Misclassifying as
+  // join was misleading every reader of those models.
+  const m = `let A = Foo, Cubes = Table.Combine({A, B, C}) in Cubes`;
+  const steps = parseMSteps(m);
+  assert.equal(steps[1].kind, "union");
+  assert.equal(steps[1].primaryFn, "Table.Combine");
+
+  const m2 = `let xs = List.Combine({L1, L2}) in xs`;
+  const s2 = parseMSteps(m2);
+  assert.equal(s2[0].kind, "union");
+});
+
 test("parseMSteps — Table.FromRows / #table() literal constructors are sources with their own primaryFn", () => {
   // Power BI's "Enter Data" feature generates
   // `Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(...))))`.

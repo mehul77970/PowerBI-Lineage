@@ -318,10 +318,21 @@ function mermaidFullModelErDiagram(data: FullData): string {
   // Mark keys as PK / FK per Mermaid's erDiagram syntax.
   for (const t of shownTables) {
     const id = erIdent(t.name);
-    const keyCols = t.columns.filter(c => c.isKey || c.isInferredPK);
-    const fkCols = t.columns.filter(c => c.isFK);
-    const otherCols = t.columns.filter(c => !c.isKey && !c.isInferredPK && !c.isFK);
-    // Keys first, then FKs, then the rest — up to the cap.
+    // A column can carry BOTH PK and FK flags (composite-key role-
+    // playing tables, junction tables). Bucket each column once and
+    // pick the highest-priority badge. Without dedupe the same column
+    // appeared twice in the entity block.
+    const seen = new Set<string>();
+    const keyCols: typeof t.columns = [];
+    const fkCols: typeof t.columns = [];
+    const otherCols: typeof t.columns = [];
+    for (const c of t.columns) {
+      if (seen.has(c.name)) continue;
+      seen.add(c.name);
+      if (c.isKey || c.isInferredPK) keyCols.push(c);
+      else if (c.isFK) fkCols.push(c);
+      else otherCols.push(c);
+    }
     const ordered = [...keyCols, ...fkCols, ...otherCols].slice(0, MAX_ER_COLUMNS);
     lines.push(`  ${id} {`);
     for (const c of ordered) {
@@ -1735,7 +1746,7 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
         .join(" · "));
     lines.push("");
   }
-  lines.push(`**How to read this:** §2 lists each data source bucket with the tables it feeds. §3 / §4 / §5 cover field parameters, composite-model proxies, and calc groups separately because they're not real "data sources" in the connection sense.`);
+  lines.push(`**How to read this:** the **Data Sources** section lists each connection bucket with the tables it feeds. **Field Parameters**, **Composite-Model Proxies**, and **Calculation Groups** cover those special-case tables separately because they're not real "data sources" in the connection sense. The **Physical-source index**, **Native queries**, **M-step breakdown**, and **Raw M expressions** sections drill into the actual external coordinates and ETL.`);
   lines.push("");
   lines.push("---");
   lines.push("");
@@ -1770,7 +1781,7 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.2 Native queries ────────────────────────────────────────────────────
+  // ── Native queries ────────────────────────────────────────────────────────
   // Surface the actual SQL that each `Value.NativeQuery(...)` or
   // `Sql.Database(..., [Query="..."])` partition runs against its source.
   // Power BI's folded query output is machine-generated — the hand-written
@@ -1784,7 +1795,7 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     }
   }
   if (nativeQueries.length > 0) {
-    lines.push(`## 2.2 Native queries`);
+    lines.push(`## Native queries`);
     lines.push("");
     lines.push(`**${nativeQueries.length}** partition${nativeQueries.length === 1 ? "" : "s"} execute${nativeQueries.length === 1 ? "s" : ""} a hand-written SQL query instead of relying on folded M. The SQL below is exactly what the source database receives.`);
     lines.push("");
@@ -1804,13 +1815,13 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.1 Physical-source index ─────────────────────────────────────────────
+  // ── Physical-source index ─────────────────────────────────────────────────
   // Aggregated external-source → model-table → visual-consumer table.
   // Separate from §2 (which groups by connector bucket) because the
   // index answers "what breaks if this source goes away?" rather than
   // "which connectors do we use?".
   if (data.physicalSourceIndex && data.physicalSourceIndex.length > 0) {
-    lines.push(`## 2.1 Physical-source index`);
+    lines.push(`## Physical-source index`);
     lines.push("");
     lines.push(`**${data.physicalSourceIndex.length}** unique external source${data.physicalSourceIndex.length === 1 ? "" : "s"} detected from M bodies. Columns show the fully-qualified coordinate, the model tables sourced from it, and the downstream report reach.`);
     lines.push("");
@@ -1828,28 +1839,86 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.3 M-step breakdown ──────────────────────────────────────────────────
+  // ── M-step breakdown ──────────────────────────────────────────────────────
   // Per-partition ETL walk — each step classified by its primary verb so
   // the review eye can jump straight to filter / join / custom steps
   // without reading raw M.
+  //
+  // Shape collapsing: composite-model fixtures (and any model where many
+  // tables share an identical entity-partition pattern) used to emit the
+  // same 3-row table N times, drowning the reader. We now group tables
+  // whose partitions share the exact same `kind:primaryFn` sequence and
+  // emit one representative table per shape, listing the member tables
+  // above it. Threshold of 3 — pairs stay as individual entries since
+  // dedupe overhead exceeds savings.
   const withSteps = regularTables.filter(t => t.partitions.some(p => p.steps && p.steps.length > 0));
   if (withSteps.length > 0) {
-    lines.push(`## 2.3 M-step breakdown`);
-    lines.push("");
-    lines.push(`**${withSteps.length}** table${withSteps.length === 1 ? "" : "s"} with a \`let … in\` M body. Each step below is classified by its dominant M function so you can spot filter / join / custom steps without reading raw M.`);
-    lines.push("");
+    type StepRow = { tableName: string; partitionName: string; steps: typeof withSteps[number]["partitions"][number]["steps"]; sigKey: string };
+    const rows: StepRow[] = [];
     for (const t of withSteps) {
       for (const p of t.partitions) {
         if (!p.steps || p.steps.length === 0) continue;
-        lines.push(`### \`${esc(t.name)}\``);
+        const sigKey = p.steps.map(s => `${s.kind}:${s.primaryFn}`).join("|");
+        rows.push({ tableName: t.name, partitionName: p.name || "", steps: p.steps, sigKey });
+      }
+    }
+    // Group by shape signature.
+    const byShape = new Map<string, StepRow[]>();
+    for (const r of rows) {
+      if (!byShape.has(r.sigKey)) byShape.set(r.sigKey, []);
+      byShape.get(r.sigKey)!.push(r);
+    }
+    const SHAPE_COLLAPSE_THRESHOLD = 3;
+    const collapsedShapes = [...byShape.entries()].filter(([, members]) => members.length >= SHAPE_COLLAPSE_THRESHOLD);
+    const collapsedSigs = new Set(collapsedShapes.map(([sig]) => sig));
+    const individualRows = rows.filter(r => !collapsedSigs.has(r.sigKey));
+
+    lines.push(`## M-step breakdown`);
+    lines.push("");
+    const collapsedTablesCount = collapsedShapes.reduce((a, [, m]) => a + m.length, 0);
+    if (collapsedShapes.length > 0) {
+      lines.push(`**${withSteps.length}** table${withSteps.length === 1 ? "" : "s"} with a \`let … in\` M body. ${collapsedTablesCount} share ${collapsedShapes.length === 1 ? "an" : `${collapsedShapes.length}`} identical ETL shape${collapsedShapes.length === 1 ? "" : "s"} (collapsed below). Each step is classified by its dominant M function.`);
+    } else {
+      lines.push(`**${withSteps.length}** table${withSteps.length === 1 ? "" : "s"} with a \`let … in\` M body. Each step is classified by its dominant M function.`);
+    }
+    lines.push("");
+
+    // Render collapsed shapes first — these are the "cohorts" the reader
+    // should see as a unit before individual outliers.
+    for (let shapeIdx = 0; shapeIdx < collapsedShapes.length; shapeIdx++) {
+      const [, members] = collapsedShapes[shapeIdx];
+      const tableList = members.map(m => `\`${esc(m.tableName)}\``).join(", ");
+      lines.push(`### Shape ${shapeIdx + 1} — ${members.length} tables follow this pipeline`);
+      lines.push("");
+      lines.push(`_Tables:_ ${tableList}`);
+      lines.push("");
+      // Steps from the first member are representative.
+      const sample = members[0].steps;
+      lines.push("| # | Step | Kind | Function |");
+      lines.push("|--:|------|:-----|----------|");
+      sample.forEach((s, i) => {
+        const fn = s.primaryFn ? `\`${esc(s.primaryFn)}\`` : "—";
+        lines.push(`| ${i + 1} | ${esc(s.name)} | \`${s.kind}\` | ${fn} |`);
+      });
+      lines.push("");
+    }
+
+    // Then individual tables with unique shapes.
+    if (individualRows.length > 0) {
+      if (collapsedShapes.length > 0) {
+        lines.push(`### Other tables — unique shapes`);
         lines.push("");
-        if (p.name && p.name !== t.name) {
-          lines.push(`_Partition: \`${esc(p.name)}\`_`);
+      }
+      for (const r of individualRows) {
+        lines.push(`#### \`${esc(r.tableName)}\``);
+        lines.push("");
+        if (r.partitionName && r.partitionName !== r.tableName) {
+          lines.push(`_Partition: \`${esc(r.partitionName)}\`_`);
           lines.push("");
         }
         lines.push("| # | Step | Kind | Function | Detail |");
         lines.push("|--:|------|:-----|----------|--------|");
-        p.steps.forEach((s, i) => {
+        r.steps.forEach((s, i) => {
           const fn = s.primaryFn ? `\`${esc(s.primaryFn)}\`` : "—";
           const detail = s.summary ? esc(s.summary) : "—";
           lines.push(`| ${i + 1} | ${esc(s.name)} | \`${s.kind}\` | ${fn} | ${detail} |`);
@@ -1861,13 +1930,13 @@ export function generateSourcesMd(data: FullData, reportName: string): string {
     lines.push("");
   }
 
-  // ── 2.4 Raw M expressions ─────────────────────────────────────────────────
+  // ── Raw M expressions ─────────────────────────────────────────────────────
   // The verbatim M body for every partition, in a collapsible per-table
   // list. Kept separate from the step breakdown so reviewers who just
   // want the classified flow aren't buried in raw Power Query.
   const withM = regularTables.filter(t => t.partitions.some(p => p.mExpression && p.mExpression.trim().length > 0));
   if (withM.length > 0) {
-    lines.push(`## 2.4 Raw M expressions`);
+    lines.push(`## Raw M expressions`);
     lines.push("");
     lines.push(`Verbatim M body for every partition that has one. Truncated at 10 KB per partition; the dashboard's Sources tab shows the same content inline.`);
     lines.push("");

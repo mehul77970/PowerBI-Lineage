@@ -765,6 +765,7 @@ export type MStepKind =
   | "rename"
   | "filter"
   | "join"
+  | "union"
   | "addColumn"
   | "typeChange"
   | "expand"
@@ -797,8 +798,13 @@ const STEP_FUNCTION_MAP: Array<{ fn: string; kind: MStepKind }> = [
   { fn: "Table.Distinct",            kind: "filter" },
   { fn: "Table.NestedJoin",          kind: "join" },
   { fn: "Table.Join",                kind: "join" },
-  { fn: "Table.Combine",             kind: "join" },
   { fn: "Table.Merge",               kind: "join" },
+  // Combine and List.Combine concatenate (UNION-style), they don't
+  // join. Misclassifying as `join` was misleading every reader of
+  // composite-model M output where `Cubes = Table.Combine(...)` is
+  // the dominant shape.
+  { fn: "Table.Combine",             kind: "union" },
+  { fn: "List.Combine",              kind: "union" },
   { fn: "Table.AddColumn",           kind: "addColumn" },
   { fn: "Table.AddIndexColumn",      kind: "addColumn" },
   { fn: "Table.AddConditionalColumn", kind: "addColumn" },
@@ -937,6 +943,13 @@ function summaryForStep(body: string, kind: MStepKind): string {
       // Which two tables — best effort from the first two identifiers.
       const ids = body.match(/\b[A-Z][A-Za-z0-9_]*\b/g);
       return ids ? `${ids.slice(0, 2).join(" ⋈ ")}` : "";
+    }
+    case "union": {
+      // Table.Combine takes a list of tables; we pull the first two
+      // identifiers as a representative summary ("A + B + …").
+      const ids = body.match(/\b[A-Z][A-Za-z0-9_]*\b/g);
+      if (!ids || ids.length < 2) return "";
+      return `${ids[1]}${ids.length > 2 ? ` + ${ids[2]}` : ""}${ids.length > 3 ? ` + ${ids.length - 3} more` : ""}`;
     }
     case "expand": {
       const m = body.match(/,\s*"([^"]+)"\s*,\s*\{/);

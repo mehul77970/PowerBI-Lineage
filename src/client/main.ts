@@ -1239,6 +1239,7 @@ function renderSources(){
       rename:      "background:rgba(168,85,247,.12);color:var(--clr-calc);border-color:rgba(168,85,247,.25)",
       filter:      "background:rgba(245,158,11,.12);color:#F59E0B;border-color:rgba(245,158,11,.25)",
       join:        "background:rgba(239,68,68,.12);color:#F87171;border-color:rgba(239,68,68,.25)",
+      union:       "background:rgba(244,114,182,.12);color:#F472B6;border-color:rgba(244,114,182,.25)",
       addColumn:   "background:rgba(16,185,129,.12);color:#34D399;border-color:rgba(16,185,129,.25)",
       typeChange:  "background:rgba(236,72,153,.12);color:#F472B6;border-color:rgba(236,72,153,.25)",
       expand:      "background:rgba(6,182,212,.12);color:#22D3EE;border-color:rgba(6,182,212,.25)",
