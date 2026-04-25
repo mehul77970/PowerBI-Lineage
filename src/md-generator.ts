@@ -336,10 +336,19 @@ const MAX_ER_TABLES = 30;
 const MAX_ER_COLUMNS = 10;
 
 function erIdent(s: string): string {
-  // Mermaid 8.13 erDiagram idents must be [A-Za-z0-9_] only.
+  // Mermaid `erDiagram` requires entity / attribute identifiers to
+  // match `[A-Za-z][A-Za-z0-9_]*` — letter first, then word chars.
+  // Lowercase / digit / underscore leaders fail to render, falling
+  // back to a plain code block on GitHub. Common Power BI table
+  // names break this rule:
+  //   _measures, _Rollup_measures   (hidden helper-table convention)
+  //   1stPartyTable                  (rare but possible)
+  // We normalise: strip non-word chars, then ensure a leading letter
+  // by prefixing `E` when the first surviving char isn't one. Pick
+  // `E` rather than underscore because underscore-leaders are also
+  // out-of-spec for the same Mermaid grammar.
   const cleaned = String(s).replace(/[^A-Za-z0-9_]/g, "_");
-  // Leading-digit identifiers aren't valid — prefix underscore.
-  return /^[0-9]/.test(cleaned) ? "_" + cleaned : cleaned;
+  return /^[A-Za-z]/.test(cleaned) ? cleaned : "E" + cleaned;
 }
 
 function erCardinality(r: ModelRelationship): string {
@@ -1216,16 +1225,22 @@ export function generateMeasuresMd(data: FullData, reportName: string, mode: MdM
         lines.push(mermaid);
         lines.push("");
       }
+      // F13 follow-up: the Depends-on / Used-by chips in Measures.md
+      // are SAME-DOC anchor links (the dependency is another measure
+      // with its own `<a id="…">` block elsewhere in this file). We
+      // wrap each chip in xref(name, null, name) so a click jumps to
+      // the dependency's A–Z entry — works on GitHub + ADO Wiki + the
+      // dashboard MD viewer's anchor scroll.
       if (m.daxDependencies.length > 0) {
         lines.push(`**Depends on**`);
         lines.push("");
-        lines.push(m.daxDependencies.map(d => `<span class="chip chip--measure">${esc(d)}</span>`).join(" "));
+        lines.push(m.daxDependencies.map(d => `<span class="chip chip--measure">${xref(d, null, d)}</span>`).join(" "));
         lines.push("");
       }
       if (m.dependedOnBy && m.dependedOnBy.length > 0) {
         lines.push(`**Used by**`);
         lines.push("");
-        lines.push(m.dependedOnBy.map(d => `<span class="chip chip--measure">${esc(d)}</span>`).join(" "));
+        lines.push(m.dependedOnBy.map(d => `<span class="chip chip--measure">${xref(d, null, d)}</span>`).join(" "));
         lines.push("");
       }
       lines.push(`</details>`);

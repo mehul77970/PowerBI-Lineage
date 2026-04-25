@@ -193,4 +193,36 @@ if (FIXTURE_EXISTS) {
     assert.ok(!/\]\(#localdatetable_/i.test(det),
       "no link should point at LocalDateTable_* anchors (no headings exist)");
   });
+
+  // ────────────────────────────────────────────────────────────────────
+  // erDiagram entity-name compliance + Measures.md deps linking
+  // ────────────────────────────────────────────────────────────────────
+
+  test("erDiagram entity names start with a letter (Mermaid grammar requires this)", () => {
+    // Power BI's `_measures` / `_Rollup_measures` underscore-prefix
+    // convention used to produce `_measures { ... }` in our erDiagram
+    // output. Mermaid rejects underscore-leading entity idents (and
+    // GitHub falls back to rendering the block as plain code when
+    // parsing fails). We now prefix `E` to non-letter leaders so the
+    // diagram renders.
+    const det = generateMarkdown(data, "H", "detailed");
+    const erMatch = det.match(/```mermaid\nerDiagram[\s\S]+?```/);
+    if (!erMatch) return; // model has no rels — no erDiagram emitted
+    // Every entity name (line ending with " {") must start with a letter.
+    const entityHeaders = erMatch[0].match(/^\s+(\S+)\s*\{/gm) || [];
+    for (const h of entityHeaders) {
+      const name = h.trim().replace(/\s*\{$/, "");
+      assert.ok(/^[A-Za-z]/.test(name),
+        `erDiagram entity "${name}" must start with a letter`);
+    }
+  });
+
+  test("Measures.md Depends-on chips link to the dependency's A-Z entry (same-doc)", () => {
+    const det = generateMeasuresMd(data, "H", "detailed");
+    // Each chip should wrap a markdown link `[Name](#anchor-slug)`
+    // inside the chip span. Detailed mode emits `chip chip--measure`
+    // wrappers; we assert at least one carries an inner link.
+    assert.ok(/<span class="chip chip--measure">\[[^\]]+\]\(#[^)]+\)<\/span>/.test(det),
+      "Detailed Measures.md Depends-on / Used-by chips should wrap a same-doc anchor link");
+  });
 }

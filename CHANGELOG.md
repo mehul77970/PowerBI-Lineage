@@ -6,6 +6,7 @@ See [`changelog/README.md`](changelog/README.md) for the full index.
 
 ## Latest releases
 
+- **[0.10.2](changelog/0.10.2.md)** — 2026-04-25 · erDiagram render fix (underscore-leader entity names broke GitHub Mermaid parsing) + Measures Depends-on chips now linked
 - **[0.10.1](changelog/0.10.1.md)** — 2026-04-25 · Cross-doc links (F13) — Measures ↔ DataDict ↔ Sources ↔ Pages ↔ Functions; F6 dropped after re-examination
 - **[0.10.0](changelog/0.10.0.md)** — 2026-04-25 · Lite / Detailed MD modes (paste-into-wiki summary alongside the full reference) + Detailed-mode cleanup pass (F5/F7/F8/F9/F10)
 - **[0.9.0](changelog/0.9.0.md)** — 2026-04-24 · Data-engineer depth pass (relationship cardinality, Value.NativeQuery SQL, broken-ref detection, M-step parser)
