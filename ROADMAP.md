@@ -40,14 +40,28 @@ The direction splits into five rough themes. Priority within each theme is **rou
 | **CSV export on Measures + Columns tabs** | Same pattern as the Source Map tab's CSV export. Filter-aware. | Once somebody's filtered to "unused measures", getting that list into a spreadsheet is a real workflow. We have the pattern from Source Map — this just applies it twice. | ~2 hours. |
 | **Per-release GitHub Release tags** (ongoing) | Continue the discipline started with v0.7.0 + v0.8.0 + v0.8.1 — every user-visible release gets a GitHub Release with the changelog-entry text as the body. | Visibility in the Releases sidebar; clean link target for social posts. | ~10 min per release when version bumps. |
 
-## 5 · Mermaid revival
+## 5 · Differentiating capabilities (vs TE3 / Measure Killer)
+
+These came out of a "what can we do that the editing-focused tools can't?" review. Filtered for unique-to-documentation work, leveraging our file-based + zero-dep + browser angle.
+
+| Item | What | Why | Rough cost |
+|---|---|---|---|
+| **Model diff between two PBIP versions** | Take two `.Report` paths, build `FullData` for each, emit a stakeholder-friendly Markdown diff: added / removed / renamed measures, columns, relationships, calc groups; cardinality flips; description changes; status (direct/indirect/unused) shifts. CLI: `node dist/app.js --diff old/ new/`. Browser: paired folder picker. | Neither TE3 nor Measure Killer has a doc-form diff between model versions. Closest competitor is git-diffing the raw TMDL — unreadable for non-developers. We can ship a "what changed in v1.3" wiki page or PR comment that goes to stakeholders. **Boldest "documentation-not-editing" capability identified so far.** | ~2 days. We already have `FullData` + per-entity status; the diff is a side-by-side over the structure. |
+| **PR-friendly compressed diff comment** | Specialised mode of the diff above — emit ≤200 lines suitable for posting as a GitHub PR comment when someone modifies a PBIP. | Tightens the dev loop for teams using PBIP in version control. Pairs naturally with the parent diff feature. | ~½ day on top of the diff feature. |
+| **PII / sensitive-column detection** | Pattern-match column names + descriptions against sensitive-data taxonomies (`*_email`, `*_ssn`, `*_phone`, `iban`, `medical_*`, `gender`, `*_dob`, `*_salary`, etc). Flag in Improvements audit; surface a count summary. Configurable pattern catalogue. | Power BI's native sensitivity-label feature operates on the dataset, not the model definition. A pre-publish doc-time audit is a clean fit. Real governance value. | ~½ day. Adds 1-2 Improvements checks + a small pattern catalogue. |
+| **DAX complexity / hotspot map** | Per-measure statistics: line count, dependency depth, fan-in. Distribution chart. "Top 10 most complex measures" ranked. Optional dedicated `Complexity.md` doc. | TE3 formats DAX, doesn't grade it. Measure Killer focuses on usage, not complexity. Identifies refactor candidates objectively. | ~½ day. |
+| **Cross-report consolidation** | A workspace with N reports → one consolidated doc spanning all of them. Deduplicates shared measures, identifies canonical home, flags drift. | Useful for centers-of-excellence teams managing multiple reports per workspace. Niche but uniquely possible because we're file-based. | ~1 day. UX work mostly — parsing already aggregates per-report. |
+
+**Tier 3 (parked but lower priority):** Decision-log extraction (surface `///` doc-comments as a curated "design decisions" doc — depends on team discipline); naming-convention audit (low signal, mostly noise); voice / exec summary generation (content-design problem, not engineering).
+
+## 6 · Mermaid revival
 
 | Item | What | Why | Rough cost |
 |---|---|---|---|
 | **Re-enable Mermaid emission in MDs** | Flip `EMIT_MERMAID` back to `true` in `src/md-generator.ts`. The three call sites + helper functions (`mermaidMeasureLineage`, `mermaidTableRelationships`, `mermaidFullModelErDiagram`) are retained — gate is the only thing toggled. | Visual lineage + ER diagrams + per-fact star fragments are genuinely useful in the MDs when they render. Currently dropped (v0.11.0) because GitHub silently falls back to plain code blocks on Mermaid 8.13.x parsing edge-cases (one we hit: underscore-leading entity names; we fixed in 0.10.2 but the broader confidence wasn't there). ADO Wiki uses Mermaid 8.13.9 which is fussier still. | Day or so to validate output across all three target surfaces with the H&S + PRISMAv1 fixtures, fix any remaining grammar issues, then ship. The fixed quirks already documented: underscore-leader entity names, `color:` in classDef, `·` middle dots in labels, square brackets inside edge labels. |
 | **Switch to interactive lineage in dashboard, drop from MDs entirely** | Alternative path: keep MDs textual + linked, invest the Mermaid surface in the existing dashboard Lineage tab (which is already interactive). | Static Mermaid in MDs is always going to be a render-environment lottery. Live interactive trees in the dashboard are the right tool for visual lineage. | Not really a cost — the dashboard Lineage tab already exists. Decision is whether to formally retire Mermaid-in-MD as the design direction or keep the option open. |
 
-## 6 · Quality infrastructure
+## 7 · Quality infrastructure
 
 | Item | What | Why | Rough cost |
 |---|---|---|---|
@@ -55,7 +69,7 @@ The direction splits into five rough themes. Priority within each theme is **rou
 | **XSS fuzz coverage for new surfaces** | Source Map CSV export, page-layout wireframe tooltip, What's-new popup. Currently they use `escAttr` correctly but have no regression test. | Belt-and-braces. | ~2 hours. |
 | **Dual-theme a11y audit** | Contrast check on BluPulse theme across every panel. Current dim-tier refresh only targeted dark mode. | BluPulse is newest; edge-cases more likely. | ~half day. |
 
-## 7 · Discovery + positioning (non-code)
+## 8 · Discovery + positioning (non-code)
 
 These came out of the `/sc:business-panel` debate. Not shippable as PRs but worth parking:
 
