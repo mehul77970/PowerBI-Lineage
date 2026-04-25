@@ -304,7 +304,10 @@ export function generateHTML(
   <div class="panel" id="panel-lineage">
     <div id="lineage-search-row" class="search-row" style="position:relative">
       <input class="search-input" id="lineage-search-input" placeholder="Search any measure or column to trace its lineage…" data-action="lineage-search" autocomplete="off">
-      <div id="lineage-search-results" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:20;max-height:340px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md);margin-top:-1px"></div>
+      <!-- Dropdown background uses --tooltip-bg (solid in every theme,
+           explicitly set for BluPulse where --surface is rgba). z-index
+           50 keeps it above stat-card tooltips. -->
+      <div id="lineage-search-results" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:50;max-height:340px;overflow-y:auto;background:var(--tooltip-bg,var(--bg));border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md);margin-top:-1px;box-shadow:0 4px 12px rgba(0,0,0,0.25)"></div>
     </div>
     <div id="lineage-content"></div>
   </div>

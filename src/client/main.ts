@@ -351,7 +351,10 @@ document.addEventListener('input', function(e){
 
 // Hide the lineage typeahead dropdown when the user clicks anywhere
 // outside it. Without this the dropdown stays visible after the user
-// has moved on, partially obscuring the lineage canvas.
+// has moved on, partially obscuring the lineage canvas. Also restore
+// the empty-state placeholder if there's no active selection — we
+// blank the content while the dropdown is open, so dismissing without
+// a pick should bring the prompt back rather than leave a void.
 document.addEventListener('click', function(e){
   const target = e.target as HTMLElement | null;
   if (!target) return;
@@ -359,6 +362,13 @@ document.addEventListener('click', function(e){
   if (!inSearch) {
     const results = document.getElementById("lineage-search-results");
     if (results) results.style.display = "none";
+    const content = document.getElementById("lineage-content");
+    if (content && !content.querySelector(".lineage-hero") && !content.innerHTML.trim()) {
+      content.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-faint)">'
+        + '<div style="font-size:14px">Type above to search any measure or column,</div>'
+        + '<div style="font-size:14px;margin-top:4px">or click an entity in <strong>Measures</strong> · <strong>Columns</strong> · <strong>Pages</strong> · <strong>Tables</strong> to trace it.</div>'
+        + '</div>';
+    }
   }
 });
 
@@ -520,10 +530,33 @@ function renderLineageSearchResults(query: string): void {
   const host = document.getElementById("lineage-search-results");
   if (!host) return;
   const q = (query || "").toLowerCase().trim();
+  // Hide the lineage-content empty-state placeholder while the user is
+  // typing — otherwise the prompt bleeds through behind / around the
+  // typeahead dropdown (especially on themes where --surface is
+  // translucent). Restore the placeholder when the query clears AND
+  // no entity is currently selected. The lineage-content has class
+  // `lineage-hero` once an entity is rendered; we use that as the
+  // "selection exists" signal so we don't blank a real lineage view.
+  const content = document.getElementById("lineage-content");
+  const hasSelection = content ? !!content.querySelector(".lineage-hero") : false;
   if (q.length === 0) {
     host.style.display = "none";
     host.innerHTML = "";
+    // Restore the empty-state prompt when the user clears the query
+    // and nothing is selected. If a selection IS rendered, leave it.
+    if (content && !hasSelection) {
+      content.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-faint)">'
+        + '<div style="font-size:14px">Type above to search any measure or column,</div>'
+        + '<div style="font-size:14px;margin-top:4px">or click an entity in <strong>Measures</strong> · <strong>Columns</strong> · <strong>Pages</strong> · <strong>Tables</strong> to trace it.</div>'
+        + '</div>';
+    }
     return;
+  }
+  // Query has text — clear the empty-state so it doesn't compete with
+  // the dropdown visually. A real selection (lineage-hero present)
+  // stays as-is; the dropdown overlays it with its solid background.
+  if (content && !hasSelection) {
+    content.innerHTML = "";
   }
   type SearchHit = { kind: "measure" | "column"; name: string; table: string; status: string };
   const hits: SearchHit[] = [];
