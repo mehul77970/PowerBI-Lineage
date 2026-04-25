@@ -40,7 +40,14 @@ The direction splits into five rough themes. Priority within each theme is **rou
 | **CSV export on Measures + Columns tabs** | Same pattern as the Source Map tab's CSV export. Filter-aware. | Once somebody's filtered to "unused measures", getting that list into a spreadsheet is a real workflow. We have the pattern from Source Map — this just applies it twice. | ~2 hours. |
 | **Per-release GitHub Release tags** (ongoing) | Continue the discipline started with v0.7.0 + v0.8.0 + v0.8.1 — every user-visible release gets a GitHub Release with the changelog-entry text as the body. | Visibility in the Releases sidebar; clean link target for social posts. | ~10 min per release when version bumps. |
 
-## 5 · Quality infrastructure
+## 5 · Mermaid revival
+
+| Item | What | Why | Rough cost |
+|---|---|---|---|
+| **Re-enable Mermaid emission in MDs** | Flip `EMIT_MERMAID` back to `true` in `src/md-generator.ts`. The three call sites + helper functions (`mermaidMeasureLineage`, `mermaidTableRelationships`, `mermaidFullModelErDiagram`) are retained — gate is the only thing toggled. | Visual lineage + ER diagrams + per-fact star fragments are genuinely useful in the MDs when they render. Currently dropped (v0.11.0) because GitHub silently falls back to plain code blocks on Mermaid 8.13.x parsing edge-cases (one we hit: underscore-leading entity names; we fixed in 0.10.2 but the broader confidence wasn't there). ADO Wiki uses Mermaid 8.13.9 which is fussier still. | Day or so to validate output across all three target surfaces with the H&S + PRISMAv1 fixtures, fix any remaining grammar issues, then ship. The fixed quirks already documented: underscore-leader entity names, `color:` in classDef, `·` middle dots in labels, square brackets inside edge labels. |
+| **Switch to interactive lineage in dashboard, drop from MDs entirely** | Alternative path: keep MDs textual + linked, invest the Mermaid surface in the existing dashboard Lineage tab (which is already interactive). | Static Mermaid in MDs is always going to be a render-environment lottery. Live interactive trees in the dashboard are the right tool for visual lineage. | Not really a cost — the dashboard Lineage tab already exists. Decision is whether to formally retire Mermaid-in-MD as the design direction or keep the option open. |
+
+## 6 · Quality infrastructure
 
 | Item | What | Why | Rough cost |
 |---|---|---|---|
@@ -48,7 +55,7 @@ The direction splits into five rough themes. Priority within each theme is **rou
 | **XSS fuzz coverage for new surfaces** | Source Map CSV export, page-layout wireframe tooltip, What's-new popup. Currently they use `escAttr` correctly but have no regression test. | Belt-and-braces. | ~2 hours. |
 | **Dual-theme a11y audit** | Contrast check on BluPulse theme across every panel. Current dim-tier refresh only targeted dark mode. | BluPulse is newest; edge-cases more likely. | ~half day. |
 
-## 6 · Discovery + positioning (non-code)
+## 7 · Discovery + positioning (non-code)
 
 These came out of the `/sc:business-panel` debate. Not shippable as PRs but worth parking:
 

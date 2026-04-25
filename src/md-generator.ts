@@ -18,6 +18,30 @@ import type { ModelRelationship, PhysicalSource } from "./model-parser.js";
 export type MdMode = "lite" | "detailed";
 
 /**
+ * Master switch: emit Mermaid blocks (erDiagram, graph LR lineage,
+ * star fragments) into the generated MDs?
+ *
+ * **Currently `false`** — Mermaid rendering across our three target
+ * surfaces is unreliable enough that we'd rather omit the blocks than
+ * ship plain-code-block fallback noise:
+ *   - GitHub renders most Mermaid but silently falls back to a code
+ *     block on parsing edge-cases (PBI's `_measures` underscore-leader
+ *     was one we hit; there are likely others).
+ *   - ADO Wiki uses Mermaid 8.13.9, which is fussier still — multiple
+ *     classDef property combinations and label characters fail.
+ *   - The dashboard MD viewer doesn't render Mermaid at all (renders
+ *     as a code block) — users have to switch to the interactive
+ *     Lineage / Tables tabs for graph visualisations anyway.
+ *
+ * Mermaid revival is parked in ROADMAP.md. The helper functions
+ * (mermaidMeasureLineage, mermaidTableRelationships,
+ * mermaidFullModelErDiagram) are retained so flipping this flag back
+ * to `true` re-enables the full pipeline; tests asserting "no Mermaid
+ * blocks emitted" pin the current state.
+ */
+const EMIT_MERMAID = false;
+
+/**
  * Sibling MD files we cross-link to. Filenames match what the dashboard's
  * Download button produces (`<reportName>-<doc>.md`), so cross-doc links
  * resolve cleanly when users paste both files into the same folder /
@@ -591,7 +615,9 @@ export function generateMarkdown(data: FullData, reportName: string, mode: MdMod
   lines.push("    - 2.1 [Schema summary](#21-schema-summary)");
   lines.push("    - 2.2 [Tables by role](#22-tables-by-role)");
   lines.push("    - 2.3 [Relationship inventory](#23-relationship-inventory)");
-  lines.push("    - 2.4 [Entity-relationship diagram](#24-entity-relationship-diagram)");
+  if (EMIT_MERMAID) {
+    lines.push("    - 2.4 [Entity-relationship diagram](#24-entity-relationship-diagram)");
+  }
   lines.push("3. [Data Sources](#3-data-sources)");
   lines.push("    - 3.1 [Storage modes](#31-storage-modes)");
   if (!isLite) {
@@ -738,17 +764,18 @@ export function generateMarkdown(data: FullData, reportName: string, mode: MdMod
   lines.push("");
 
   // ── 2.4 Full-model ER diagram ─────────────────────────────────────────────
-  // Mermaid erDiagram rendering the complete star / constellation. Capped
-  // at 30 tables (ADO Wiki's layout engine chokes above that); per-fact
-  // star fragments in the Data Dictionary doc provide the drill-down.
-  const erDiagram = mermaidFullModelErDiagram(data);
-  if (erDiagram) {
-    lines.push("### 2.4 Entity-relationship diagram");
-    lines.push("");
-    lines.push("_Mermaid `erDiagram` — renders natively on GitHub, ADO Wiki, and in this dashboard. Inactive relationships are tagged `inactive`; bidirectional cross-filter relationships are tagged `bidi`._");
-    lines.push("");
-    lines.push(erDiagram);
-    lines.push("");
+  // Gated behind EMIT_MERMAID (see top of file). Helper retained for
+  // future revival when render-quality across our three targets stabilises.
+  if (EMIT_MERMAID) {
+    const erDiagram = mermaidFullModelErDiagram(data);
+    if (erDiagram) {
+      lines.push("### 2.4 Entity-relationship diagram");
+      lines.push("");
+      lines.push("_Mermaid `erDiagram` — renders natively on GitHub, ADO Wiki, and in this dashboard. Inactive relationships are tagged `inactive`; bidirectional cross-filter relationships are tagged `bidi`._");
+      lines.push("");
+      lines.push(erDiagram);
+      lines.push("");
+    }
   }
 
   lines.push("---");
@@ -1212,18 +1239,18 @@ export function generateMeasuresMd(data: FullData, reportName: string, mode: MdM
         lines.push(`> ${m.description.replace(/\n/g, " ")}`);
         lines.push("");
       }
-      // Lineage graph: upstream measures → this measure → downstream
-      // visuals. Emits a mermaid code block when the measure has
-      // either dependencies or usage; otherwise skipped (no signal
-      // to render). Mermaid renders natively in ADO Wiki + GitHub;
-      // the dashboard falls back to rendering the source as a code
-      // block (acceptable — the text lists below cover the same data).
-      const mermaid = mermaidMeasureLineage(m);
-      if (mermaid) {
-        lines.push(`**Lineage**`);
-        lines.push("");
-        lines.push(mermaid);
-        lines.push("");
+      // Lineage graph: gated behind EMIT_MERMAID. The Depends-on /
+      // Used-by chip lists below cover the same data and are now
+      // proper anchor links, so the textual flow is fully navigable
+      // without the (currently flaky) Mermaid render.
+      if (EMIT_MERMAID) {
+        const mermaid = mermaidMeasureLineage(m);
+        if (mermaid) {
+          lines.push(`**Lineage**`);
+          lines.push("");
+          lines.push(mermaid);
+          lines.push("");
+        }
       }
       // F13 follow-up: the Depends-on / Used-by chips in Measures.md
       // are SAME-DOC anchor links (the dependency is another measure
@@ -1647,8 +1674,11 @@ export function generateDataDictionaryMd(data: FullData, reportName: string, mod
         lines.push("");
       }
 
-      // Star-fragment Mermaid — fact tables only.
-      if (classifyTable(tbl) === "Fact") {
+      // Star-fragment Mermaid — fact tables only. Gated behind
+      // EMIT_MERMAID. The FK chips below already carry same-doc
+      // anchor links to each related dimension, so the textual nav
+      // is intact without the diagram.
+      if (EMIT_MERMAID && classifyTable(tbl) === "Fact") {
         const mermaid = mermaidTableRelationships(tbl);
         if (mermaid) {
           lines.push("#### Star fragment");

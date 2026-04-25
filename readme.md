@@ -9,7 +9,7 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 </p>
 
 <p align="center">
-  <img alt="Tests 270/270" src="https://img.shields.io/badge/tests-270%2F270-22c55e?style=flat-square">
+  <img alt="Tests 267/267" src="https://img.shields.io/badge/tests-267%2F267-22c55e?style=flat-square">
   <img alt="Runtime deps 0" src="https://img.shields.io/badge/runtime%20deps-0-64748b?style=flat-square">
   <img alt="Node ≥18" src="https://img.shields.io/badge/node-%E2%89%A518-5E6A7B?style=flat-square">
 </p>
@@ -199,7 +199,7 @@ scripts/
   serve-browser.mjs    Tiny static server for local testing
 
 changelog/             Per-version release notes (one file per release)
-tests/                 node:test suites — 270 tests, zero framework deps
+tests/                 node:test suites — 267 tests, zero framework deps
 ```
 
 ## Zero runtime dependencies
@@ -245,7 +245,7 @@ Each of the nine generated MDs starts with an HTML comment suggesting its wiki p
 | `<details>` / `<summary>` collapsibles | ✅ native | ✅ native | ✅ native |
 | Pipe tables | ✅ | ✅ | ✅ |
 | Fenced `dax` code blocks | ✅ syntax-highlighted | ✅ | ✅ syntax-highlighted |
-| ```` ```mermaid ```` lineage / star fragments | ✅ native | ✅ native | ⚠ code-block fallback (acceptable) |
+| ```` ```mermaid ```` lineage / star fragments | ⛔ not emitted (parked in ROADMAP) | ⛔ not emitted | ⛔ not emitted |
 | Badge `<span>` styling | ⚠ CSS stripped — emoji-prefixed plain text (`🔑 PK`) | ⚠ same fallback | ✅ styled pill |
 | Auto-anchor from heading | ✅ | ✅ | ✅ |
 
@@ -256,4 +256,4 @@ Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 - **What shipped** — [`changelog/`](changelog/), one file per release. Full index in [`changelog/README.md`](changelog/README.md).
 - **What's parked for future design** — [`ROADMAP.md`](ROADMAP.md). Not a commitment — a scratchpad of ideas (XMLA endpoint support, broken-DAX audit, column drill-down, physical-source index, M-query steps, CSV exports) with rough scopes.
 
-Latest release: **[v0.10.2](changelog/0.10.2.md)** — erDiagram render fix (underscore-leader entity names broke Mermaid parsing on GitHub) + Measures.md Depends-on / Used-by chips now wrap proper same-doc anchor links.
+Latest release: **[v0.11.0](changelog/0.11.0.md)** — Mermaid emission dropped from generated MDs. Render-quality across GitHub / ADO Wiki / dashboard never stabilised; the textual Depends-on / FK / Relationship-inventory fallbacks already cover the same data. Revival parked in `ROADMAP.md` §5.

@@ -59,9 +59,13 @@ if (FIXTURE_EXISTS) {
     const det = generateMarkdown(data, "H", "detailed");
     const lit = generateMarkdown(data, "H", "lite");
     assert.ok(lit.length < det.length, "lite should be smaller");
-    // Lite must still carry the front matter and ER diagram
+    // Lite must still carry the front matter
     assert.ok(lit.includes("# Semantic Model Technical Specification"));
-    assert.ok(lit.includes("erDiagram"));
+    // erDiagram is currently gated off (EMIT_MERMAID = false in
+    // md-generator.ts) — neither mode emits it. When it returns we'll
+    // re-add the assertion.
+    assert.ok(!lit.includes("erDiagram"), "Mermaid is gated off — neither mode emits erDiagram");
+    assert.ok(!det.includes("erDiagram"), "Mermaid is gated off — neither mode emits erDiagram");
     // Lite must drop §1.2 Conventions, §3.2 Parameters, Appendix A
     assert.ok(!lit.includes("### 1.2 Conventions"), "lite should drop §1.2");
     assert.ok(!lit.includes("### 3.2 Parameters and expressions"), "lite should drop §3.2");
@@ -82,7 +86,11 @@ if (FIXTURE_EXISTS) {
   test("H&S fixture — Lite Measures.md is a flat summary table only (no per-measure blocks)", () => {
     const lit = generateMeasuresMd(data, "H", "lite");
     const det = generateMeasuresMd(data, "H", "detailed");
-    assert.ok(lit.length < det.length / 4, "lite should be much smaller");
+    // Without Mermaid lineage blocks in Detailed (gated off), the
+    // size ratio shifts — Detailed shrinks too. Loosen the bound to
+    // < 1/3 of Detailed; structural assertions below pin the actual
+    // shape difference.
+    assert.ok(lit.length < det.length / 3, "lite should be much smaller");
     // Lite has the summary table
     assert.ok(/\| Name \| Table \| Status \| Format \| Description \|/.test(lit));
     // Lite drops the per-measure <details> blocks (a hallmark of Detailed)
