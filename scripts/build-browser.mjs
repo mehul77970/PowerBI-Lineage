@@ -521,7 +521,7 @@ const overlayHtml = `
       <span>·</span>
       <a class="br-visits" href="https://jpapworth.goatcounter.com" target="_blank" rel="noopener"
          title="Anonymous page-view tally — no cookies, no IP storage">
-        <img src="https://jpapworth.goatcounter.com/counter//count.svg" alt="visits" />
+        <img src="https://jpapworth.goatcounter.com/counter/TOTAL.svg" alt="visits" />
       </a>
     </div>
 
