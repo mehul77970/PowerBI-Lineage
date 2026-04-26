@@ -480,6 +480,8 @@ export function runImprovementChecks(data: FullData): Improvement[] {
       title: `${tablesNoDesc.length} of ${userTables.length} tables lack descriptions`,
       summary: `${Math.round((tablesNoDesc.length / userTables.length) * 100)}% of user tables have no table-level description.`,
       rationale: "Table descriptions surface in tooltips + the Data Dictionary doc. Without them, anyone new to the model has to reverse-engineer intent from column names.",
+      items: [...tablesNoDesc.map(t => t.name)].sort(),
+      maxListed: 15,
     });
   }
   const measuresNoDesc = userMeasures.filter(m => !m.description || m.description.trim() === "");
@@ -489,6 +491,8 @@ export function runImprovementChecks(data: FullData): Improvement[] {
       title: `${measuresNoDesc.length} of ${userMeasures.length} measures lack descriptions`,
       summary: `${Math.round((measuresNoDesc.length / userMeasures.length) * 100)}% of measures have no description.`,
       rationale: "Measure descriptions appear in the Power BI UI measure-picker tooltip. Business users pick measures from that list; unlabelled ones are just names.",
+      items: [...measuresNoDesc.map(m => m.table + "[" + m.name + "]")].sort(),
+      maxListed: 15,
     });
   }
   const longDax = longDaxMeasures(data, 30);
@@ -559,6 +563,8 @@ export function runImprovementChecks(data: FullData): Improvement[] {
       title: `${columnsNoDesc.length} of ${userColumns.length} columns lack descriptions`,
       summary: `${Math.round((columnsNoDesc.length / userColumns.length) * 100)}% of columns have no description.`,
       rationale: "Less critical than table / measure descriptions — column names usually carry enough meaning on their own for a data dictionary reader.",
+      items: [...columnsNoDesc.map(c => c.table + "[" + c.name + "]")].sort(),
+      maxListed: 20,
     });
   }
   if (!data.modelProperties.description || data.modelProperties.description.trim() === "") {
