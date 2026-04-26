@@ -425,7 +425,7 @@ function renderTabs(){
     {id:"unused",l:"Unused",b:um,w:um>0},
     {id:"lineage",l:"Lineage",b:null},
     // Output
-    {id:"docs",l:"Docs",b:null}
+    {id:"docs",l:"Documentation",b:null}
   ].map((t: any) =>`<button class="tab ${activeTab===t.id?'active':''}" data-action="tab" data-tab="${t.id}">${t.l}${t.b!==null?`<span class="tab-count ${t.w?'warn':''}">${t.b}</span>`:''}</button>`).join("");
 }
 

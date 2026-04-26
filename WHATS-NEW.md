@@ -22,7 +22,7 @@ Drop in a PBIP folder — get a **searchable dashboard** plus **nine Markdown do
 - **Improvements** — 16-check model-health audit, severity-tiered (high · medium · low · info · strengths) — includes **broken-reference detection**: flags any DAX referencing a table / column / measure that doesn't exist
 
 ### Output
-- **Docs tab** — Markdown ready to paste into ADO Wiki or GitHub. Up to nine files — *Model · Data Dictionary · Sources · Measures · Functions · Calc Groups · Pages · Improvements · Index*. Empty docs (e.g. no UDFs) skip automatically.
+- **Documentation tab** — Markdown ready to paste into ADO Wiki or GitHub. Up to nine files — *Model · Data Dictionary · Sources · Measures · Functions · Calc Groups · Pages · Improvements · Index*. Empty docs (e.g. no UDFs) skip automatically.
 - **Lite / Detailed toggle** — paste-into-wiki summary versus full engineer reference. Lite drops Data Dictionary + Index entirely, replaces per-measure detail with a flat A–Z table, and skips Native queries / M-steps / Raw M from Sources. **Lite is 21% the size of Detailed** on a real model.
 
 ## Under the hood

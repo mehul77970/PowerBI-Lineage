@@ -20,7 +20,7 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 
 ## What you get
 
-- **Interactive dashboard** — 11 tabs: Sources, Tables, Columns, Relationships, Measures, Calc Groups, Functions, Pages (with layout wireframe), Unused, Lineage (search-driven), Docs
+- **Interactive dashboard** — 11 tabs: Sources, Tables, Columns, Relationships, Measures, Calc Groups, Functions, Pages (with layout wireframe), Unused, Lineage (search-driven), Documentation
 - **Wiki-ready Markdown** — up to 9 generated docs, paste-ready for ADO Wiki or GitHub. **Lite / Detailed toggle** per doc — paste-into-wiki summary for stakeholders, full reference for engineers. Cross-doc links between them resolve in the dashboard, on GitHub, and on ADO Wiki
 - **Improvements audit** — 16 checks across five severity tiers (high / medium / low / info / strengths) including broken-DAX-reference detection
 - **Source Map** — flat PBI-column → physical-source lineage with CSV export
@@ -101,7 +101,7 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
 ### Wiki-ready Markdown
 
 <p align="center">
-  <img src="docs/screenshots/12-modeldocuments.png" alt="Docs tab with Model technical specification" width="720">
+  <img src="docs/screenshots/12-modeldocuments.png" alt="Documentation tab with Model technical specification" width="720">
 </p>
 
 Nine Markdown documents — paste-ready for ADO Wiki or GitHub, anchor-stable, Mermaid-native.
@@ -228,7 +228,7 @@ Each of the nine generated MDs starts with an HTML comment suggesting its wiki p
 
 **To publish:**
 
-1. Open the dashboard for your report, switch to the **Docs** tab
+1. Open the dashboard for your report, switch to the **Documentation** tab
 2. For each doc (Model / Data Dictionary / Sources / Measures / Functions / Calc Groups / Pages / Improvements / Index):
    - Click **⎘ Copy** to copy the markdown
    - In ADO Wiki, create a new page with the name from the `<!-- Suggested ADO Wiki page name: ... -->` hint
@@ -255,4 +255,4 @@ Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 
 [`changelog/`](changelog/) — one file per release. Full index in [`changelog/README.md`](changelog/README.md). Future direction is open-ended; feature requests welcome via Issues.
 
-Latest release: **[v0.11.3](changelog/0.11.3.md)** — Mobile responsive. Landing overlay, tabs row, and primary tabs (Measures / Columns / Sources / Improvements / Docs) clean up cleanly on phone-width viewports. The live sample is now usable from a phone-screen click-through.
+Latest release: **[v0.11.3](changelog/0.11.3.md)** — Mobile responsive. Landing overlay, tabs row, and primary tabs (Measures / Columns / Sources / Improvements / Documentation) clean up cleanly on phone-width viewports. The live sample is now usable from a phone-screen click-through.
