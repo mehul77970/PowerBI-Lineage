@@ -11,7 +11,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); version
 
 | Version | Date | Theme |
 |---|---|---|
-| [0.11.4](0.11.4.md) | 2026-04-26 | Visitor count on landing overlay — anonymous, cookieless GoatCounter badge as 4th trust chip |
 | [0.11.3](0.11.3.md) | 2026-04-26 | Mobile responsive — landing card + tabs row + primary tabs + modals clean up at ≤720 / ≤480 |
 | [0.11.2](0.11.2.md) | 2026-04-25 | Lineage typeahead bleed-through fix — solid dropdown background + hide placeholder while typing |
 | [0.11.1](0.11.1.md) | 2026-04-25 | Lineage tab is search-driven — typeahead replaces the passive empty state; external clicks still work |

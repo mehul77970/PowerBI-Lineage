@@ -6,7 +6,6 @@ See [`changelog/README.md`](changelog/README.md) for the full index.
 
 ## Latest releases
 
-- **[0.11.4](changelog/0.11.4.md)** — 2026-04-26 · Visitor count badge on landing overlay — anonymous GoatCounter tally as 4th trust chip; no cookies, no IP storage
 - **[0.11.3](changelog/0.11.3.md)** — 2026-04-26 · Mobile responsive — landing + tabs + primary tabs cleaned up for phone viewports; sample loads cleanly from a LinkedIn-arriving mobile click
 - **[0.11.2](changelog/0.11.2.md)** — 2026-04-25 · Lineage typeahead — fix empty-state bleed-through on translucent themes; hide placeholder while typing
 - **[0.11.1](changelog/0.11.1.md)** — 2026-04-25 · Lineage tab gets a search bar — type any measure / column to trace it; no more "click elsewhere to populate" placeholder

@@ -312,19 +312,6 @@ const overlayStyles = `
   }
   .br-trust span { white-space: nowrap; }
   .br-trust .br-lock { color: #10B981; }
-  /* Visit-count badge — GoatCounter SVG sits inline with the other
-     trust chips. Slight vertical nudge so the digits baseline-align
-     with surrounding text. The chip is a link to the public stats. */
-  .br-trust .br-visits {
-    display: inline-flex; align-items: center;
-    line-height: 1; text-decoration: none;
-  }
-  .br-trust .br-visits img {
-    height: 18px; width: auto; display: block;
-    border-radius: 3px; opacity: 0.85;
-    transition: opacity .12s;
-  }
-  .br-trust .br-visits:hover img { opacity: 1; }
 
   /* Secondary actions under the trust chips. Understated text-link
      styling (no border, no background) so they sit as footnotes,
@@ -518,11 +505,6 @@ const overlayHtml = `
       <span>267 tests</span>
       <span>·</span>
       <span>Zero runtime deps</span>
-      <span>·</span>
-      <a class="br-visits" href="https://jpapworth.goatcounter.com" target="_blank" rel="noopener"
-         title="Anonymous page-view tally — no cookies, no IP storage">
-        <img src="https://jpapworth.goatcounter.com/counter/TOTAL.svg" alt="visits" />
-      </a>
     </div>
 
     <div class="br-links">
@@ -553,11 +535,6 @@ const overlayHtml = `
   </div>
 </div>
 <script type="module" src="./browser/entry.js"></script>
-<!-- GoatCounter — anonymous, cookieless page-view tally. No IP storage,
-     no fingerprinting. Bundled into the browser shell only; CLI mode
-     never loads this script (no public URL to track). -->
-<script data-goatcounter="https://jpapworth.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
 `.trim();
 
 // Splice everything in right before </body>. The import map has to
