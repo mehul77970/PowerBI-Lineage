@@ -255,4 +255,4 @@ Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 
 [`changelog/`](changelog/) — one file per release. Full index in [`changelog/README.md`](changelog/README.md). Future direction is open-ended; feature requests welcome via Issues.
 
-Latest release: **[v0.11.1](changelog/0.11.1.md)** — Lineage tab gets a search bar with typeahead. Type any measure or column to trace it directly; no more "click an entity elsewhere to populate" empty state. External clicks still work and now sync into the search box.
+Latest release: **[v0.11.3](changelog/0.11.3.md)** — Mobile responsive. Landing overlay, tabs row, and primary tabs (Measures / Columns / Sources / Improvements / Docs) clean up cleanly on phone-width viewports. The live sample is now usable from a phone-screen click-through.

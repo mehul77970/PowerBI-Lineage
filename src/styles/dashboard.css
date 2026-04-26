@@ -594,6 +594,81 @@
 
   @media(max-width:768px){.summary{grid-template-columns:repeat(3,1fr)}.lineage-flow-row{flex-direction:column}.lineage-arrow-col{transform:rotate(90deg);padding:8px 0;width:100%}}
 
+  /* ── Mobile responsive (≤720px / ≤480px) ─────────────────────────────────
+     Goal: the live demo on a phone shows the landing overlay, dashboard
+     tabs, and the headline-tab data legibly. Wide tables (Measures,
+     Columns, Source Map, etc.) keep their `.table-wrap` horizontal-
+     scroll wrapper so dense data degrades gracefully rather than
+     reflowing into unreadable narrow columns. Lineage flow already
+     stacks vertically at ≤768px (above). The Pages-tab wireframe is
+     intentionally NOT optimised — true-position SVG of 30+ visuals
+     doesn't rescale meaningfully below ~600px and degrading it would
+     hurt the desktop signal more than helping mobile. */
+
+  @media (max-width: 720px) {
+    .container { padding: var(--space-5) var(--space-4); }
+
+    /* Tabs row: scroll horizontally on touch, stay sticky. */
+    .tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+      flex-wrap: nowrap;
+    }
+    .tabs::-webkit-scrollbar { height: 4px; }
+    .tabs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .tab { padding: var(--space-3) var(--space-4); font-size: 13px; }
+    .tab-count { font-size: 9px; padding: 1px 5px; }
+
+    /* Header: title + actions wrap rather than overflow off-screen. */
+    .header { flex-wrap: wrap; gap: var(--space-3); }
+    .header-sub { font-size: 16px; }
+
+    /* Search row: input takes the full width, buttons wrap below it. */
+    .search-row { flex-wrap: wrap; gap: var(--space-3); }
+    .search-input { min-width: 100%; }
+    .filter-btn { font-size: 11px; padding: 5px 9px; }
+
+    /* Stat cards: tighter so 3 across don't crowd or truncate. */
+    .summary { gap: 6px; }
+    .stat { padding: 8px 6px; }
+    .stat-value { font-size: 18px; }
+    .stat-label { font-size: 9px; letter-spacing: 0.04em; }
+    .stat-detail { font-size: 9px; }
+
+    /* Dense tables — let cell text be slightly smaller; horizontal
+       scroll handles overflow. */
+    .data-table th, .data-table td { font-size: 11px; padding: 6px 8px; }
+    .data-table th { font-size: 9px; }
+
+    /* Lineage tab tightens — search input takes full width. */
+    #lineage-search-input { font-size: 13px; }
+    .lineage-hero-title { font-size: 16px; }
+    .lineage-hero-meta { font-size: 11px; }
+  }
+
+  @media (max-width: 480px) {
+    /* Phone portrait: 2 stat cards per row, tighter container padding,
+       smaller header. About modal goes near-fullscreen so its content
+       isn't padding-trapped. */
+    .container { padding: var(--space-4) var(--space-3); }
+    .summary { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    .header-sub { font-size: 14px; }
+    .tab { padding: 6px 9px; font-size: 12px; }
+    .tab-count { display: none; }  /* badge counts are noise at this size */
+    .data-table th, .data-table td { padding: 4px 6px; }
+    /* About / What's-new modal full-width with edge gutters */
+    .wn-card {
+      max-width: calc(100vw - 16px) !important;
+      max-height: calc(100vh - 16px) !important;
+      padding: 16px !important;
+    }
+    .wn-body { font-size: 13px; }
+    /* Lineage typeahead dropdown takes full width minus the search-row gutter */
+    #lineage-search-results { max-height: 50vh; }
+  }
+
   /* ── DAX syntax highlighter (vendor/dax-highlight) ───────────────── */
   /*__DAX_HIGHLIGHT_CSS__*/
 

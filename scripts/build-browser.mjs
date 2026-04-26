@@ -170,6 +170,17 @@ const overlayStyles = `
   .br-card.br-card--wide {
     max-width: min(960px, 95vw);
   }
+  /* Mobile: tighter padding, smaller heading, full-width-ish card.
+     Keeps the landing card legible on a phone before the user enters
+     the dashboard. */
+  @media (max-width: 480px) {
+    .br-card { padding: 24px 18px; max-width: calc(100vw - 16px); }
+    .br-card h1 { font-size: 22px; }
+    .br-tagline { font-size: 11px; margin-bottom: 14px; }
+    .br-trust { font-size: 10px; flex-wrap: wrap; justify-content: center; gap: 6px; }
+    .br-ctas { flex-wrap: wrap; gap: 8px; }
+    .br-btn { font-size: 13px; padding: 10px 16px; }
+  }
   .br-card h1 {
     margin: 0 0 4px;
     font-size: 28px;
