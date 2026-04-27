@@ -104,14 +104,14 @@ Open a PBIP project folder — get a searchable dashboard plus nine Markdown doc
   <img src="docs/screenshots/12-modeldocuments.png" alt="Documentation tab with Model technical specification" width="720">
 </p>
 
-Nine Markdown documents — paste-ready for ADO Wiki or GitHub, anchor-stable, Mermaid-native.
+Nine Markdown documents — paste-ready for ADO Wiki or GitHub, anchor-stable, with cross-doc links that resolve everywhere.
 
 | Doc | What's in it |
 |---|---|
 | **Model** | Technical spec — front matter, schema summary, per-table breakdown, relationships, pages roll-up |
-| **Data Dictionary** | Per-table column catalog with PK / FK / CALC / HIDDEN badges + star-schema Mermaid fragments |
+| **Data Dictionary** | Per-table column catalog with PK / FK / CALC / HIDDEN badges + textual star-schema fragments (FK targets, role tags) |
 | **Sources** | Data-sources catalog, partition modes, field parameters, composite-model proxies |
-| **Measures** | A–Z reference with dependencies, bindings, per-measure Mermaid lineage |
+| **Measures** | A–Z reference with DAX, dependencies (Depends on / Used by), per-visual + per-page bindings |
 | **Functions** | UDF reference — parameters, description, body |
 | **Calc Groups** | Calculation-group reference with per-item descriptions |
 | **Pages** | Per-page visual catalog — type, title, field bindings for every visual |
@@ -255,4 +255,4 @@ Every anchor link is verified by `tests/md-anchors.test.ts` — drift fires CI.
 
 [`changelog/`](changelog/) — one file per release. Full index in [`changelog/README.md`](changelog/README.md). Future direction is open-ended; feature requests welcome via Issues.
 
-Latest release: **[v0.11.3](changelog/0.11.3.md)** — Mobile responsive. Landing overlay, tabs row, and primary tabs (Measures / Columns / Sources / Improvements / Documentation) clean up cleanly on phone-width viewports. The live sample is now usable from a phone-screen click-through.
+Latest release: **[v0.11.5](changelog/0.11.5.md)** — Improvements audit names the entities. The three "tables / measures / columns lacking descriptions" findings used to report only a count + percentage; now each lists the actual offenders inline so they're directly actionable.
