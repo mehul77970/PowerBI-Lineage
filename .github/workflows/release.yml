@@ -1,0 +1,125 @@
+# Auto-release on version bump
+#
+# Watches main for changes to package.json. When the `version` field
+# changes to a value that has not yet been tagged, this workflow:
+#
+#   1. Tags the merge commit `v<x.y.z>` (annotated, with the changelog
+#      file's first heading as the message).
+#   2. Pushes the tag.
+#   3. Creates a GitHub Release whose body is the contents of
+#      `changelog/<x.y.z>.md` — the same file the dashboard's
+#      "What's new" popup pulls from. Title format:
+#      `v<x.y.z> — <theme from changelog first line>`.
+#
+# Skipped when:
+#   - `package.json` did not change in the push
+#   - The version is unchanged from the previous commit
+#   - A tag for that version already exists (idempotent on re-runs)
+#   - No `changelog/<x.y.z>.md` file exists (release without notes is
+#     never useful — fail loud rather than ship a blank release)
+#
+# Why this exists: the project tags every version into its own
+# changelog/ shard (one MD per release). Before this workflow, those
+# shards never automatically reached the GitHub Releases page —
+# tagging stalled after v0.8.1. This closes the loop.
+name: release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "package.json"
+      - "changelog/*.md"
+
+# Default permission set is read; we need write for tags + releases.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main with full history
+        uses: actions/checkout@v4
+        with:
+          # Full history so we can compare HEAD's package.json
+          # against HEAD~1's. Default fetch-depth=1 would prevent
+          # the version-diff check below.
+          fetch-depth: 0
+
+      - name: Resolve current vs previous version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          curr=$(node -p "require('./package.json').version")
+          # On the very first commit there's no HEAD~1 — fall back to
+          # 'unknown' so the diff check treats it as a new version.
+          prev=$(git show HEAD~1:package.json 2>/dev/null \
+                 | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{try{console.log(JSON.parse(d).version)}catch{console.log("unknown")}})' \
+                 || echo "unknown")
+          echo "curr=$curr" >> "$GITHUB_OUTPUT"
+          echo "prev=$prev" >> "$GITHUB_OUTPUT"
+          if [ "$curr" = "$prev" ]; then
+            echo "Version unchanged ($curr) — nothing to release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version bumped: $prev → $curr"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check tag does not already exist
+        if: steps.ver.outputs.skip == 'false'
+        id: tag-check
+        shell: bash
+        run: |
+          set -euo pipefail
+          v="${{ steps.ver.outputs.curr }}"
+          if git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then
+            echo "Tag v$v already exists — skipping release (idempotent)."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify changelog file exists
+        if: steps.ver.outputs.skip == 'false' && steps.tag-check.outputs.skip == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          v="${{ steps.ver.outputs.curr }}"
+          if [ ! -f "changelog/$v.md" ]; then
+            echo "::error::No changelog/$v.md — refusing to release without notes."
+            exit 1
+          fi
+
+      - name: Tag + push
+        if: steps.ver.outputs.skip == 'false' && steps.tag-check.outputs.skip == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          v="${{ steps.ver.outputs.curr }}"
+          # Title line lives at the top of changelog/<x.y.z>.md as
+          #   ## [x.y.z] — YYYY-MM-DD · <theme>
+          # We want just the theme for the tag annotation.
+          theme=$(head -1 "changelog/$v.md" \
+                  | sed -E 's/^## \[[0-9.]+\] — [0-9-]+ · //')
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$v" -m "v$v — $theme"
+          git push origin "v$v"
+
+      - name: Create GitHub Release
+        if: steps.ver.outputs.skip == 'false' && steps.tag-check.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          v="${{ steps.ver.outputs.curr }}"
+          theme=$(head -1 "changelog/$v.md" \
+                  | sed -E 's/^## \[[0-9.]+\] — [0-9-]+ · //')
+          gh release create "v$v" \
+            --title "v$v — $theme" \
+            --notes-file "changelog/$v.md"
